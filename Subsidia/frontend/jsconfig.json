@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "baseUrl": "."
+  },
+  "include": [
+    "src/**/*"
+, "src/sections/nad/NadTableRow.js", "src/sections/scaricamenti/CategorizzaFileDialog.js", "src/sections/scaricamenti/ScaricamentiInfos.js", "src/sections/identity/IdentitaTableStep2.js"  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
