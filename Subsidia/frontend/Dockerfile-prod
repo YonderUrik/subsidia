@@ -1,5 +1,5 @@
 # Create image based on node image
-FROM node:19 as build
+FROM node:19 as build as build-stage
 
 # Set working directory
 WORKDIR /app
