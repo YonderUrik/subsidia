@@ -27,7 +27,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile-prod  # Path to your React frontend Dockerfile
+      dockerfile: Dockerfile-prod-nobuild  # Path to your React frontend Dockerfile
     container_name: frontend
     environment:
       - REACT_APP_HOST_API_KEY="/api"
