@@ -1,5 +1,5 @@
 import sumBy from 'lodash/sumBy';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 // @mui
 import { useTheme, alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -79,6 +79,7 @@ export default function InvoiceListView() {
   const { enqueueSnackbar } = useSnackbar();
   const router = useRouter();
   const table = useTable({ defaultOrderBy: 'date' });
+  const componentRef = useRef(null);
 
   const confirm = useBoolean();
 
@@ -254,7 +255,7 @@ export default function InvoiceListView() {
 
   return (
     <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <Container maxWidth={settings.themeStretch ? false : 'lg'} ref={componentRef}>
         <CustomBreadcrumbs
           heading={
             <>
@@ -277,6 +278,7 @@ export default function InvoiceListView() {
           }}
         />
 
+        {/* STATISTICS */}
         <Card
           sx={{
             mb: { xs: 3, md: 2 },
@@ -291,7 +293,7 @@ export default function InvoiceListView() {
               <RaccolteAnalytic
                 title="Totale"
                 percent={100}
-                symbol='Q'
+                symbol="Q"
                 price={`${sumBy(dataFiltered, 'weight') / 100}`}
                 icon="solar:bill-list-bold-duotone"
                 color={theme.palette.info.main}
@@ -299,7 +301,7 @@ export default function InvoiceListView() {
 
               <RaccolteAnalytic
                 title="Pagati"
-                symbol='€'
+                symbol="€"
                 percent={getPercentByStatus('Pagato')}
                 price={getTotalAmount('Pagato')}
                 icon="solar:check-circle-bold-duotone"
@@ -308,7 +310,7 @@ export default function InvoiceListView() {
 
               <RaccolteAnalytic
                 title="Acconti"
-                symbol='€'
+                symbol="€"
                 percent={getPercentByStatus('Acconto')}
                 price={getTotalAmount('Acconto')}
                 icon="solar:clock-circle-bold-duotone"
@@ -317,7 +319,7 @@ export default function InvoiceListView() {
 
               <RaccolteAnalytic
                 title="Da Pagare"
-                symbol='€'
+                symbol="€"
                 percent={getPercentByStatus('Da Pagare')}
                 price={getTotalAmount('Da Pagare')}
                 icon="solar:bell-bing-bold-duotone"
@@ -328,6 +330,7 @@ export default function InvoiceListView() {
         </Card>
 
         <Card>
+          {/* TABS */}
           <Tabs
             value={filters.status}
             onChange={handleFilterStatus}
@@ -358,8 +361,8 @@ export default function InvoiceListView() {
 
           <RaccolteTableToolbar
             filters={filters}
+            componentRef={componentRef.current}
             onFilters={handleFilters}
-            //
             productOptions={products.map((option) => option)}
           />
 

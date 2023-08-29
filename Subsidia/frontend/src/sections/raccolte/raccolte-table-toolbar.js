@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 // @mui
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Stack from '@mui/material/Stack';
@@ -12,6 +12,8 @@ import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
+import html2canvas from 'html2canvas';
+
 // components
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
@@ -21,6 +23,7 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 export default function RaccolteTableToolbar({
   filters,
   onFilters,
+  componentRef,
   //
   productOptions,
 }) {
@@ -49,6 +52,20 @@ export default function RaccolteTableToolbar({
     },
     [onFilters]
   );
+
+  const handleExport = async () => {
+    if (componentRef.current) {
+      const canvas = await html2canvas(componentRef);
+      const imageURL = canvas.toDataURL('image/png');
+
+      const a = document.createElement('a');
+      a.href = imageURL;
+      a.download = 'exported-image.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
 
   return (
     <>
@@ -102,7 +119,7 @@ export default function RaccolteTableToolbar({
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            size='small'
+            size="small"
             value={filters.client}
             onChange={handleClientName}
             placeholder="Cerca cliente..."
@@ -129,6 +146,7 @@ export default function RaccolteTableToolbar({
       >
         <MenuItem
           onClick={() => {
+            handleExport();
             popover.onClose();
           }}
         >
@@ -152,5 +170,6 @@ export default function RaccolteTableToolbar({
 RaccolteTableToolbar.propTypes = {
   filters: PropTypes.object,
   onFilters: PropTypes.func,
+  componentRef: PropTypes.any,
   productOptions: PropTypes.array,
 };
