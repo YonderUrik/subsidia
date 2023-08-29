@@ -12,7 +12,7 @@ services:
 
   backend:
     build:
-      context: ./backend  # Path to your Flask backend Dockerfile
+      context: ./backend/Dockerfile  # Path to your Flask backend Dockerfile
     container_name: backend
     ports:
       - "5000:5555"
@@ -25,7 +25,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend  # Path to your React frontend Dockerfile
+      context: ./frontend/Dockerfile-prod  # Path to your React frontend Dockerfile
     container_name: frontend
     environment:
       - REACT_APP_HOST_API_KEY="/api"
