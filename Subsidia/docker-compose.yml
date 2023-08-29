@@ -20,7 +20,7 @@ services:
     ports:
       - "8315:5555"
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/mydb
+      - MONGO_URI=mongodb://localhost:27017/
     deploy:
       replicas: 5
       placement:
