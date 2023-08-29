@@ -1,4 +1,10 @@
 version: '3.7'
+
+networks:
+  subsidia-network:
+    external: true
+    driver: overlay
+
 services:
   mongodb:
     image: mongo:latest
@@ -8,38 +14,29 @@ services:
     volumes:
       - mongodb_data:/data/db
     networks:
-      - mynetwork
+      - subsidia-network
 
   backend:
-    build:
-      context: ./backend  # Path to your Flask backend Dockerfile
-      dockerfile: Dockerfile
-    container_name: backend
+    image: backend:0.0.1
     ports:
-      - "5000:5555"
+      - "8315:5555"
     environment:
       - MONGO_URI=mongodb://mongodb:27017/mydb
-    depends_on:
-      - mongodb
+    deploy:
+      replicas: 5
+      placement:
+        constraints: [node.role == manager]
     networks:
-      - mynetwork
+      - subsidia-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile-prod-nobuild  # Path to your React frontend Dockerfile
-    container_name: frontend
+    image: frontend:0.0.1
     environment:
       - REACT_APP_HOST_API_KEY="/api"
       - NODE_OPTIONS=--max-old-space-size=4096
     ports:
       - "8314:80"
-    networks:
-      - mynetwork
-
-networks:
-  mynetwork:
-    driver: bridge
-
-volumes:
-  mongodb_data:
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
