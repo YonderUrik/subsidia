@@ -20,7 +20,7 @@ except:
 try:
     MONGO_HOST = os.getenv("MONGO_HOST")
 except:
-    MONGO_HOST = 'mongodb://localhost:27017/'
+    MONGO_HOST = 'mongodb:27017'
 
 DB_NAME = 'subsidia'
 USERS_COLLECTION = 'users'
