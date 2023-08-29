@@ -31,6 +31,7 @@ services:
     container_name: frontend
     environment:
       - REACT_APP_HOST_API_KEY="/api"
+      - NODE_OPTIONS=--max-old-space-size=4096
     ports:
       - "8314:80"
     networks:
