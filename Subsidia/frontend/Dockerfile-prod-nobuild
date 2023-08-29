@@ -11,8 +11,6 @@ ENV PATH /app/node_modules/.bin:$PATH
 # Install all app dependencies
 COPY package.json yarn.lock /app/
 
-RUN yarn install
-
 # Create image based on nginx and deploy our built React app
 FROM nginx:1.17-alpine
 

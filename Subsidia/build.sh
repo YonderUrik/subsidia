@@ -10,7 +10,7 @@ VERSION=0.0.1
 if [ "$IMAGE_TYPE" = "frontend" ]; then
     echo "Building frontend image. You have 5 seconds to stop the script"
     sleep 5
-    docker build ./frontend -f frontend/Dockerfile-prod -t $IMAGE_TYPE:$VERSION
+    docker build ./frontend -f frontend/Dockerfile-prod-nobuild -t $IMAGE_TYPE:$VERSION
     docker image push $IMAGE_TYPE:$VERSION
 elif [ "$IMAGE_TYPE" = "backend" ]; then
     echo "Building backend image. You have 5 seconds to stop the script"
