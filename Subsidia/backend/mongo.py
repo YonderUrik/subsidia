@@ -17,7 +17,7 @@ class BaseMongo(object):
         Create client connection
         """
         super(BaseMongo, self).__init__()
-        self.client = MongoClient(VARS.MONGO_HOST)
+        self.client = MongoClient()
 
     def close(self):
         """
