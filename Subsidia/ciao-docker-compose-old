@@ -1,0 +1,71 @@
+# @Author: Andrian Putina
+# @Date:   2023-06-01 17:27:55
+# @Last Modified by:   Andrian Putina
+# @Last Modified time: 2023-06-09 12:42:13
+version: "3.7"
+
+secrets:
+  ca-chain.cert.pem:
+    external: True
+  crawler.client.all.pem:
+    external: True
+  JWT_SECRET_KEY:
+    external: True
+  client_id:
+    external: True  
+  client_secret:
+    external: True
+  MAP_MONGO_ADDRESS:
+    external: True
+  MAP_MONGO_PORT:
+    external: True
+  MAP_MONGO_USERNAME:
+    external: True
+  MAP_MONGO_PASSWORD:
+    external: True
+  MAP_MONGO_ADDRESS_DEV:
+    external: True
+  MAP_MONGO_PORT_DEV:
+    external: True
+  MAP_MONGO_USERNAME_DEV:
+    external: True
+  MAP_MONGO_PASSWORD_DEV:
+    external: True
+
+networks:
+  crawler-network:
+    external: true
+    driver: overlay    
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  frontend:
+    image: localhost:7452/apps/frontend:0.0.1
+    environment:
+      - REACT_APP_HOST_API_KEY="/api"
+    ports:
+      - "8314:80"
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+
+  backend:
+    image: localhost:7452/apps/backend:0.0.1
+    environment:
+      - JWT_SECRET_KEY=/run/secrets/JWT_SECRET_KEY
+    ports:
+      - "8315:5555"
+    networks:
+      - crawler-network
+    deploy:
+      replicas: 5
+      placement:
+        constraints: [node.role == manager]
