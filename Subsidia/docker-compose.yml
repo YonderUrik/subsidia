@@ -15,7 +15,7 @@ services:
   mongodb:
     image: mongo:latest
     ports:
-      - "27017:27017"
+      - "7334:27017"
     volumes:
       - /mnt/mongodb:/data/db
     networks:
@@ -31,7 +31,7 @@ services:
     ports:
       - "8315:5555"
     environment:
-      - MONGO_HOST=mongodb:27017
+      - MONGO_HOST=mongodb:7334
     deploy:
       replicas: 5
       placement:
