@@ -25,6 +25,7 @@ services:
       - mongodb-root-password
     environment:
       MONGO_INITDB_DATABASE: admin
+    command: mongod --auth
 
   backend:
     image: backend:0.0.1
