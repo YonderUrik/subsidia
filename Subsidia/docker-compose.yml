@@ -5,6 +5,12 @@ networks:
     external: true
     driver: overlay
 
+secrets:
+  mongodb-root-username:
+    external: true
+  mongodb-root-password:
+    external: true
+
 services:
   mongodb:
     image: mongo:latest
