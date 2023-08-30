@@ -23,6 +23,8 @@ services:
     secrets:
       - mongodb-root-username
       - mongodb-root-password
+    environment:
+      MONGO_INITDB_DATABASE: admin
 
   backend:
     image: backend:0.0.1
@@ -34,8 +36,6 @@ services:
       replicas: 5
       placement:
         constraints: [node.role == manager]
-    volumes:
-      - /run/secrets/:/run/secrets/
     networks:
       - subsidia-network
 
