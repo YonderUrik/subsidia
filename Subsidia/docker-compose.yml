@@ -28,6 +28,9 @@ services:
     command: mongod --auth
 
   backend:
+    secrets:
+      - mongodb-root-username
+      - mongodb-root-password
     image: backend:0.0.1
     ports:
       - "8315:5555"
