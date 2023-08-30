@@ -14,6 +14,9 @@ services:
       - /mnt/mongodb:/data/db
     networks:
       - subsidia-network
+    secrets:
+      - mongodb-root-username
+      - mongodb-root-password
 
   backend:
     image: backend:0.0.1
@@ -25,6 +28,8 @@ services:
       replicas: 5
       placement:
         constraints: [node.role == manager]
+    volumes:
+      - /run/secrets/:/run/secrets/
     networks:
       - subsidia-network
 

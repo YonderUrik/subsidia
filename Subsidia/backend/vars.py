@@ -22,6 +22,8 @@ try:
 except:
     MONGO_HOST = 'mongodb:27017'
 
+MONGO_AUTH = "admin"
+
 DB_NAME = 'subsidia'
 USERS_COLLECTION = 'users'
 RACCOLTE_COLLECTION = 'raccolte'

@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import vars as VARS
 import logging
+import os
 from bson.objectid import ObjectId
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,10 @@ class BaseMongo(object):
         Create client connection
         """
         super(BaseMongo, self).__init__()
-        self.client = MongoClient("mongodb:27017")
+        # Read MongoDB secrets from Docker secrets
+        mongodb_username = open('/run/secrets/mongodb-root-username', 'r').read().strip()
+        mongodb_password = open('/run/secrets/mongodb-root-password', 'r').read().strip()
+        self.client = MongoClient(VARS.MONGO_HOST, username=mongodb_username, password=mongodb_password, authSource=VARS.MONGO_AUTH)
 
     def close(self):
         """
