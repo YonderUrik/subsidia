@@ -130,8 +130,10 @@ export default function InvoiceListView() {
   const getTotalAmount = (status) => {
     if (status === 'Da Pagare') {
       const filteredItems = dataFiltered.filter((item) => item.status === status);
-      const sum = filteredItems.reduce((acc, item) => acc + item.weight * item.price, 0);
-      return sum;
+      const sum = filteredItems.reduce((acc, item) => acc + item.revenue, 0);
+      const filteredItemsAcconto = dataFiltered.filter((item) => item.status === 'Acconto');
+      const sumAcconto = filteredItemsAcconto.reduce((acc, item) => acc + item.revenue, 0);
+      return sum+sumAcconto;
     }
     return sumBy(
       dataFiltered.filter((item) => item.status === status),

@@ -20,7 +20,7 @@ except:
 try:
     MONGO_HOST = os.getenv("MONGO_HOST")
 except:
-    MONGO_HOST = 'mongodb:7334'
+    MONGO_HOST = 'mongodb:27017'
 
 MONGO_AUTH = "admin"
 
