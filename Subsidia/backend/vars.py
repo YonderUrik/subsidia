@@ -15,7 +15,7 @@ except Exception:
 try:
     APP_DEBUG_PORT = int(os.getenv("APP_DEBUG_PORT"))
 except:
-    APP_DEBUG_PORT = 5555
+    APP_DEBUG_PORT = 5000
 
 try:
     MONGO_HOST = os.getenv("MONGO_HOST")

@@ -4,7 +4,7 @@ import { PATH_APP } from './routes/paths';
 // API
 // ----------------------------------------------------------------------
 
-export const HOST_API_KEY = process.env.REACT_APP_HOST_API_KEY || 'https://subsidia.page/api';
+export const HOST_API_KEY = process.env.REACT_APP_HOST_API_KEY || '/api';
 
 export const MAP_API = process.env.REACT_APP_MAPBOX_API;
 
