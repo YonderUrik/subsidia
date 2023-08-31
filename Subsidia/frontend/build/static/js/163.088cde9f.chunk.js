@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_minimal_kit_cra_js=self.webpackChunk_minimal_kit_cra_js||[]).push([[163],{49163:function(a,i,_){_.r(i);var s=_(29480);i.default=s.g}}]);
