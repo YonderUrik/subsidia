@@ -40,10 +40,10 @@ export default function Home() {
               color: 'primary',
               to: PATH_APP.raccolte,
             },
-            { label: 'Cashflow', icon: 'mdi:cash-sync', color: 'primary' },
-            { label: 'Dipendenti', icon: 'clarity:employee-group-solid', color: 'primary' },
-            { label: 'Agenda', icon: 'solar:book-2-bold-duotone', color: 'primary' },
-            { label: 'Magazzino', icon: 'material-symbols:warehouse-rounded', color: 'primary' },
+            { label: 'Cashflow', icon: 'mdi:cash-sync', color: '' },
+            { label: 'Dipendenti', icon: 'clarity:employee-group-solid', color: '' },
+            { label: 'Agenda', icon: 'solar:book-2-bold-duotone', color: '' },
+            { label: 'Magazzino', icon: 'material-symbols:warehouse-rounded', color: '' },
           ]}
         />
       </Container>
