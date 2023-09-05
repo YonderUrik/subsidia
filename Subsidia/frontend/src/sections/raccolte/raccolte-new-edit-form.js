@@ -3,11 +3,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useNavigate } from 'react-router-dom';
+
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import { Grid, Divider, CardHeader, InputAdornment, Box, MenuItem } from '@mui/material';
+import { Grid, Divider, CardHeader, InputAdornment, Box, MenuItem, Button } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // routes
 import { PATH_APP } from '../../routes/paths';
@@ -38,7 +40,7 @@ export default function RaccolteNewEditForm({ currentInvoice }) {
   const [clients, setClients] = useState([]);
   const [products, setProducts] = useState([]);
 
-  console.log(currentInvoice);
+  const navigate = useNavigate();
 
   const getDistinctValues = useCallback(async () => {
     try {
@@ -258,6 +260,14 @@ export default function RaccolteNewEditForm({ currentInvoice }) {
               </RHFSelect>
             </Stack>
             <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3, p: 3 }}>
+              <Button
+                onClick={() => navigate(PATH_APP.raccolte)}
+                size="small"
+                variant="soft"
+                color="inherit"
+              >
+                Torna indietro
+              </Button>
               <LoadingButton
                 size="small"
                 variant="contained"

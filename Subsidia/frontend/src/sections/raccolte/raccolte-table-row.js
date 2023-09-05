@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 // @mui
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
@@ -12,6 +10,7 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import ListItemText from '@mui/material/ListItemText';
+import { Card, Tooltip } from '@mui/material';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // utils
@@ -32,11 +31,10 @@ export default function RaccolteTableRow({
   onEditRow,
   onDeleteRow,
 }) {
-  const { sent, invoiceNumber, date, revenue, status, weight, price, client, product } = row;
-
+  const { date, revenue, status, weight, price, client, product, note } = row;
   const confirm = useBoolean();
-
   const popover = usePopover();
+  const popoverNote = usePopover();
 
   return (
     <>
@@ -89,6 +87,29 @@ export default function RaccolteTableRow({
           >
             {status}
           </Label>
+        </TableCell>
+
+        <TableCell sx={{ py: 0 }}>
+          {note ? (
+            <>
+              <Tooltip title="Visualizza nota">
+                <IconButton onClick={popoverNote.onOpen}>
+                  <Iconify icon="solar:notebook-bold-duotone" />
+                </IconButton>
+              </Tooltip>
+              <CustomPopover arrow="left-top" open={popoverNote.open} onClose={popoverNote.onClose}>
+                <Card
+                  style={{
+                    maxWidth: '300px', // Adjust the max width as needed
+                    wordWrap: 'break-word', // Allow text to break and wrap
+                  }}
+                  sx={{ p: 2 }}
+                >
+                  {note}
+                </Card>
+              </CustomPopover>
+            </>
+          ) : null}
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1, py: 0 }}>

@@ -1,12 +1,11 @@
 import PropTypes from 'prop-types';
 // @mui
 import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 // utils
-import { fShortenNumber, fCurrency } from 'src/utils/format-number';
+import {  fCurrency } from 'src/utils/format-number';
 // components
 import Iconify from 'src/components/iconify';
 

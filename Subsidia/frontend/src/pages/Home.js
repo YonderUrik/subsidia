@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 // @mui
-import { Container, Typography, Card, CardHeader, Box, Paper, Grid } from '@mui/material';
+import { Container, Typography,  Box, Paper } from '@mui/material';
 // components
 
 import { useSettingsContext } from '../components/settings';

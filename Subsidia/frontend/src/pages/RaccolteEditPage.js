@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 // @mui
 import Container from '@mui/material/Container';
-import { LinearProgress } from '@mui/material';
 // routes
-import { PATH_APP } from 'src/routes/paths';
 import { useParams } from 'src/routes/hook';
 // hooks
-import { useBoolean } from 'src/hooks/use-boolean';
+
 // components
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';

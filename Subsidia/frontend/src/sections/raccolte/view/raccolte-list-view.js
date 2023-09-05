@@ -23,7 +23,6 @@ import { RouterLink } from '../../../routes/components';
 // hooks
 import { useBoolean } from '../../../hooks/use-boolean';
 // utils
-import { fTimestamp } from '../../../utils/format-time';
 import axios from '../../../utils/axios';
 // components
 import Label from '../../../components/label';
@@ -60,6 +59,7 @@ const TABLE_HEAD = [
   { id: 'price', label: 'Prezzo' },
   { id: 'revenue', label: 'Incasso R / Incasso T' },
   { id: 'status', label: 'Stato' },
+  { id: 'note', label: 'Note' },
   { id: '' },
 ];
 
