@@ -60,7 +60,7 @@ RaccolteAnalytic.propTypes = {
   color: PropTypes.string,
   icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   percent: PropTypes.number,
-  price: PropTypes.number,
+  price: PropTypes.any,
   title: PropTypes.string,
   symbol: PropTypes.string,
 };

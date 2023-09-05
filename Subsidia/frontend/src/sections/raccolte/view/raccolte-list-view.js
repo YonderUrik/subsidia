@@ -132,8 +132,11 @@ export default function InvoiceListView() {
       const filteredItems = dataFiltered.filter((item) => item.status === status);
       const sum = filteredItems.reduce((acc, item) => acc + item.revenue, 0);
       const filteredItemsAcconto = dataFiltered.filter((item) => item.status === 'Acconto');
-      const sumAcconto = filteredItemsAcconto.reduce((acc, item) => acc + item.revenue, 0);
-      return sum+sumAcconto;
+      const sumAcconto = filteredItemsAcconto.reduce(
+        (acc, item) => acc + (item.price * item.weight - item.revenue),
+        0
+      );
+      return sum + sumAcconto;
     }
     return sumBy(
       dataFiltered.filter((item) => item.status === status),
@@ -141,6 +144,12 @@ export default function InvoiceListView() {
     );
   };
 
+  const getMean = () => {
+    const numeratore = dataFiltered.reduce((acc, item) => acc + item.weight * item.price, 0);
+    const denominatore = dataFiltered.reduce((acc, item) => acc + item.weight, 0);
+
+    return numeratore/denominatore
+  };
   const getPercentByStatus = (status) => (getRaccoltaLength(status) / dataFiltered.length) * 100;
 
   const TABS = [
@@ -311,11 +320,11 @@ export default function InvoiceListView() {
               />
 
               <RaccolteAnalytic
-                title="Acconti"
+                title="Media Prezzo"
                 symbol="€"
-                percent={getPercentByStatus('Acconto')}
-                price={getTotalAmount('Acconto')}
-                icon="solar:clock-circle-bold-duotone"
+                percent={0}
+                price={getMean()}
+                icon="solar:tag-price-bold-duotone"
                 color={theme.palette.warning.main}
               />
 

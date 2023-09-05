@@ -23,8 +23,6 @@ services:
     secrets:
       - mongodb-root-username
       - mongodb-root-password
-    environment:
-      MONGO_INITDB_DATABASE: admin
     command: mongod --auth
 
   backend:
@@ -36,6 +34,8 @@ services:
       - "8315:5555"
     environment:
       - MONGO_HOST=mongodb:27017
+      - mongodb_username=/run/secrets/mongodb-root-username
+      - mongodb_password=/run/secrets/mongodb-root-password
     deploy:
       replicas: 5
       placement:

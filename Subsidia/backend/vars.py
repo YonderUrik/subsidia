@@ -22,6 +22,10 @@ try:
 except:
     MONGO_HOST = 'mongodb:27017'
 
+mongodb_username = os.getenv("mongodb_username")
+mongodb_password = os.getenv("mongodb_password")
+
+
 MONGO_AUTH = "admin"
 
 DB_NAME = 'subsidia'

@@ -19,8 +19,8 @@ class BaseMongo(object):
         """
         super(BaseMongo, self).__init__()
         # Read MongoDB secrets from Docker secrets
-        mongodb_username = open('/run/secrets/mongodb-root-username', 'r').read().strip()
-        mongodb_password = open('/run/secrets/mongodb-root-password', 'r').read().strip()
+        mongodb_username = open(VARS.mongodb_username, 'r').read().strip()
+        mongodb_password = open(VARS.mongodb_password, 'r').read().strip()
         self.client = MongoClient(VARS.MONGO_HOST, username=mongodb_username, password=mongodb_password)
 
     def close(self):
