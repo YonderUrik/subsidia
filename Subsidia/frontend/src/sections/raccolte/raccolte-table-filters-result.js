@@ -20,7 +20,18 @@ export default function RaccolteTableFiltersResult({
   results,
   ...other
 }) {
-  const shortLabel = shortDateLabel(filters.date, filters.date);
+  let shortLabel = null;
+  if (filters.date && !filters.endDate) {
+    shortLabel = shortDateLabel(filters.date, filters.date);
+  }
+  if (!filters.date && filters.endDate) {
+    shortLabel = shortDateLabel(filters.endDate, filters.endDate);
+  }
+  if (filters.date && filters.endDate) {
+    shortLabel = shortDateLabel(filters.date, filters.endDate);
+  }
+
+  console.log(shortLabel);
 
   const handleRemoveProduct = (inputValue) => {
     const newValue = filters.product.filter((item) => item !== inputValue);
@@ -33,6 +44,7 @@ export default function RaccolteTableFiltersResult({
 
   const handleRemoveDate = () => {
     onFilters('date', null);
+    onFilters('endDate', null);
   };
 
   return (
@@ -64,7 +76,7 @@ export default function RaccolteTableFiltersResult({
           </Block>
         )}
 
-        {filters.date && (
+        {shortLabel && (
           <Block label="Data:">
             <Chip size="small" label={shortLabel} onDelete={handleRemoveDate} />
           </Block>

@@ -68,6 +68,7 @@ const defaultFilters = {
   product: [],
   status: 'all',
   date: null,
+  endDate: null,
 };
 
 // ----------------------------------------------------------------------
@@ -86,6 +87,9 @@ export default function InvoiceListView() {
   const [tableData, setTableData] = useState([]);
 
   const [filters, setFilters] = useState(defaultFilters);
+
+  const dateError =
+    filters.date && filters.endDate ? filters.date.getTime() > filters.endDate.getTime() : false;
 
   const [products, setProducts] = useState([]);
   const [yearsAvailable, setYearsAvailable] = useState([]);
@@ -110,6 +114,7 @@ export default function InvoiceListView() {
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters,
+    dateError,
   });
 
   const dataInPage = dataFiltered.slice(
@@ -148,7 +153,7 @@ export default function InvoiceListView() {
     const numeratore = dataFiltered.reduce((acc, item) => acc + item.weight * item.price, 0);
     const denominatore = dataFiltered.reduce((acc, item) => acc + item.weight, 0);
 
-    return numeratore/denominatore
+    return numeratore / denominatore;
   };
   const getPercentByStatus = (status) => (getRaccoltaLength(status) / dataFiltered.length) * 100;
 
@@ -320,21 +325,21 @@ export default function InvoiceListView() {
               />
 
               <RaccolteAnalytic
-                title="Media Prezzo"
-                symbol="€"
-                percent={0}
-                price={getMean()}
-                icon="solar:tag-price-bold-duotone"
-                color={theme.palette.warning.main}
-              />
-
-              <RaccolteAnalytic
                 title="Da Pagare"
                 symbol="€"
                 percent={getPercentByStatus('Da Pagare')}
                 price={getTotalAmount('Da Pagare')}
                 icon="solar:bell-bing-bold-duotone"
                 color={theme.palette.error.main}
+              />
+
+              <RaccolteAnalytic
+                title="Media Prezzo"
+                symbol="€"
+                percent={0}
+                price={getMean()}
+                icon="solar:tag-price-bold-duotone"
+                color={theme.palette.warning.main}
               />
             </Stack>
           </Scrollbar>
@@ -374,6 +379,7 @@ export default function InvoiceListView() {
             filters={filters}
             componentRef={componentRef.current}
             onFilters={handleFilters}
+            dateError={dateError}
             productOptions={products.map((option) => option)}
           />
 
@@ -497,8 +503,8 @@ export default function InvoiceListView() {
 
 // ----------------------------------------------------------------------
 
-function applyFilter({ inputData, comparator, filters }) {
-  const { client, status, product, date } = filters;
+function applyFilter({ inputData, comparator, filters, dateError }) {
+  const { client, status, product, date, endDate } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -524,24 +530,46 @@ function applyFilter({ inputData, comparator, filters }) {
     inputData = inputData.filter((invoice) => product.includes(invoice.product));
   }
 
-  if (date) {
-    inputData = inputData.filter((invoice) => {
-      const invoiceDate = new Date(invoice.date);
-      const formattedInvoiceDate = new Date(
-        invoiceDate.getFullYear(),
-        invoiceDate.getMonth(),
-        invoiceDate.getDate()
-      );
+  if (!dateError) {
+    if (date) {
+      inputData = inputData.filter((invoice) => {
+        const invoiceDate = new Date(invoice.date);
+        const formattedInvoiceDate = new Date(
+          invoiceDate.getFullYear(),
+          invoiceDate.getMonth(),
+          invoiceDate.getDate()
+        );
 
-      const selectedDate = new Date(date);
-      const formattedSelectedDate = new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate()
-      );
+        const selectedDate = new Date(date);
+        const formattedSelectedDate = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate()
+        );
 
-      return formattedInvoiceDate.getTime() === formattedSelectedDate.getTime();
-    });
+        return formattedInvoiceDate.getTime() >= formattedSelectedDate.getTime();
+      });
+    }
+
+    if (endDate) {
+      inputData = inputData.filter((invoice) => {
+        const invoiceDate = new Date(invoice.date);
+        const formattedInvoiceDate = new Date(
+          invoiceDate.getFullYear(),
+          invoiceDate.getMonth(),
+          invoiceDate.getDate()
+        );
+
+        const selectedDate = new Date(endDate);
+        const formattedSelectedDate = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate()
+        );
+
+        return formattedInvoiceDate.getTime() <= formattedSelectedDate.getTime();
+      });
+    }
   }
 
   return inputData;
