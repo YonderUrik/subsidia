@@ -5,6 +5,7 @@ import { Box, Stack } from '@mui/material';
 //
 import NavList from './NavList';
 import AccountPopover from '../../../layouts/dashboard/header/AccountPopover';
+import { useAuthContext } from '../../../auth/useAuthContext';
 
 // ----------------------------------------------------------------------
 
@@ -25,7 +26,7 @@ function NavSectionMini({ data, sx, ...other }) {
       {...other}
     >
       <AccountPopover />
-      
+
       <Box
         sx={{
           width: 24,
@@ -51,11 +52,15 @@ Items.propTypes = {
 };
 
 function Items({ items, isLastGroup }) {
+  const { user } = useAuthContext();
+  const tags = user?.tags;
   return (
     <>
-      {items.map((list) => (
-        <NavList key={list.title + list.path} data={list} depth={1} hasChild={!!list.children} />
-      ))}
+      {items.map((list) =>
+        !list.tag || tags.includes(list.tag) ? (
+          <NavList key={list.title + list.path} data={list} depth={1} hasChild={!!list.children} />
+        ) : null
+      )}
 
       {!isLastGroup && (
         <Box

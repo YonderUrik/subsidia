@@ -8,11 +8,14 @@ import { hideScrollbarX } from '../../../utils/cssStyles';
 import Logo from '../../../components/logo';
 import { NavSectionMini } from '../../../components/nav-section';
 //
+
 import navConfig from './config-navigation';
 
 // ----------------------------------------------------------------------
 
 export default function NavMini() {
+
+
   return (
     <Box
       component="nav"

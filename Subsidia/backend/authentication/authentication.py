@@ -29,7 +29,7 @@ def login():
         if not check_password_hash(user_exists['password'], _password):
             return {"message": "Credenziali errate"}, 401
 
-        user_auth_token = {"email": user_exists['email']}
+        user_auth_token = {"email": user_exists['email'], 'tags' : user_exists['tags']}
 
         token = create_access_token(
             identity=user_auth_token, expires_delta=current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])

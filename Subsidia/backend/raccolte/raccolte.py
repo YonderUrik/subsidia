@@ -5,11 +5,12 @@ from raccolte.mongo import RaccolteMongo
 from datetime import datetime
 import vars as VARS
 import json
+import user_limitations as USER
 
 bp = Blueprint('raccolte', __name__, url_prefix='/api/raccolte')
 
 @bp.route('/edit-raccolta', methods=["POST"])
-@jwt_required()
+@USER.has_raccolte()
 def edit_raccolta():
     user_email = get_jwt_identity()['email']
     request_data = request.json.get('data')
@@ -32,7 +33,7 @@ def edit_raccolta():
     return {"message" : msg}, status
 
 @bp.route('/new-raccolta', methods=["POST"])
-@jwt_required()
+@USER.has_raccolte()
 def new_raccolta():
     user_email = get_jwt_identity()['email']
     request_data = request.json.get('data')
@@ -54,7 +55,7 @@ def new_raccolta():
     return {"message" : msg}, status
 
 @bp.route('/get-distinct-value', methods=["POST"])
-@jwt_required()
+@USER.has_raccolte()
 def get_distinct_value():
     user_email = get_jwt_identity()['email']
     field_to_get = request.json.get('value')
@@ -73,7 +74,7 @@ def get_distinct_value():
     return json.dumps(res, default=str)
 
 @bp.route('/get-distinct-years', methods=["GET"])
-@jwt_required()
+@USER.has_raccolte()
 def get_distinct_years():
     user_email = get_jwt_identity()['email']
 
@@ -91,7 +92,7 @@ def get_distinct_years():
     return json.dumps(res, default=str)
     
 @bp.route('/get-data', methods=["POST"])
-@jwt_required()
+@USER.has_raccolte()
 def get_data():
     year = request.json.get('year')
     
@@ -111,7 +112,7 @@ def get_data():
     return json.dumps(res, default=str)
 
 @bp.route('/get-single-doc', methods=["POST"])
-@jwt_required()
+@USER.has_raccolte()
 def get_single_doc():
     _id = request.json.get('id')
     user_email = get_jwt_identity()['email']
@@ -130,7 +131,7 @@ def get_single_doc():
     return json.dumps(res, default=str)
 
 @bp.route('/delete-rows', methods=["POST"])
-@jwt_required()
+@USER.has_raccolte()
 def delete_rows():
     _ids = request.json.get('ids')
 

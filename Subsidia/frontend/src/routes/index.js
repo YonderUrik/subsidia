@@ -3,6 +3,8 @@ import { Navigate, useRoutes } from 'react-router-dom';
 import AuthGuard from '../auth/AuthGuard';
 import GuestGuard from '../auth/GuestGuard';
 
+import RoleBasedGuard from '../auth/RoleBasedGuard';
+
 // layouts
 import CompactLayout from '../layouts/compact';
 import DashboardLayout from '../layouts/dashboard';
@@ -70,9 +72,30 @@ export default function Router() {
       children: [
         { element: <Navigate to={PATH_AFTER_LOGIN} replace />, index: true },
         { path: 'home', element: <Home /> },
-        { path: 'raccolte', element: <RaccoltePage /> },
-        { path: 'nuova-raccolta', element: <RaccolteCreateView /> },
-        { path: 'raccolta/:id/modifica', element: <RaccolteEditPage /> },
+        {
+          path: 'raccolte',
+          element: (
+            <RoleBasedGuard hasContent roles={['raccolte']}>
+              <RaccoltePage />
+            </RoleBasedGuard>
+          ),
+        },
+        {
+          path: 'nuova-raccolta',
+          element: (
+            <RoleBasedGuard hasContent roles={['raccolte']}>
+              <RaccolteCreateView />
+            </RoleBasedGuard>
+          ),
+        },
+        {
+          path: 'raccolta/:id/modifica',
+          element: (
+            <RoleBasedGuard hasContent roles={['raccolte']}>
+              <RaccolteEditPage />{' '}
+            </RoleBasedGuard>
+          ),
+        },
       ],
     },
     {
