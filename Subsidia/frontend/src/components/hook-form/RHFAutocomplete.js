@@ -14,7 +14,7 @@ RHFAutocomplete.propTypes = {
 
 export default function RHFAutocomplete({ name, label, helperText, ...other }) {
   const { control, setValue } = useFormContext();
-  const { freeSolo } = other; // Extracting freeSolo from other props
+  // const { freeSolo } = other; // Extracting freeSolo from other props
 
   return (
     <Controller
@@ -23,12 +23,6 @@ export default function RHFAutocomplete({ name, label, helperText, ...other }) {
       render={({ field, fieldState: { error } }) => (
         <Autocomplete
           {...field}
-          freeSolo={freeSolo}
-          onKeyUp={
-            freeSolo
-              ? (event) => setValue(name, event.target.value, { shouldValidate: true })
-              : undefined
-          }
           onChange={(event, newValue) => setValue(name, newValue, { shouldValidate: true })}
           renderInput={(params) => (
             <TextField

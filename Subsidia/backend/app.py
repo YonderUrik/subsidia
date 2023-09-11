@@ -28,6 +28,9 @@ app.register_blueprint(auth.bp)
 import raccolte.raccolte as raccolte
 app.register_blueprint(raccolte.bp)
 
+import dipendenti.dipendenti as dipendenti
+app.register_blueprint(dipendenti.bp)
+
  
 
 # Main Route

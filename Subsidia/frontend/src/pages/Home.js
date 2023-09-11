@@ -44,7 +44,8 @@ export default function Home() {
             {
               label: 'Dipendenti',
               icon: 'clarity:employee-group-solid',
-              color: '',
+              color: 'primary',
+              to: PATH_APP.dipendenti,
               tag: 'dipendenti',
             },
             { label: 'Agenda', icon: 'solar:book-2-bold-duotone', color: '', tag: 'agenda' },

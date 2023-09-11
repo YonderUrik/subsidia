@@ -20,6 +20,12 @@ const navConfig = [
         icon: icon('bi:collection-fill'),
         tag: 'raccolte',
       },
+      {
+        title: 'Dipendenti',
+        path: PATH_APP.dipendenti,
+        icon: icon('clarity:employee-group-solid'),
+        tag: 'dipendenti',
+      },
     ],
   },
 ];

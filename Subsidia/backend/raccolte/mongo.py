@@ -1,4 +1,3 @@
-
 from mongo import BaseMongo
 import vars as VARS
 from bson.objectid import ObjectId

@@ -28,5 +28,8 @@ export const RaccoltePage = Loadable(lazy(() => import('../pages/RaccoltePage'))
 export const RaccolteCreateView = Loadable(lazy(() => import('../pages/RaccolteCreatePage')));
 export const RaccolteEditPage = Loadable(lazy(() => import('../pages/RaccolteEditPage')));
 
+// DIPENDENTI
+export const DipendentiPage = Loadable(lazy(() => import('../pages/DipendentiPage')));
+
 // ERRORS
 export const Page404 = Loadable(lazy(() => import('../pages/Page404')));

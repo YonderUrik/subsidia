@@ -31,6 +31,8 @@ MONGO_AUTH = "admin"
 DB_NAME = 'subsidia'
 USERS_COLLECTION = 'users'
 RACCOLTE_COLLECTION = 'raccolte'
+GIORNATE_COLLECTION = 'giornate'
+DIPENDENTI_INFO_COLLECTION = 'dipendenti_info'
 
 
 # MESSAGES

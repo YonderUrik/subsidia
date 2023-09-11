@@ -24,6 +24,8 @@ import {
   RaccoltePage,
   RaccolteCreateView,
   RaccolteEditPage,
+  // Dipendenti
+  DipendentiPage,
   // ERRORS
   Page404,
 } from './elements';
@@ -72,6 +74,14 @@ export default function Router() {
       children: [
         { element: <Navigate to={PATH_AFTER_LOGIN} replace />, index: true },
         { path: 'home', element: <Home /> },
+        {
+          path: 'dipendenti',
+          element: (
+            <RoleBasedGuard hasContent roles={['dipendenti']}>
+              <DipendentiPage />
+            </RoleBasedGuard>
+          ),
+        },
         {
           path: 'raccolte',
           element: (
