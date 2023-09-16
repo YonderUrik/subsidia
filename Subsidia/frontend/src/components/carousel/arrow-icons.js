@@ -1,20 +1,14 @@
+//
 import PropTypes from 'prop-types';
 import Iconify from '../iconify';
 
 // ----------------------------------------------------------------------
-
-LeftIcon.propTypes = {
-  isRTL: PropTypes.bool,
-  icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-};
 
 export function LeftIcon({ icon = 'eva:arrow-ios-forward-fill', isRTL }) {
   return (
     <Iconify
       icon={icon}
       sx={{
-        width: 20,
-        height: 20,
         transform: ' scaleX(-1)',
         ...(isRTL && {
           transform: ' scaleX(1)',
@@ -24,9 +18,9 @@ export function LeftIcon({ icon = 'eva:arrow-ios-forward-fill', isRTL }) {
   );
 }
 
-RightIcon.propTypes = {
+LeftIcon.propTypes = {
+  icon: PropTypes.string,
   isRTL: PropTypes.bool,
-  icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
 };
 
 export function RightIcon({ icon = 'eva:arrow-ios-forward-fill', isRTL }) {
@@ -34,8 +28,6 @@ export function RightIcon({ icon = 'eva:arrow-ios-forward-fill', isRTL }) {
     <Iconify
       icon={icon}
       sx={{
-        width: 20,
-        height: 20,
         ...(isRTL && {
           transform: ' scaleX(-1)',
         }),
@@ -43,3 +35,8 @@ export function RightIcon({ icon = 'eva:arrow-ios-forward-fill', isRTL }) {
     />
   );
 }
+
+RightIcon.propTypes = {
+  icon: PropTypes.string,
+  isRTL: PropTypes.bool,
+};

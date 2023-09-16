@@ -12,10 +12,13 @@ import axios from '../../utils/axios';
 
 import AggiungiGiornata from './dipendenti-aggiungi-giornata';
 import DipendentiTransazioni from './dipendenti-transazioni';
+import DipendentiAcconti from './dipendenti-acconti';
+import OperaiSummary from './dipendenti-operai-summary';
 
 export default function DipendentiPageSection() {
   const [operaiInfo, setOperaiInfo] = useState([]);
   const [lastTransactions, setLastTransactions] = useState([]);
+  const [operaiSummary, setOperaiSummary] = useState([]);
   const settings = useSettingsContext();
   const componentRef = useRef(null);
 
@@ -39,22 +42,61 @@ export default function DipendentiPageSection() {
     }
   }, []);
 
+  const getOperaiSummary = useCallback(async () => {
+    try {
+      const response = await axios.post('/dipendenti/get-operai-summary');
+      const { data } = response;
+      console.log(data);
+      setOperaiSummary(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  const refreshAll = () => {
+    getOperaiInfo();
+    getLastTransactions();
+    getOperaiSummary();
+  };
+
   useEffect(() => {
     getOperaiInfo();
     getLastTransactions();
-  }, [getOperaiInfo, getLastTransactions]);
+    getOperaiSummary();
+  }, [getOperaiInfo, getLastTransactions, getOperaiSummary]);
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'} ref={componentRef}>
       <CustomBreadcrumbs
         heading="Operai"
-        action={<AggiungiGiornata operai={operaiInfo} />}
+        action={
+          <AggiungiGiornata
+            operai={operaiInfo}
+            refreshData={() => {
+              refreshAll();
+            }}
+          />
+        }
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
       <Grid container spacing={3}>
+        <Grid item xs={12} md={4}>
+          <Stack sx={{ mb: 2 }}>
+            <DipendentiAcconti
+              list={operaiInfo}
+              refreshData={() => {
+                refreshAll();
+              }}
+            />
+          </Stack>
+          <Stack sx={{ mb: 2 }}>
+            <OperaiSummary list={operaiSummary} />
+          </Stack>
+        </Grid>
         <Grid item xs={12} md={8}>
-          <Stack spacing={3}>
+          <Stack>
             <DipendentiTransazioni tableData={lastTransactions} />
           </Stack>
         </Grid>

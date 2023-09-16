@@ -147,7 +147,6 @@ def delete_rows():
 
     status, msg, msg_dev = mongo.delete_rows(db_name, _ids)
 
-    print(msg_dev)
     return {"message" : msg}, status
 
 

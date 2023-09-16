@@ -1,7 +1,9 @@
 /* eslint-disable react/jsx-no-useless-fragment */
+import PropTypes from 'prop-types';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Box, Stack } from '@mui/material';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 
 // ----------------------------------------------------------------------
 
@@ -9,6 +11,7 @@ const StyledRoot = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'rounded',
 })(({ rounded, theme }) => ({
   zIndex: 9,
+  margin: 0,
   padding: 0,
   display: 'flex',
   alignItems: 'center',
@@ -38,7 +41,7 @@ const StyledDot = styled('span')(({ theme }) => ({
   width: 8,
   height: 8,
   borderRadius: '50%',
-  transition: theme.transitions.create('width', {
+  transition: theme.transitions.create(['width'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.short,
   }),
@@ -54,7 +57,7 @@ export default function CarouselDots(props) {
   return {
     appendDots: (dots) => (
       <>
-        <StyledRoot component="ul" rounded={rounded} sx={sx} {...props}>
+        <StyledRoot component="ul" rounded={rounded} sx={{ ...sx }} {...props}>
           {dots}
         </StyledRoot>
       </>
@@ -75,3 +78,8 @@ export default function CarouselDots(props) {
     ),
   };
 }
+
+CarouselDots.propTypes = {
+  rounded: PropTypes.bool,
+  sx: PropTypes.object,
+};

@@ -35,8 +35,9 @@ import { useBoolean } from '../../hooks/use-boolean';
 
 AggiungiGiornata.propTypes = {
   operai: PropTypes.array,
+  refreshData: PropTypes.func,
 };
-export default function AggiungiGiornata({ operai }) {
+export default function AggiungiGiornata({ operai, refreshData }) {
   const isOpen = useBoolean();
   const loadingSend = useBoolean();
   const { enqueueSnackbar } = useSnackbar();
@@ -85,8 +86,9 @@ export default function AggiungiGiornata({ operai }) {
       await axios.post('/dipendenti/set-giornata-operai', {
         data,
       });
-      handleCLose()
+      handleCLose();
       enqueueSnackbar('Giornata aggiunta');
+      refreshData();
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     } finally {

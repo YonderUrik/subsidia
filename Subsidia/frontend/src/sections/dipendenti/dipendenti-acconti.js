@@ -1,13 +1,9 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect, useCallback } from 'react';
 // @mui
-import { useTheme } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Slider from '@mui/material/Slider';
-import Tooltip from '@mui/material/Tooltip';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
@@ -16,14 +12,12 @@ import ListItemText from '@mui/material/ListItemText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import Input, { inputClasses } from '@mui/material/Input';
+import { FormControl, MenuItem, Select, OutlinedInput, Chip, Card } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// utils
-import { fCurrency } from 'src/utils/format-number';
-// components
-import Iconify from 'src/components/iconify';
-import Carousel, { CarouselArrows, useCarousel } from 'src/components/carousel';
-
+import axios from '../../utils/axios';
+import { useSnackbar } from '../../components/snackbar';
 // ----------------------------------------------------------------------
 
 const STEP = 50;
@@ -31,59 +25,27 @@ const STEP = 50;
 const MIN_AMOUNT = 0;
 
 const MAX_AMOUNT = 1000;
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
 
-const AVATAR_SIZE = 40;
-
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 // ----------------------------------------------------------------------
 
-export default function DipendentiAcconti({ title, subheader, list, sx, ...other }) {
-  const theme = useTheme();
-
-  const carousel = useCarousel({
-    centerMode: true,
-    swipeToSlide: true,
-    focusOnSelect: true,
-    centerPadding: '0px',
-    slidesToShow: list.length > 7 ? 7 : list.length,
-    responsive: [
-      {
-        // Down 1600
-        breakpoint: 1600,
-        settings: {
-          slidesToShow: 5,
-        },
-      },
-      {
-        // Down 1400
-        breakpoint: 1400,
-        settings: {
-          slidesToShow: 3,
-        },
-      },
-      {
-        // Down 900
-        breakpoint: theme.breakpoints.values.md,
-        settings: {
-          slidesToShow: 5,
-        },
-      },
-      {
-        // Down 400
-        breakpoint: 400,
-        settings: {
-          slidesToShow: 3,
-        },
-      },
-    ],
-  });
-
+DipendentiAcconti.propTypes = {
+  list: PropTypes.array,
+  refreshData: PropTypes.func,
+};
+export default function DipendentiAcconti({ list, refreshData }) {
   const [autoWidth, setAutoWidth] = useState(24);
-
   const [amount, setAmount] = useState(0);
-
   const confirm = useBoolean();
-
-  const getContactInfo = list.find((_, index) => index === carousel.currentIndex);
 
   useEffect(() => {
     if (amount) {
@@ -113,68 +75,51 @@ export default function DipendentiAcconti({ title, subheader, list, sx, ...other
     }
   }, [amount]);
 
+  const [personName, setPersonName] = useState([]);
+
+  const handleChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setPersonName(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value
+    );
+  };
+
   const renderCarousel = (
     <Box sx={{ position: 'relative' }}>
-      <CarouselArrows
-        filled
-        onPrev={carousel.onPrev}
-        onNext={carousel.onNext}
-        leftButtonProps={{
-          sx: {
-            p: 0.5,
-            mt: -1.5,
-            left: -8,
-            '& svg': { width: 16, height: 16 },
-          },
-        }}
-        rightButtonProps={{
-          sx: {
-            p: 0.5,
-            mt: -1.5,
-            right: -8,
-            '& svg': { width: 16, height: 16 },
-          },
-        }}
-      >
-        <Box
-          component={Carousel}
-          ref={carousel.carouselRef}
-          {...carousel.carouselSettings}
-          sx={{
-            width: 1,
-            mx: 'auto',
-            maxWidth: AVATAR_SIZE * 7 + 160,
-          }}
-        >
-          {list.map((contact, index) => (
-            <Box key={contact.id} sx={{ py: 5 }}>
-              <Tooltip key={contact.id} title={contact.name} arrow placement="top">
-                <Avatar
-                  src={contact.avatarUrl}
-                  sx={{
-                    mx: 'auto',
-                    opacity: 0.48,
-                    cursor: 'pointer',
-                    transition: theme.transitions.create('all'),
-                    ...(index === carousel.currentIndex && {
-                      opacity: 1,
-                      transform: 'scale(1.25)',
-                      boxShadow: '-4px 12px 24px 0 rgb(0,0,0,0.24)',
-                    }),
-                  }}
-                />
-              </Tooltip>
+      <FormControl sx={{ m: 1, width: '100%' }}>
+        <Select
+          multiple
+          size="small"
+          fullWidth
+          value={personName}
+          onChange={handleChange}
+          input={<OutlinedInput />}
+          renderValue={(selected) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip key={value} label={value} />
+              ))}
             </Box>
+          )}
+          MenuProps={MenuProps}
+        >
+          {list.map((operaio) => (
+            <MenuItem key={operaio.name} value={operaio.name}>
+              {operaio.name}
+            </MenuItem>
           ))}
-        </Box>
-      </CarouselArrows>
+        </Select>
+      </FormControl>
     </Box>
   );
 
   const renderInput = (
     <Stack spacing={3}>
       <Typography variant="overline" sx={{ color: 'text.secondary' }}>
-        insert amount
+        Inserisci importo
       </Typography>
 
       <InputAmount
@@ -194,58 +139,39 @@ export default function DipendentiAcconti({ title, subheader, list, sx, ...other
         onChange={handleChangeSlider}
       />
 
-      <Stack direction="row" alignItems="center" sx={{ typography: 'subtitle1' }}>
-        <Box component="span" sx={{ flexGrow: 1 }}>
-          Your Balance
-        </Box>
-        {fCurrency(34212)}
-      </Stack>
-
       <Button
         size="large"
-        color="inherit"
+        color="success"
         variant="contained"
-        disabled={amount === 0}
+        disabled={amount === 0 || personName.length === 0}
         onClick={confirm.onTrue}
       >
-        Transfer Now
+        Aggiungi acconto
       </Button>
     </Stack>
   );
 
   return (
     <>
-      <Stack
+      <Card
         sx={{
           borderRadius: 2,
-          bgcolor: 'background.neutral',
-          ...sx,
         }}
-        {...other}
       >
-        <CardHeader title={title} subheader={subheader} />
+        <CardHeader title="Acconto rapido" />
 
         <Stack sx={{ p: 3 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="overline" sx={{ color: 'text.secondary' }}>
-              Recent
+              Seleziona operai
             </Typography>
-
-            <Button
-              size="small"
-              color="inherit"
-              endIcon={<Iconify icon="eva:arrow-ios-forward-fill" width={18} sx={{ ml: -0.5 }} />}
-              sx={{ mr: -1 }}
-            >
-              View All
-            </Button>
           </Stack>
 
           {renderCarousel}
 
           {renderInput}
         </Stack>
-      </Stack>
+      </Card>
 
       <ConfirmTransferDialog
         amount={amount}
@@ -253,26 +179,24 @@ export default function DipendentiAcconti({ title, subheader, list, sx, ...other
         open={confirm.value}
         autoWidth={autoWidth}
         onClose={confirm.onFalse}
-        contactInfo={getContactInfo}
+        onRefresh={() => {
+          setPersonName([])
+          confirm.onFalse();
+          refreshData();
+        }}
+        contactInfo={personName}
         onChange={handleChangeInput}
       />
     </>
   );
 }
 
-BankingQuickTransfer.propTypes = {
-  list: PropTypes.array,
-  subheader: PropTypes.string,
-  sx: PropTypes.object,
-  title: PropTypes.string,
-};
-
 // ----------------------------------------------------------------------
 
 function InputAmount({ autoWidth, amount, onBlur, onChange, sx, ...other }) {
   return (
     <Stack direction="row" justifyContent="center" spacing={1} sx={sx}>
-      <Typography variant="h5">$</Typography>
+      <Typography variant="h5">€</Typography>
 
       <Input
         disableUnderline
@@ -313,20 +237,40 @@ function ConfirmTransferDialog({
   onClose,
   onBlur,
   onChange,
+  onRefresh,
 }) {
+  const [isConfirming, setIsConfirming] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+
+  const confirmAcconto = async () => {
+    setIsConfirming(true);
+    try {
+      await axios.post('/dipendenti/set-new-acconto', {
+        operai: contactInfo,
+        amount,
+      });
+      enqueueSnackbar('Acconto aggiunto con successo');
+      onRefresh();
+    } catch (error) {
+      enqueueSnackbar(error.message || error, { variant: 'error' });
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
   return (
     <Dialog open={open} fullWidth maxWidth="xs" onClose={onClose}>
-      <DialogTitle>Transfer to</DialogTitle>
+      <DialogTitle>Aggiungi acconto a</DialogTitle>
 
       <Stack spacing={3} sx={{ px: 3 }}>
         <Stack direction="row" alignItems="center" spacing={2}>
-          <Avatar src={contactInfo?.avatarUrl} sx={{ width: 48, height: 48 }} />
-
-          <ListItemText
-            primary={contactInfo?.name}
-            secondary={contactInfo?.email}
-            secondaryTypographyProps={{ component: 'span', mt: 0.5 }}
-          />
+          {contactInfo.map((operaio) => (
+            <ListItemText
+              key={operaio}
+              primary={operaio}
+              secondaryTypographyProps={{ component: 'span', mt: 0.5 }}
+            />
+          ))}
         </Stack>
 
         <InputAmount
@@ -337,16 +281,22 @@ function ConfirmTransferDialog({
           disableUnderline={false}
           sx={{ justifyContent: 'flex-end' }}
         />
-
-        <TextField fullWidth multiline rows={3} placeholder="Write a message..." />
       </Stack>
 
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-
-        <Button variant="contained" disabled={amount === 0} onClick={onClose}>
-          Confirm & Transfer
+        <Button variant="outlined" onClick={onClose}>
+          Annulla
         </Button>
+
+        <LoadingButton
+          loading={isConfirming}
+          variant="contained"
+          color="success"
+          disabled={amount === 0}
+          onClick={confirmAcconto}
+        >
+          Conferma
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );
@@ -359,5 +309,6 @@ ConfirmTransferDialog.propTypes = {
   onBlur: PropTypes.func,
   onChange: PropTypes.func,
   onClose: PropTypes.func,
+  onRefresh: PropTypes.func,
   open: PropTypes.bool,
 };
