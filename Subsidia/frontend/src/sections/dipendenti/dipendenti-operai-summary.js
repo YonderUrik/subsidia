@@ -4,22 +4,39 @@ import Stack from '@mui/material/Stack';
 import CardHeader from '@mui/material/CardHeader';
 import Card from '@mui/material/Card';
 import ListItemText from '@mui/material/ListItemText';
-import { alpha} from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 
 // components
 import Iconify from 'src/components/iconify';
-import { Grid, Paper } from '@mui/material';
+import { Grid, Paper, TextField } from '@mui/material';
 import { TableNoData } from 'src/components/table';
+import { useState } from 'react';
 
 // ----------------------------------------------------------------------
 
 export default function OperaiSummary({ list }) {
+  const [selectedOperaio, setSelectedOperaio] = useState('');
+
+  const filteredList = list.filter((singleElem) => {
+    if (selectedOperaio === '') {
+      return true;
+    }
+
+    return singleElem._id.includes(selectedOperaio);
+  });
   return (
     <Card>
       <CardHeader title="Riassunto operai" />
+      <TextField
+        label="Cerca operaio"
+        sx={{ mx: 2, mt: 2 }}
+        value={selectedOperaio}
+        onChange={(event) => setSelectedOperaio(event.target.value)}
+        size="small"
+      />
       <Grid container spacing={1} sx={{ p: 2 }}>
-        <TableNoData notFound={list.length === 0} />
-        {list.map((operaio) => {
+        <TableNoData notFound={filteredList.length === 0} />
+        {filteredList.map((operaio) => {
           const remaining = operaio.total_pay - operaio.total_payed;
           let labelText = '';
           let labelColor = '';

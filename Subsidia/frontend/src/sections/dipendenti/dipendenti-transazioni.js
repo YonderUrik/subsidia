@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
+import { useState } from 'react';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import Table from '@mui/material/Table';
@@ -12,6 +13,7 @@ import CardHeader from '@mui/material/CardHeader';
 import Card from '@mui/material/Card';
 import ListItemText from '@mui/material/ListItemText';
 import TableContainer from '@mui/material/TableContainer';
+import { LoadingButton } from '@mui/lab';
 // utils
 import { fCurrency } from 'src/utils/format-number';
 // components
@@ -20,6 +22,10 @@ import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { TableHeadCustom, TableNoData } from 'src/components/table';
+import { useBoolean } from 'src/hooks/use-boolean';
+import ConfirmDialog from 'src/components/confirm-dialog';
+import { useSnackbar } from '../../components/snackbar';
+import axios from '../../utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -33,7 +39,7 @@ const TABLE_COLUMNS = [
   { id: 'actions', label: '' },
 ];
 
-export default function DipendentiTransazioni({ tableData, ...other }) {
+export default function DipendentiTransazioni({ tableData, refreshTable, ...other }) {
   return (
     <Card {...other}>
       <CardHeader title="Ultime giornate" sx={{ mb: 3 }} />
@@ -45,9 +51,9 @@ export default function DipendentiTransazioni({ tableData, ...other }) {
 
             <TableBody>
               {tableData.map((row) => (
-                <DipendentiTransazioniRow key={row._id} row={row} />
+                <DipendentiTransazioniRow key={row._id} row={row} refreshData={() => refreshTable()} />
               ))}
-              <TableNoData notFound={tableData.length===0} />
+              <TableNoData notFound={tableData.length === 0} />
             </TableBody>
           </Table>
         </Scrollbar>
@@ -58,19 +64,39 @@ export default function DipendentiTransazioni({ tableData, ...other }) {
 
 DipendentiTransazioni.propTypes = {
   tableData: PropTypes.array,
+  refreshTable: PropTypes.func,
 };
 
 // ----------------------------------------------------------------------
 
-function DipendentiTransazioniRow({ row }) {
+function DipendentiTransazioniRow({ row, refreshData }) {
   const theme = useTheme();
   const isLight = theme.palette.mode === 'light';
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
 
   const popover = usePopover();
+  const confirmDialog = useBoolean();
 
   const handleDelete = () => {
     popover.onClose();
-    console.info('DELETE', row._id);
+    confirmDialog.onTrue();
+  };
+
+  const handleDeleteGiornata = async () => {
+    setIsDeleting(true);
+    try {
+      await axios.post('/dipendenti/delete-giornata', {
+        id: row._id,
+      });
+      confirmDialog.onFalse();
+      enqueueSnackbar('Giornata eliminata con successo');
+      refreshData()
+    } catch (error) {
+      enqueueSnackbar(error.message || error, { variant: 'error' });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -134,10 +160,22 @@ function DipendentiTransazioniRow({ row }) {
           Elimina
         </MenuItem>
       </CustomPopover>
+      <ConfirmDialog
+        open={confirmDialog.value}
+        onClose={confirmDialog.onFalse}
+        title="Delete"
+        content={<>Sei sicuro di voler eliminare la giornata?</>}
+        action={
+          <LoadingButton loading={isDeleting} variant="contained" color="error" onClick={handleDeleteGiornata}>
+            Elimina
+          </LoadingButton>
+        }
+      />
     </>
   );
 }
 
 DipendentiTransazioniRow.propTypes = {
   row: PropTypes.object,
+  refreshData: PropTypes.func,
 };

@@ -97,7 +97,7 @@ export default function DipendentiPageSection() {
         </Grid>
         <Grid item xs={12} md={8}>
           <Stack>
-            <DipendentiTransazioni tableData={lastTransactions} />
+            <DipendentiTransazioni tableData={lastTransactions} refreshTable={() => refreshAll()} />
           </Stack>
         </Grid>
       </Grid>

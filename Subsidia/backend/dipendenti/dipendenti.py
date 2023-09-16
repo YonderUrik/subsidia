@@ -166,6 +166,23 @@ def set_new_acconto():
     status, msg, dev_msg = mongo.update_giornate_after_acconto(db_name=db_name, df=df)
     return {"message" : msg}, status
 
+@bp.route('/delete-giornata', methods=["POST"])
+@USER.has_dipendenti()
+def delete_giornata():
+    id = request.json.get("id")
+
+    user_email = get_jwt_identity()['email']
+    mongo = AuthMongo()
+    user_info = mongo.get_usr_by_email(user_email)
+    db_name = str(user_info['_id'])
+
+    mongo = DipendentiMongo()
+
+    status, res, dev_msg = mongo.delete_giornata(db_name=db_name, id=id)
+
+    return {'message' : res}, status
+
+
 
 
 

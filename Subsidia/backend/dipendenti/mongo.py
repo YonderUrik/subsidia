@@ -132,4 +132,13 @@ class DipendentiMongo(BaseMongo):
         except Exception as e:
             return 500, VARS.ERROR_MESSAGE, str(e)
         
+    def delete_giornata(self, db_name, id):
+        try:
+            self.client[db_name][VARS.GIORNATE_COLLECTION].delete_one({"_id" : ObjectId(id)})
+
+            return 200, VARS.SUCCESS_MESSAGE, "Giornata eliminata"
+        
+        except Exception as e:
+            return 500, VARS.ERROR_MESSAGE, str(e)
+        
 
