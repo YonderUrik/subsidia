@@ -14,6 +14,7 @@ import Card from '@mui/material/Card';
 import ListItemText from '@mui/material/ListItemText';
 import TableContainer from '@mui/material/TableContainer';
 import { LoadingButton } from '@mui/lab';
+import { Tooltip } from '@mui/material';
 // utils
 import { fCurrency } from 'src/utils/format-number';
 // components
@@ -36,6 +37,7 @@ const TABLE_COLUMNS = [
   { id: 'payed', label: 'Pagato' },
   { id: 'type', label: 'Tipo' },
   { id: 'status', label: 'Status' },
+  { id: 'activity', label: 'Attività' },
   { id: 'actions', label: '' },
 ];
 
@@ -51,7 +53,11 @@ export default function DipendentiTransazioni({ tableData, refreshTable, ...othe
 
             <TableBody>
               {tableData.map((row) => (
-                <DipendentiTransazioniRow key={row._id} row={row} refreshData={() => refreshTable()} />
+                <DipendentiTransazioniRow
+                  key={row._id}
+                  row={row}
+                  refreshData={() => refreshTable()}
+                />
               ))}
               <TableNoData notFound={tableData.length === 0} />
             </TableBody>
@@ -74,7 +80,7 @@ function DipendentiTransazioniRow({ row, refreshData }) {
   const isLight = theme.palette.mode === 'light';
   const [isDeleting, setIsDeleting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
-
+  const popoverActivity = usePopover();
   const popover = usePopover();
   const confirmDialog = useBoolean();
 
@@ -91,7 +97,7 @@ function DipendentiTransazioniRow({ row, refreshData }) {
       });
       confirmDialog.onFalse();
       enqueueSnackbar('Giornata eliminata con successo');
-      refreshData()
+      refreshData();
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     } finally {
@@ -136,10 +142,36 @@ function DipendentiTransazioniRow({ row, refreshData }) {
               'error'
             }
           >
-            {(row.pay === row.payed && 'Pagto') ||
+            {(row.pay === row.payed && 'Pagato') ||
               (row.payed > 0 && row.payed < row.pay && 'Acconto') ||
               'Da Saldare'}
           </Label>
+        </TableCell>
+
+        {/* ATTIVITÁ */}
+        <TableCell sx={{ py: 0 }}>
+          <>
+            <Tooltip title="Visualizza attività">
+              <IconButton onClick={popoverActivity.onOpen}>
+                <Iconify icon="solar:notebook-bold-duotone" />
+              </IconButton>
+            </Tooltip>
+            <CustomPopover
+              arrow="left-top"
+              open={popoverActivity.open}
+              onClose={popoverActivity.onClose}
+            >
+              <Card
+                style={{
+                  maxWidth: '300px', // Adjust the max width as needed
+                  wordWrap: 'break-word', // Allow text to break and wrap
+                }}
+                sx={{ p: 2 }}
+              >
+                {row.activity}
+              </Card>
+            </CustomPopover>
+          </>
         </TableCell>
 
         <TableCell sx={{ py: 0 }}>
@@ -166,7 +198,12 @@ function DipendentiTransazioniRow({ row, refreshData }) {
         title="Delete"
         content={<>Sei sicuro di voler eliminare la giornata?</>}
         action={
-          <LoadingButton loading={isDeleting} variant="contained" color="error" onClick={handleDeleteGiornata}>
+          <LoadingButton
+            loading={isDeleting}
+            variant="contained"
+            color="error"
+            onClick={handleDeleteGiornata}
+          >
             Elimina
           </LoadingButton>
         }
