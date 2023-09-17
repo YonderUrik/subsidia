@@ -48,7 +48,7 @@ export default function OperaiSummary({ list }) {
             labelColor = 'success.main';
           }
           return (
-            <Grid key={operaio._id} item xs={12} md={4}>
+            <Grid key={operaio._id} item xs={12} md={6}>
               <Paper
                 sx={{
                   mr: 1,
