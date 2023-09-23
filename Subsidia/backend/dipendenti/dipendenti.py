@@ -41,6 +41,35 @@ def get_operai_info():
     
     return json.dumps(res, default=str)
 
+@bp.route('/edit-giornata-operai', methods=["POST"])
+@USER.has_dipendenti()
+def edit_giornata_operai():
+    user_email = get_jwt_identity()['email']
+    mongo = AuthMongo()
+    user_info = mongo.get_usr_by_email(user_email)
+    db_name = str(user_info['_id'])
+
+    mongo = DipendentiMongo()
+
+    request_data = request.json.get("data")
+    id = request.json.get("id")
+
+    print(request_data)
+    print(id)
+
+    doc_to_insert = {
+        "operaio" : request_data['operai'][0],
+        "date" : datetime.strptime(request_data['date'], "%Y-%m-%dT%H:%M:%S.%fZ"),
+        "pay" : float(request_data['pay']),
+        "type" : int(request_data['type']),
+        "activity" : str(request_data['activity']),
+    }
+
+    print(doc_to_insert)
+
+    status, msg, dev_msg = mongo.edit_giornata_operi(db_name=db_name, id=id, data=doc_to_insert)
+    return {"message" : msg}, status
+
 @bp.route('/set-giornata-operai', methods=["POST"])
 @USER.has_dipendenti()
 def set_giornata_operai():

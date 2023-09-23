@@ -12,7 +12,12 @@ import ListItemText from '@mui/material/ListItemText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import Input, { inputClasses } from '@mui/material/Input';
-import { FormControl, MenuItem, Select, OutlinedInput, Chip, Card } from '@mui/material';
+import {
+  FormControl,
+  Card,
+  Autocomplete,
+  TextField,
+} from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -25,17 +30,7 @@ const STEP = 50;
 const MIN_AMOUNT = 0;
 
 const MAX_AMOUNT = 1000;
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
 
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
 // ----------------------------------------------------------------------
 
 DipendentiAcconti.propTypes = {
@@ -90,28 +85,14 @@ export default function DipendentiAcconti({ list, refreshData }) {
   const renderCarousel = (
     <Box sx={{ position: 'relative' }}>
       <FormControl sx={{ m: 1, width: '100%' }}>
-        <Select
+        <Autocomplete
           multiple
           size="small"
-          fullWidth
           value={personName}
+          options={list.map((operaio) => operaio.name)}
           onChange={handleChange}
-          input={<OutlinedInput />}
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
-          MenuProps={MenuProps}
-        >
-          {list.map((operaio) => (
-            <MenuItem key={operaio.name} value={operaio.name}>
-              {operaio.name}
-            </MenuItem>
-          ))}
-        </Select>
+          renderInput={(params) => <TextField {...params} label="Operai" />}
+        />
       </FormControl>
     </Box>
   );
@@ -180,7 +161,7 @@ export default function DipendentiAcconti({ list, refreshData }) {
         autoWidth={autoWidth}
         onClose={confirm.onFalse}
         onRefresh={() => {
-          setPersonName([])
+          setPersonName([]);
           confirm.onFalse();
           refreshData();
         }}

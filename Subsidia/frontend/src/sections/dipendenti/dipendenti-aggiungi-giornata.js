@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 // @mui
 import {
@@ -35,9 +35,10 @@ import { useBoolean } from '../../hooks/use-boolean';
 
 AggiungiGiornata.propTypes = {
   operai: PropTypes.array,
+  openedRow: PropTypes.object,
   refreshData: PropTypes.func,
 };
-export default function AggiungiGiornata({ operai, refreshData }) {
+export default function AggiungiGiornata({ operai, refreshData, openedRow }) {
   const isOpen = useBoolean();
   const loadingSend = useBoolean();
   const { enqueueSnackbar } = useSnackbar();
@@ -45,6 +46,7 @@ export default function AggiungiGiornata({ operai, refreshData }) {
   const handleCLose = () => {
     isOpen.onFalse();
     reset();
+    refreshData();
   };
 
   const schema = Yup.object().shape({
@@ -52,18 +54,17 @@ export default function AggiungiGiornata({ operai, refreshData }) {
     operai: Yup.array().min(1).required('Aggiungi gli operai'),
     pay: Yup.number().min(1).required('Aggiungi paga'),
     type: Yup.number().min(0).max(1).required('Aggiungi paga'),
-    activity: Yup.string().required('Aggiungi descrizione della giornata'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      operai: [],
-      date: new Date(),
-      type: 1,
-      pay: 0,
-      activiy: '',
+      operai: openedRow?.opeario || [],
+      date: openedRow ? new Date(openedRow.date) : new Date(),
+      type: openedRow?.type || 1,
+      pay: openedRow?.pay || 50,
+      activity: openedRow?.activity || '',
     }),
-    []
+    [openedRow]
   );
 
   const methods = useForm({
@@ -78,17 +79,36 @@ export default function AggiungiGiornata({ operai, refreshData }) {
     formState: { isSubmitting },
   } = methods;
 
+  useEffect(() => {
+    reset({
+      operai: openedRow ? [openedRow.operaio] : [],
+      date: openedRow ? new Date(openedRow.date) : new Date(),
+      type: openedRow?.type || 1,
+      pay: openedRow?.pay || 50,
+      activity: openedRow?.activity || '',
+    });
+  }, [openedRow, reset]);
+
   const handleAddGiornata = handleSubmit(async (data) => {
     loadingSend.onTrue();
 
     try {
-      console.log(data);
-      await axios.post('/dipendenti/set-giornata-operai', {
-        data,
-      });
-      handleCLose();
-      enqueueSnackbar('Giornata aggiunta');
-      refreshData();
+      if (openedRow) {
+        await axios.post('/dipendenti/edit-giornata-operai', {
+          data,
+          id : openedRow._id
+        });
+        handleCLose();
+        enqueueSnackbar('Giornata modificata');
+        refreshData();
+      } else {
+        await axios.post('/dipendenti/set-giornata-operai', {
+          data,
+        });
+        handleCLose();
+        enqueueSnackbar('Giornata aggiunta');
+        refreshData();
+      }
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     } finally {
@@ -105,7 +125,7 @@ export default function AggiungiGiornata({ operai, refreshData }) {
       >
         Aggiungi Giornata
       </Button>
-      <Dialog maxWidth="sm" fullWidth open={isOpen.value} onClose={handleCLose}>
+      <Dialog maxWidth="sm" fullWidth open={isOpen.value || openedRow} onClose={handleCLose}>
         <DialogTitle>Aggiungi giornata</DialogTitle>
         <FormProvider methods={methods}>
           <DialogContent>
@@ -211,7 +231,7 @@ export default function AggiungiGiornata({ operai, refreshData }) {
               loading={loadingSend.value && isSubmitting}
               onClick={handleAddGiornata}
             >
-              Aggiungi
+              {openedRow ? 'Modifica' : 'Aggiungi'}
             </LoadingButton>
           </DialogActions>
         </FormProvider>

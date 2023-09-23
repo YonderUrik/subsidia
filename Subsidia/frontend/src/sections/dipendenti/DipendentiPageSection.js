@@ -21,6 +21,7 @@ export default function DipendentiPageSection() {
   const [operaiSummary, setOperaiSummary] = useState([]);
   const settings = useSettingsContext();
   const componentRef = useRef(null);
+  const [openedRow, setOpenedRow] = useState(null);
 
   const getOperaiInfo = useCallback(async () => {
     try {
@@ -71,8 +72,10 @@ export default function DipendentiPageSection() {
         heading="Operai"
         action={
           <AggiungiGiornata
+            openedRow={openedRow}
             operai={operaiInfo}
             refreshData={() => {
+              setOpenedRow(null)
               refreshAll();
             }}
           />
@@ -97,7 +100,11 @@ export default function DipendentiPageSection() {
         </Grid>
         <Grid item xs={12} md={8}>
           <Stack>
-            <DipendentiTransazioni tableData={lastTransactions} refreshTable={() => refreshAll()} />
+            <DipendentiTransazioni
+              tableData={lastTransactions}
+              refreshTable={() => refreshAll()}
+              onEdit={(row) => setOpenedRow(row)}
+            />
           </Stack>
         </Grid>
       </Grid>

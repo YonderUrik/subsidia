@@ -54,10 +54,17 @@ class DipendentiMongo(BaseMongo):
             return 200, VARS.SUCCESS_MESSAGE, ''
         except Exception as e:
             return 500, VARS.ERROR_MESSAGE, str(e)
+        
+    def edit_giornata_operi(self, db_name, id, data):
+        try:
+            self.client[db_name][VARS.GIORNATE_COLLECTION].update_one({"_id" : ObjectId(id)}, {"$set" : data})
+            return 200, VARS.SUCCESS_MESSAGE, ''
+        except Exception as e:
+            return 500, VARS.ERROR_MESSAGE, str(e)
 
     def get_last_giorante(self, db_name):
         try:
-            sort = {"$sort": {"_id": -1}}
+            sort = {"$sort": {"date": -1}}
             limit = {"$limit": 500}
             return 200, list(self.client[db_name][VARS.GIORNATE_COLLECTION].aggregate([sort, limit])), ''
         except Exception as e:

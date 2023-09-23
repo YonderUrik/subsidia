@@ -41,7 +41,7 @@ const TABLE_COLUMNS = [
   { id: 'actions', label: '' },
 ];
 
-export default function DipendentiTransazioni({ tableData, refreshTable, ...other }) {
+export default function DipendentiTransazioni({ onEdit,tableData, refreshTable, ...other }) {
   return (
     <Card {...other}>
       <CardHeader title="Ultime giornate" sx={{ mb: 3 }} />
@@ -57,6 +57,7 @@ export default function DipendentiTransazioni({ tableData, refreshTable, ...othe
                   key={row._id}
                   row={row}
                   refreshData={() => refreshTable()}
+                  onEdit={() => onEdit(row)}
                 />
               ))}
               <TableNoData notFound={tableData.length === 0} />
@@ -71,11 +72,12 @@ export default function DipendentiTransazioni({ tableData, refreshTable, ...othe
 DipendentiTransazioni.propTypes = {
   tableData: PropTypes.array,
   refreshTable: PropTypes.func,
+  onEdit: PropTypes.func,
 };
 
 // ----------------------------------------------------------------------
 
-function DipendentiTransazioniRow({ row, refreshData }) {
+function DipendentiTransazioniRow({ row, refreshData, onEdit }) {
   const theme = useTheme();
   const isLight = theme.palette.mode === 'light';
   const [isDeleting, setIsDeleting] = useState(false);
@@ -88,6 +90,11 @@ function DipendentiTransazioniRow({ row, refreshData }) {
     popover.onClose();
     confirmDialog.onTrue();
   };
+
+  const handleEdit = () =>{
+    popover.onClose()
+    onEdit()
+  }
 
   const handleDeleteGiornata = async () => {
     setIsDeleting(true);
@@ -187,6 +194,10 @@ function DipendentiTransazioniRow({ row, refreshData }) {
         arrow="right-top"
         sx={{ width: 160 }}
       >
+        <MenuItem onClick={handleEdit}>
+          <Iconify icon="fluent:edit-32-regular" />
+          Modifica
+        </MenuItem>
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
           <Iconify icon="solar:trash-bin-trash-bold" />
           Elimina
@@ -215,4 +226,5 @@ function DipendentiTransazioniRow({ row, refreshData }) {
 DipendentiTransazioniRow.propTypes = {
   row: PropTypes.object,
   refreshData: PropTypes.func,
+  onEdit: PropTypes.func,
 };
