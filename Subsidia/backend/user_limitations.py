@@ -29,3 +29,17 @@ def has_dipendenti():
                 return {"message": "Modulo Dipendenti non abilitato"}, 403
         return decorator
     return wrapper
+
+def has_cashflow():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            current_user = get_jwt_identity()
+            tags_allowed = ['cashflow']
+            if any(tag in current_user['tags'] for tag in tags_allowed):
+                return fn(*args, **kwargs)
+            else:
+                return {"message": "Modulo Cashflow non abilitato"}, 403
+        return decorator
+    return wrapper

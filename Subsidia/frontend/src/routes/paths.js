@@ -21,4 +21,5 @@ export const PATH_APP = {
   nuova_raccolta: path(ROOT_APP, '/nuova-raccolta'),
   modifica_raccolta: (id) => path(ROOT_APP, `/raccolta/${id}/modifica`),
   dipendenti: path(ROOT_APP, '/dipendenti'),
+  cashflow: path(ROOT_APP, '/cashflow'),
 };

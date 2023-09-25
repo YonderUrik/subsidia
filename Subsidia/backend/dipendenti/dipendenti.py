@@ -54,9 +54,6 @@ def edit_giornata_operai():
     request_data = request.json.get("data")
     id = request.json.get("id")
 
-    print(request_data)
-    print(id)
-
     doc_to_insert = {
         "operaio" : request_data['operai'][0],
         "date" : datetime.strptime(request_data['date'], "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -64,8 +61,6 @@ def edit_giornata_operai():
         "type" : int(request_data['type']),
         "activity" : str(request_data['activity']),
     }
-
-    print(doc_to_insert)
 
     status, msg, dev_msg = mongo.edit_giornata_operi(db_name=db_name, id=id, data=doc_to_insert)
     return {"message" : msg}, status

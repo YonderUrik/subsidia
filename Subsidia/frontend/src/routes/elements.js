@@ -31,5 +31,8 @@ export const RaccolteEditPage = Loadable(lazy(() => import('../pages/RaccolteEdi
 // DIPENDENTI
 export const DipendentiPage = Loadable(lazy(() => import('../pages/DipendentiPage')));
 
+// CASHFLOW
+export const CashFlowPage = Loadable(lazy(() => import('../pages/CashFlowPage')));
+
 // ERRORS
 export const Page404 = Loadable(lazy(() => import('../pages/Page404')));

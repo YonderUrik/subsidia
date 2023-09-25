@@ -26,6 +26,8 @@ import {
   RaccolteEditPage,
   // Dipendenti
   DipendentiPage,
+  // CASHFLOW
+  CashFlowPage,
   // ERRORS
   Page404,
 } from './elements';
@@ -74,6 +76,14 @@ export default function Router() {
       children: [
         { element: <Navigate to={PATH_AFTER_LOGIN} replace />, index: true },
         { path: 'home', element: <Home /> },
+        {
+          path: 'cashflow',
+          element: (
+            <RoleBasedGuard hasContent roles={['cashflow']}>
+              <CashFlowPage />
+            </RoleBasedGuard>
+          ),
+        },
         {
           path: 'dipendenti',
           element: (

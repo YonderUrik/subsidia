@@ -31,6 +31,9 @@ app.register_blueprint(raccolte.bp)
 import dipendenti.dipendenti as dipendenti
 app.register_blueprint(dipendenti.bp)
 
+import cashflow.cashflow as cashflow
+app.register_blueprint(cashflow.bp)
+
  
 
 # Main Route

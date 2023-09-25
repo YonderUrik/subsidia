@@ -26,6 +26,12 @@ const navConfig = [
         icon: icon('clarity:employee-group-solid'),
         tag: 'dipendenti',
       },
+      {
+        title: 'Cashflow',
+        path: PATH_APP.cashflow,
+        icon: icon('mdi:cash-sync'),
+        tag: 'cashflow',
+      },
     ],
   },
 ];

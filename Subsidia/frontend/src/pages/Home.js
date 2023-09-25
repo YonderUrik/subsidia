@@ -40,7 +40,13 @@ export default function Home() {
               to: PATH_APP.raccolte,
               tag: 'raccolte',
             },
-            { label: 'Cashflow', icon: 'mdi:cash-sync', color: '', tag: 'cashflow' },
+            {
+              label: 'Cashflow',
+              to: PATH_APP.cashflow,
+              icon: 'mdi:cash-sync',
+              color: 'primary',
+              tag: 'cashflow',
+            },
             {
               label: 'Dipendenti',
               icon: 'clarity:employee-group-solid',
