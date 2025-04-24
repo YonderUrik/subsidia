@@ -3,6 +3,7 @@ import { AuthProvider } from "../contexts/auth-context";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { config } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
+import { Suspense } from "react";
 
 export const metadata = {
   title: config.appName,
@@ -19,18 +20,27 @@ export default function RootLayout({ children }) {
       <meta name="apple-mobile-web-app-title" content="Subsidia" />
       <link rel="manifest" href="/site.webmanifest" />
       <body>
-        <ThemeProvider attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster />
-          <AuthProvider>
-            <div className="flex min-h-screen flex-col">
-              <div className="flex-1">{children}</div>
+        <Suspense fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <p className="text-lg font-medium text-muted-foreground">Caricamento...</p>
             </div>
-          </AuthProvider>
-        </ThemeProvider>
+          </div>
+        }>
+          <ThemeProvider attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Toaster />
+            <AuthProvider>
+              <div className="flex min-h-screen flex-col">
+                <div className="flex-1">{children}</div>
+              </div>
+            </AuthProvider>
+          </ThemeProvider>
+        </Suspense>
       </body>
     </html>
   );
