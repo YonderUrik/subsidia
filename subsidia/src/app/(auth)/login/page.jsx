@@ -147,6 +147,7 @@ export default function LoginPage() {
                       <Button
                         key={provider.id}
                         variant="outline"
+                        type="button"
                         className="w-full h-11 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground flex items-center justify-center gap-2 transition-all"
                         onClick={() => signIn(provider.id)}
                         disabled={isSubmitting}

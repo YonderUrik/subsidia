@@ -1,40 +1,33 @@
 "use client"
 
 import * as React from "react"
-
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { AppIcon } from "./logo/app-icon"
 import { config } from "@/lib/config"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { paths } from "@/lib/paths"
 
 export function LogoHeader() {
-
+  const router = useRouter()
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <div
-                className="text-sidebar-primary-foreground flex size-8 items-center justify-center rounded-lg">
-                <AppIcon />
-              </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{config.appName}</span>
-              </div>
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-        </DropdownMenu>
-      </SidebarMenuItem>
+      <SidebarMenuButton
+        size="lg"
+        className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        onClick={() => router.push(paths.dashboard)}
+      >
+        <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
+          <Image src="/favicon.svg" alt={config.appName} width={32} height={32} priority />
+        </div>
+        <div className="grid flex-1 text-left text-sm leading-tight">
+          <span className="truncate font-semibold">
+            {config.appName}
+          </span>
+        </div>
+      </SidebarMenuButton>
     </SidebarMenu>
   );
 }
