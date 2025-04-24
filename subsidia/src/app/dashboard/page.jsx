@@ -2,11 +2,12 @@
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { paths } from "@/lib/paths"
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Users } from "lucide-react"
+import { Plus, Users } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import axios from "axios"
 export default function DashboardPage() {
    const { data: session, status } = useSession()
 
@@ -19,6 +20,30 @@ export default function DashboardPage() {
       }
    }, [status, session])
 
+   const [employeesStats, setEmployeesStats] = useState({
+      activeEmployees: 0,
+      totalSalaries: 0,
+      totalToPay: 0
+   })
+   const [employeesStatsLoading, setEmployeesStatsLoading] = useState(false)
+
+   const getEmployeesStats = useCallback(async () => {
+      try{
+         setEmployeesStatsLoading(true)
+         const response = await axios.get('/api/employees-stats')
+         const data = await response.data
+         setEmployeesStats(data)
+         setEmployeesStatsLoading(false)
+      }catch(error){
+         console.error("Error fetching employees stats:", error)
+         setEmployeesStatsLoading(false)
+      }
+   }, [])
+
+   useEffect(() => {
+      getEmployeesStats()
+   }, [getEmployeesStats])
+
 
    return (
 
@@ -30,31 +55,47 @@ export default function DashboardPage() {
                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                      <Users className="h-5 w-5 text-blue-600" />
-                     Gestione dipendenti
+                     Gestione Paghe
                   </CardTitle>
                </CardHeader>
                <CardContent>
                   <div className="space-y-2">
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Dipendenti attivi</span>
-                        <span>12</span>
+                        <span className="text-slate-500">Operai attivi</span>
+                        {employeesStatsLoading ? (
+                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                        ) : (
+                           <span className="font-medium text-emerald-600">{employeesStats.activeEmployees}</span>
+                        )}
                      </div>
                      <div className="flex justify-between text-sm">
                         <span className="text-slate-500">Giornate totali</span>
-                        <span>12</span>
+                        {employeesStatsLoading ? (
+                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                        ) : (
+                           <span className="font-medium text-blue-600">{employeesStats.totalSalaries}</span>
+                        )}
                      </div>
                      <div className="flex justify-between text-sm">
                         <span className="text-slate-500">Totale da pagare</span>
-                        <span>12</span>
+                        {employeesStatsLoading ? (
+                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                        ) : (
+                           <span className="font-semibold text-lg text-rose-600">€{employeesStats.totalToPay.toLocaleString('it-IT', {minimumFractionDigits: 2})}</span>
+                        )}
                      </div>
                   </div>
                </CardContent>
                <CardFooter>
-                  <Link href={paths.employees} className="w-full">
-                     <Button className="w-full">Gestione dipendenti</Button>
+                  <Link href={paths.salaryBatchEntry} className="w-full">
+                     <Button className="w-full hover:bg-blue-700">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Aggiungi Giornata
+                     </Button>
                   </Link>
                </CardFooter>
             </Card>
+
 
          </div>
       </div>

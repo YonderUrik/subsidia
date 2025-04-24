@@ -14,6 +14,7 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  Users,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -34,9 +35,9 @@ import { paths } from "@/lib/paths"
 const data = {
   navMain: [
     {
-      title: "Salari",
+      title: "Gestione Paghe",
       url: "#",
-      icon: CircleUser,
+      icon: Users,
       isActive: false,
       items: [
         {

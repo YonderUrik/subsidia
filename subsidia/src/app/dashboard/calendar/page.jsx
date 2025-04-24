@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,119 +22,6 @@ import {
 import { paths } from "@/lib/paths"
 import { toast } from "sonner"
 import axios from "axios"
-// Mock data for work entries
-const workEntries = [
-   {
-      id: 1,
-      employeeId: "EMP001",
-      employeeName: "John Doe",
-      date: new Date(2023, 4, 1),
-      type: "full",
-      extras: 20,
-      notes: "Worked on Project A",
-      isPaid: true,
-   },
-   {
-      id: 2,
-      employeeId: "EMP001",
-      employeeName: "John Doe",
-      date: new Date(2023, 4, 2),
-      type: "half",
-      extras: 0,
-      notes: "Training session",
-      isPaid: true,
-   },
-   {
-      id: 3,
-      employeeId: "EMP001",
-      employeeName: "John Doe",
-      date: new Date(2023, 4, 3),
-      type: "full",
-      extras: 30,
-      notes: "Overtime for deployment",
-      isPaid: false,
-   },
-   {
-      id: 4,
-      employeeId: "EMP002",
-      employeeName: "Jane Smith",
-      date: new Date(2023, 4, 1),
-      type: "full",
-      extras: 0,
-      notes: "Team meeting",
-      isPaid: true,
-   },
-   {
-      id: 5,
-      employeeId: "EMP002",
-      employeeName: "Jane Smith",
-      date: new Date(2023, 4, 2),
-      type: "full",
-      extras: 50,
-      notes: "Client presentation",
-      isPaid: true,
-   },
-   {
-      id: 6,
-      employeeId: "EMP002",
-      employeeName: "Jane Smith",
-      date: new Date(2023, 4, 3),
-      type: "half",
-      extras: 0,
-      notes: "Documentation",
-      isPaid: false,
-   },
-   {
-      id: 7,
-      employeeId: "EMP003",
-      employeeName: "Michael Johnson",
-      date: new Date(2023, 4, 1),
-      type: "half",
-      extras: 0,
-      notes: "Design review",
-      isPaid: true,
-   },
-   {
-      id: 8,
-      employeeId: "EMP003",
-      employeeName: "Michael Johnson",
-      date: new Date(2023, 4, 2),
-      type: "full",
-      extras: 25,
-      notes: "Prototype creation",
-      isPaid: false,
-   },
-   {
-      id: 9,
-      employeeId: "EMP003",
-      employeeName: "Michael Johnson",
-      date: new Date(2023, 4, 3),
-      type: "full",
-      extras: 0,
-      notes: "User testing",
-      isPaid: false,
-   },
-   {
-      id: 10,
-      employeeId: "EMP001",
-      employeeName: "John Doe",
-      date: new Date(),
-      type: "full",
-      extras: 15,
-      notes: "Current day entry",
-      isPaid: false,
-   },
-   {
-      id: 11,
-      employeeId: "EMP002",
-      employeeName: "Jane Smith",
-      date: new Date(),
-      type: "half",
-      extras: 10,
-      notes: "Current day entry",
-      isPaid: true,
-   },
-]
 
 
 export default function CalendarPage() {
@@ -143,6 +30,34 @@ export default function CalendarPage() {
    const [selectedDay, setSelectedDay] = useState(null)
 
    const [employees, setEmployees] = useState([])
+   const [isLoading, setIsLoading] = useState(true)
+
+   const [workEntries, setWorkEntries] = useState([])
+
+
+   const getWorkEntries = useCallback(async () => {
+      try {
+         setIsLoading(true)
+         const response = await axios.get('/api/salaries', {
+            params: {
+               periodRange: "month",
+               year: currentDate.getFullYear(),
+               month: currentDate.getMonth() + 1
+            }
+         })
+         const data = response.data
+
+         setWorkEntries(data.data)
+      } catch (error) {
+         toast.error(error.response.data.message || error.response.data.error || "Errore nel caricamento delle giornate")
+      } finally {
+         setIsLoading(false)
+      }
+   }, [currentDate])
+
+   useEffect(() => {
+      getWorkEntries()
+   }, [getWorkEntries])
 
    useEffect(() => {
       const fetchEmployees = async () => {
@@ -150,15 +65,13 @@ export default function CalendarPage() {
             const response = await axios.get('/api/distinct-employees')
             const data = response.data
 
-            console.log(data)
             setEmployees(data)
          } catch (error) {
-            toast.error("Errore nel caricamento dei dipendenti")
+            toast.error("Errore nel caricamento dei operai")
          }
       }
       fetchEmployees()
    }, [])
-   
 
    // Filter entries based on selected employee
    const filteredEntries = selectedEmployee
@@ -179,7 +92,7 @@ export default function CalendarPage() {
    // Group entries by date
    const entriesByDate = filteredEntries.reduce(
       (acc, entry) => {
-         const dateStr = format(entry.date, "yyyy-MM-dd")
+         const dateStr = format(entry.workedDay, "yyyy-MM-dd")
          if (!acc[dateStr]) {
             acc[dateStr] = []
          }
@@ -190,7 +103,7 @@ export default function CalendarPage() {
    )
 
    // Get entries for selected day
-   const selectedDayEntries = selectedDay ? filteredEntries.filter((entry) => isSameDay(entry.date, selectedDay)) : []
+   const selectedDayEntries = selectedDay ? filteredEntries.filter((entry) => isSameDay(entry.workedDay, selectedDay)) : []
 
    const handlePrevMonth = () => {
       setCurrentDate(subMonths(currentDate, 1))
@@ -215,7 +128,7 @@ export default function CalendarPage() {
             <Link href={paths.salaryBatchEntry}>
                <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Aggiungi giornate
+                  Aggiungi Giornate
                </Button>
             </Link>
          </div>
@@ -238,7 +151,7 @@ export default function CalendarPage() {
                   </CardHeader>
                   <CardContent>
                      <div className="grid grid-cols-7 gap-px bg-slate-200 text-center">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+                        {["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"].map((day) => (
                            <div key={day} className="p-2 font-medium bg-white">
                               {day}
                            </div>
@@ -247,9 +160,11 @@ export default function CalendarPage() {
                      <div className="grid grid-cols-7 gap-px bg-slate-200">
                         {calendarDays.map((day, i) => {
                            if (!day) return <div key={`empty-${i}`} className="bg-white p-2 h-24" />
-
+                           
                            const dateStr = format(day, "yyyy-MM-dd")
+
                            const dayEntries = entriesByDate[dateStr] || []
+
                            const isCurrentMonth = isSameMonth(day, currentDate)
                            const isCurrentDay = isToday(day)
                            const isSelected = selectedDay ? isSameDay(day, selectedDay) : false
@@ -270,7 +185,7 @@ export default function CalendarPage() {
                                           className={`text-xs truncate rounded px-1 py-0.5 ${entry.type === "full" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
                                              } ${entry.isPaid ? "border-l-2 border-green-500" : "border-l-2 border-red-500"}`}
                                        >
-                                          {entry.employeeName}
+                                          {entry.employee.name}
                                        </div>
                                     ))}
                                     {dayEntries.length > 2 && (
@@ -286,22 +201,23 @@ export default function CalendarPage() {
             </div>
 
             <div className="w-full md:w-1/4 space-y-6">
+               {/* FILTERS */}
                <Card className="shadow-sm">
                   <CardHeader>
-                     <CardTitle>Filters</CardTitle>
+                     <CardTitle>Filtri</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Employee</label>
+                        <label className="text-sm font-medium">Seleziona Operaio</label>
                         <Select
                            value={selectedEmployee || "all"}
                            onValueChange={(value) => setSelectedEmployee(value === "all" ? null : value)}
                         >
                            <SelectTrigger>
-                              <SelectValue placeholder="All Employees" />
+                              <SelectValue placeholder="Tutti gli operai" />
                            </SelectTrigger>
                            <SelectContent>
-                              <SelectItem value="all">All Employees</SelectItem>
+                              <SelectItem value="all">Tutti gli operai</SelectItem>
                               {employees.map((employee) => (
                                  <SelectItem key={employee.id} value={employee.id}>
                                     {employee.name}
@@ -313,12 +229,13 @@ export default function CalendarPage() {
                   </CardContent>
                </Card>
 
+               {/* GIORNO SELEZIONATO */}
                {selectedDay && (
                   <Card className="shadow-sm">
                      <CardHeader>
                         <CardTitle>{format(selectedDay, "MMMM d, yyyy")}</CardTitle>
                         <CardDescription>
-                           {selectedDayEntries.length} work {selectedDayEntries.length === 1 ? "entry" : "entries"}
+                           {selectedDayEntries.length} {selectedDayEntries.length === 1 ? "giornata" : "giornate"}
                         </CardDescription>
                      </CardHeader>
                      <CardContent>
@@ -327,30 +244,33 @@ export default function CalendarPage() {
                               {selectedDayEntries.map((entry) => (
                                  <div key={entry.id} className="border rounded-lg p-3 space-y-2">
                                     <div className="flex items-center justify-between">
-                                       <div className="font-medium">{entry.employeeName}</div>
-                                       <Badge variant={entry.isPaid ? "default" : "outline"}>
-                                          {entry.isPaid ? "Paid" : "Unpaid"}
+                                       <div className="font-medium">{entry.employee.name}</div>
+                                       <Badge variant={entry.isPaid ? "success" : "destructive"}>
+                                          {entry.isPaid ? "Pagato" : "Non pagato"}
                                        </Badge>
                                     </div>
                                     <div className="text-sm">
-                                       <span className="text-slate-500">Type:</span>{" "}
-                                       <span className="capitalize">{entry.type} day</span>
+                                       <span className="text-slate-500">Tipo:</span>{" "}
+                                       <span className="capitalize">{entry.workType === "fullDay" ? "Giornata intera" : "Mezza giornata"}</span>
+                                    </div>
+                                    <div className="text-sm">
+                                       <span className="text-slate-500">Totale:</span> €{entry.total}
                                     </div>
                                     {entry.extras > 0 && (
                                        <div className="text-sm">
-                                          <span className="text-slate-500">Extras:</span> ${entry.extras}
+                                          <span className="text-slate-500">Extra:</span> €{entry.extras}
                                        </div>
                                     )}
                                     {entry.notes && (
                                        <div className="text-sm">
-                                          <span className="text-slate-500">Notes:</span> {entry.notes}
+                                          <span className="text-slate-500">Note:</span> {entry.notes}
                                        </div>
                                     )}
                                  </div>
                               ))}
                            </div>
                         ) : (
-                           <div className="text-center py-4 text-slate-500">No work entries for this day</div>
+                           <div className="text-center py-4 text-slate-500">Nessuna giornata per questo giorno</div>
                         )}
                      </CardContent>
                   </Card>
@@ -358,25 +278,25 @@ export default function CalendarPage() {
 
                <Card className="shadow-sm">
                   <CardHeader>
-                     <CardTitle>Legend</CardTitle>
+                     <CardTitle>Legenda</CardTitle>
                   </CardHeader>
                   <CardContent>
                      <div className="space-y-3">
                         <div className="flex items-center gap-2">
                            <div className="w-4 h-4 rounded bg-green-100"></div>
-                           <span className="text-sm">Full Day</span>
+                           <span className="text-sm">Giornata intera</span>
                         </div>
                         <div className="flex items-center gap-2">
                            <div className="w-4 h-4 rounded bg-yellow-100"></div>
-                           <span className="text-sm">Half Day</span>
+                           <span className="text-sm">Mezza giornata</span>
                         </div>
                         <div className="flex items-center gap-2">
                            <div className="w-4 h-4 rounded border-l-2 border-green-500"></div>
-                           <span className="text-sm">Paid</span>
+                           <span className="text-sm">Pagato</span>
                         </div>
                         <div className="flex items-center gap-2">
                            <div className="w-4 h-4 rounded border-l-2 border-red-500"></div>
-                           <span className="text-sm">Unpaid</span>
+                           <span className="text-sm">Non pagato</span>
                         </div>
                      </div>
                   </CardContent>

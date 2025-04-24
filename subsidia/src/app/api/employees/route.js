@@ -178,7 +178,7 @@ export async function POST(request) {
       if (existingEmployee) {
          return NextResponse.json({
             success: false,
-            message: "Un dipendente con questo nome esiste già"
+            message: "Un operaio con questo nome esiste già"
          }, { status: 400 });
       }
 
@@ -217,8 +217,6 @@ export async function PUT(request) {
          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
       const body = await request.json();
-
-      console.log("body", body)
 
       // Check if employee ID is provided
       if (!body.id) {
@@ -289,7 +287,6 @@ export async function PATCH(request) {
 
       const body = await request.json();
 
-      console.log("body", body)
 
       // Check if employee ID is provided
       if (!body.id) {
@@ -300,9 +297,6 @@ export async function PATCH(request) {
       }
 
       const { id, isActive } = body;
-
-      console.log("id", id)
-      console.log("isActive", isActive)
 
       // Check if the isActive field is provided
       if (isActive === undefined) {
@@ -316,8 +310,6 @@ export async function PATCH(request) {
       const existingEmployee = await prisma.employee.findUnique({
          where: { id, userId: session.user.id }
       });
-
-      console.log("existingEmployee", existingEmployee)
 
       if (!existingEmployee) {
          return NextResponse.json({
@@ -335,12 +327,8 @@ export async function PATCH(request) {
          }
       });
 
-      console.log("updatedEmployee", updatedEmployee)
-
       const action = isActive ? "abilitato" : "disabilitato";
-
-      console.log("action", action)
-
+      
       return NextResponse.json({
          success: true,
          message: `Impiegato ${action} con successo`,

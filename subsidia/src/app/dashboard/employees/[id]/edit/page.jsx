@@ -20,8 +20,6 @@ export default function EditEmployeePage() {
    const router = useRouter()
    const id = params.id
 
-   console.log("id", id)
-
    const [formData, setFormData] = useState({
       id: id,
       name: "",
@@ -42,7 +40,7 @@ export default function EditEmployeePage() {
          setIsLoading(false)
       } catch (error) {
          setEmployee(null)
-         setError(error.response.data.message || error.response.data.error || "Errore nel caricamento dei dati dell'impiegato")
+         setError(error.response.data.message || error.response.data.error || "Errore nel caricamento dei dati dell'operaio")
          setIsLoading(false)
       }
    }, [id])
@@ -72,10 +70,6 @@ export default function EditEmployeePage() {
       e.preventDefault()
       setIsSubmitting(true)
 
-      // In a real app, this would send the data to an API
-      console.log("Form submitted:", formData)
-
-
       try {
          const response = await axios.put(`/api/employees`, { ...formData, dailyRate: parseFloat(formData.dailyRate), halfDayRate: parseFloat(formData.halfDayRate) })
          if (response.data.success) {
@@ -87,18 +81,18 @@ export default function EditEmployeePage() {
          }
       } catch (error) {
          setIsSubmitting(false)
-         toast.error(error.response.data.message || error.response.data.error || "Errore nel salvataggio dei dati dell'impiegato")
+         toast.error(error.response.data.message || error.response.data.error || "Errore nel salvataggio dei dati dell'operaio")
       }
    }
 
    if (!employee) {
       return (
          <div className="p-6">
-            <h1 className="text-2xl font-bold text-slate-900">Impiegato non trovato</h1>
+            <h1 className="text-2xl font-bold text-slate-900">operaio non trovato</h1>
             <Link href={paths.employees}>
                <Button className="mt-4">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Torna ai dipendenti
+                  Torna agli operai
                </Button>
             </Link>
          </div>
@@ -114,7 +108,7 @@ export default function EditEmployeePage() {
                </Button>
             </Link>
             <div>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Modifica impiegato</h1>
+               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Modifica operaio</h1>
                {!employee?.isActive && (
                   <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 mt-1">
                      Disabilitato
@@ -128,7 +122,7 @@ export default function EditEmployeePage() {
                <CheckCircle2 className="h-5 w-5 text-green-600" />
                <AlertTitle className="text-green-800">Operazione completata con successo!</AlertTitle>
                <AlertDescription className="text-green-700">
-                  Le informazioni dell'impiegato sono state aggiornate con successo.
+                  Le informazioni dell'operaio sono state aggiornate con successo.
                </AlertDescription>
             </Alert>
          ) : (
@@ -137,7 +131,7 @@ export default function EditEmployeePage() {
                   <Card className="shadow-sm">
                      <CardHeader>
                         <CardTitle>Informazioni personali</CardTitle>
-                        <CardDescription>Modifica i dati personali dell'impiegato</CardDescription>
+                        <CardDescription>Modifica i dati personali dell'operaio</CardDescription>
                      </CardHeader>
                      <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -150,7 +144,7 @@ export default function EditEmployeePage() {
                   <Card className="shadow-sm">
                      <CardHeader>
                         <CardTitle>Informazioni salariali</CardTitle>
-                        <CardDescription>Modifica le rate di pagamento dell'impiegato</CardDescription>
+                        <CardDescription>Modifica le rate di pagamento dell'operaio</CardDescription>
                      </CardHeader>
                      <CardContent className="space-y-4">
                         <div className="space-y-2">

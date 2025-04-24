@@ -74,51 +74,51 @@ export default function SalaryPage() {
    }, [debouncedSearch, searchTerm])
 
    return (
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
          {/* ACTIONS */}
-         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
             <div>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gestione giornate</h1>
+               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Giornate</h1>
             </div>
-            <div className="flex items-center gap-2">
-               <Link href={paths.calendar}>
-                  <Button variant="outline">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+               <Link href={paths.calendar} className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">
                      <CalendarIcon className="mr-2 h-4 w-4" />
-                     Visualizza calendario
+                     Calendario
                   </Button>
                </Link>
-               <Link href={paths.salaryBatchEntry}>
-                  <Button variant="outline">
+               <Link href={paths.salaryBatchEntry} className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">
                      <Plus className="mr-2 h-4 w-4" />
-                     Inserimento Multiplo
+                     Aggiungi Giornate
                   </Button>
                </Link>
             </div>
          </div>
 
          {/* TOTALS */}
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-white/50 backdrop-blur-sm">
-               <CardContent className="pt-4">
-                  <div className="flex flex-col gap-1">
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Card className="bg-white/40">
+               <CardContent className="py-3">
+                  <div className="flex items-center justify-between">
                      <p className="text-sm text-slate-500">Totale pagato</p>
-                     <p className="text-xl font-semibold">€{totalPayed.toLocaleString()}</p>
+                     <p className="text-lg font-semibold">€{totalPayed.toLocaleString()}</p>
                   </div>
                </CardContent>
             </Card>
-            <Card className="bg-white/50 backdrop-blur-sm">
-               <CardContent className="pt-4">
-                  <div className="flex flex-col gap-1">
+            <Card className="bg-white/40">
+               <CardContent className="py-3">
+                  <div className="flex items-center justify-between">
                      <p className="text-sm text-slate-500">Da pagare</p>
-                     <p className="text-xl font-semibold">€{totalToPay.toLocaleString()}</p>
+                     <p className="text-lg font-semibold">€{totalToPay.toLocaleString()}</p>
                   </div>
                </CardContent>
             </Card>
-            <Card className="md:col-span-2 bg-white/50 backdrop-blur-sm">
-               <CardContent className="pt-4 space-y-2">
-                  <div className="flex items-center gap-2">
+            <Card className="sm:col-span-2 bg-white/40">
+               <CardContent className="py-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                      <Select value={periodType} onValueChange={setPeriodType}>
-                        <SelectTrigger className="h-8">
+                        <SelectTrigger className="h-8 w-full sm:w-auto">
                            <SelectValue placeholder="Tipo periodo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -130,7 +130,7 @@ export default function SalaryPage() {
 
                      {periodType !== "all" && (
                         <Select value={year} onValueChange={setYear}>
-                           <SelectTrigger className="h-8">
+                           <SelectTrigger className="h-8 w-full sm:w-auto">
                               <SelectValue placeholder="Anno" />
                            </SelectTrigger>
                            <SelectContent>
@@ -143,7 +143,7 @@ export default function SalaryPage() {
 
                      {periodType === "month" && (
                         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                           <SelectTrigger className="h-8">
+                           <SelectTrigger className="h-8 w-full sm:w-auto">
                               <SelectValue placeholder="Mese" />
                            </SelectTrigger>
                            <SelectContent>
@@ -158,27 +158,30 @@ export default function SalaryPage() {
             </Card>
          </div>
 
-         <Tabs value={groupBy} onValueChange={setGroupBy} defaultValue="day">
-            <TabsList>
-               <TabsTrigger value="day">Per giorno</TabsTrigger>
-               <TabsTrigger value="week">Per settimana</TabsTrigger>
-               <TabsTrigger value="month">Per mese</TabsTrigger>
-               <TabsTrigger value="year">Per anno</TabsTrigger>
-            </TabsList>
-            <div className="flex items-center gap-4">
-               <div className="relative flex-1 max-w-sm">
+         <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+               <Tabs value={groupBy} onValueChange={setGroupBy} defaultValue="day" className="w-full sm:w-auto">
+                  <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full sm:w-auto">
+                     <TabsTrigger value="day">Giorno</TabsTrigger>
+                     <TabsTrigger value="week">Settimana</TabsTrigger>
+                     <TabsTrigger value="month">Mese</TabsTrigger>
+                     <TabsTrigger value="year">Anno</TabsTrigger>
+                  </TabsList>
+               </Tabs>
+               <div className="relative flex-1 max-w-sm w-full">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                   <Input
                      type="search"
-                     placeholder="Cerca impiegati..."
-                     className="pl-8"
+                     placeholder="Cerca operai..."
+                     className="pl-8 w-full"
                      value={searchTerm}
                      onChange={(e) => setSearchTerm(e.target.value)}
                   />
                </div>
             </div>
-            <Card className="shadow-sm">
-               <CardContent className="p-0">
+
+            <Card className="shadow-sm overflow-hidden">
+               <CardContent className="p-0 overflow-x-auto">
                   {isLoading ? (
                      <div className="flex items-center justify-center p-8 text-slate-500">
                         Caricamento in corso...
@@ -195,20 +198,20 @@ export default function SalaryPage() {
                      <Table>
                         <TableHeader>
                            <TableRow>
-                              <TableHead>Impiegato</TableHead>
+                              <TableHead>Operaio</TableHead>
                               <TableHead>Data</TableHead>
                               <TableHead>Tipo</TableHead>
-                              <TableHead>Importo base</TableHead>
+                              <TableHead>Base</TableHead>
                               <TableHead>Extra</TableHead>
-                              <TableHead>Stato pagamento</TableHead>
+                              <TableHead>Stato</TableHead>
                               <TableHead className="text-right">Totale</TableHead>
                            </TableRow>
                         </TableHeader>
                         <TableBody>
                            {salaries.map((salary) => (
                               <TableRow key={salary.id}>
-                                 <TableCell>{salary.employee.name}</TableCell>
-                                 <TableCell>
+                                 <TableCell className="whitespace-nowrap">{salary.employee.name}</TableCell>
+                                 <TableCell className="whitespace-nowrap">
                                     {groupBy === 'day' ? 
                                        (() => {
                                           try {
@@ -219,7 +222,7 @@ export default function SalaryPage() {
                                        })() 
                                        : String(salary.workedDay)}
                                  </TableCell>
-                                 <TableCell>{groupBy === 'day' ? (salary.workType === 'fullDay' ? 'Giornata intera' : 'Mezza giornata') : '-'}</TableCell>
+                                 <TableCell>{groupBy === 'day' ? (salary.workType === 'fullDay' ? 'Giornata' : 'Mezza') : '-'}</TableCell>
                                  <TableCell>€{salary.salaryAmount}</TableCell>
                                  <TableCell>€{salary.extras}</TableCell>
                                  <TableCell>
@@ -231,8 +234,8 @@ export default function SalaryPage() {
                                        }
                                     >
                                        {salary.payedAmount >= salary.total ?
-                                          `Pagato: €${salary.payedAmount}` :
-                                          `Da pagare: €${(salary.total - salary.payedAmount).toFixed(2)}`
+                                          `€${salary.payedAmount}` :
+                                          `€${(salary.total - salary.payedAmount).toFixed(2)}`
                                        }
                                     </Badge>
                                  </TableCell>
@@ -244,7 +247,7 @@ export default function SalaryPage() {
                   )}
                </CardContent>
             </Card>
-         </Tabs>
+         </div>
       </div>
    )
 }

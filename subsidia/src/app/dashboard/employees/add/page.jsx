@@ -50,10 +50,10 @@ export default function AddEmployeePage() {
           halfDayRate: "",
         })
       } else {
-        setError(response.data.message || "Si è verificato un errore durante l'aggiunta del dipendente")
+        setError(response.data.message || "Si è verificato un errore durante l'aggiunta dell'operaio")
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Si è verificato un errore durante l'aggiunta del dipendente")
+      setError(err.response?.data?.message || "Si è verificato un errore durante l'aggiunta dell'operaio")
       console.error(err)
     } finally {
       setIsSubmitting(false)
@@ -73,7 +73,7 @@ export default function AddEmployeePage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Aggiungi dipendente</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Aggiungi Operaio</h1>
       </div>
 
       {error && (
@@ -97,12 +97,12 @@ export default function AddEmployeePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={handleAddAnother} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
-              Aggiungi un altro dipendente
+              Aggiungi un altro operaio
             </Button>
             <Link href={paths.employees}>
               <Button variant="outline" className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
-                Vai alla lista dei dipendenti
+                Vai alla lista degli operai
               </Button>
             </Link>
           </div>
@@ -113,7 +113,7 @@ export default function AddEmployeePage() {
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle>Informazioni personali</CardTitle>
-                <CardDescription>Inserisci i dettagli personali del dipendente</CardDescription>
+                <CardDescription>Inserisci i dettagli personali dell'operaio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -126,7 +126,7 @@ export default function AddEmployeePage() {
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle>Informazioni salariali</CardTitle>
-                <CardDescription>Imposta le rate di pagamento del dipendente</CardDescription>
+                <CardDescription>Imposta le rate di pagamento dell'operaio</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -167,7 +167,7 @@ export default function AddEmployeePage() {
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Aggiungi dipendente
+                  Aggiungi operaio
                 </>
               )}
             </Button>

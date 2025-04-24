@@ -41,7 +41,7 @@ export default function BatchEntryPage() {
             setEmployees(data)
          } catch (error) {
             console.error("Error fetching employees:", error)
-            toast.error(error.response.data.error || "Impossibile caricare i dipendenti. Riprova più tardi.")
+            toast.error(error.response.data.error || "Impossibile caricare gli operai. Riprova più tardi.")
          }
       }
       fetchEmployees()
@@ -124,8 +124,7 @@ export default function BatchEntryPage() {
                </Button>
             </Link>
             <div>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Inserimento Multiplo</h1>
-               <p className="text-slate-500">Aggiungi entrate di lavoro per più dipendenti contemporaneamente</p>
+               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Aggiungi Giornate</h1>
             </div>
          </div>
 
@@ -134,8 +133,8 @@ export default function BatchEntryPage() {
                {/* Employees selection */}
                <Card className="shadow-sm">
                   <CardHeader>
-                     <CardTitle>Seleziona Dipendenti</CardTitle>
-                     <CardDescription>Scegli dipendenti per aggiungere entrate di lavoro</CardDescription>
+                     <CardTitle>Seleziona Operai</CardTitle>
+                     <CardDescription>Scegli operai per aggiungere entrate di lavoro</CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
                      <Table>
@@ -170,7 +169,7 @@ export default function BatchEntryPage() {
                      </Table>
                   </CardContent>
                   <CardFooter className="border-t px-6 py-4">
-                     <div className="text-sm text-slate-500">{selectedEmployees.length} dipendenti selezionati</div>
+                     <div className="text-sm text-slate-500">{selectedEmployees.length} operai selezionati</div>
                   </CardFooter>
                </Card>
 
@@ -179,7 +178,7 @@ export default function BatchEntryPage() {
                   <Card className="shadow-sm">
                      <CardHeader>
                         <CardTitle>Dettagli Lavoro</CardTitle>
-                        <CardDescription>Imposta le informazioni di lavoro per i dipendenti selezionati</CardDescription>
+                        <CardDescription>Imposta le informazioni di lavoro per gli operai selezionati</CardDescription>
                      </CardHeader>
                      <CardContent className="space-y-4">
                         <div className="space-y-2">

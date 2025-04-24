@@ -30,8 +30,6 @@ export default function EmployeeDetailsPage() {
    const id = params.id
    const [employee, setEmployee] = useState(null)
 
-   console.log("employee", employee)
-
    const [error, setError] = useState(null)
    const [isLoading, setIsLoading] = useState(true)
 
@@ -42,7 +40,7 @@ export default function EmployeeDetailsPage() {
          setIsLoading(false)
       } catch (error) {
          setEmployee(null)
-         setError(error.response.data.message || error.response.data.error || "Errore nel caricamento dei dati dell'impiegato")
+         setError(error.response.data.message || error.response.data.error || "Errore nel caricamento dei dati dell'operaio")
          setIsLoading(false)
       }
    }, [id])
@@ -88,12 +86,6 @@ export default function EmployeeDetailsPage() {
    const [selectedEntryId, setSelectedEntryId] = useState(null)
    const [paymentType, setPaymentType] = useState("acconto") // "acconto" or "full"
 
-   console.log("paymentAmount", paymentAmount)
-   console.log("selectedEntryId", selectedEntryId)
-   console.log("paymentType", paymentType)
-   console.log("isPaymentDialogOpen", isPaymentDialogOpen)
-   console.log("isProcessingPayment", isProcessingPayment)
-
    const handleDelete = async () => {
       setIsDeleting(true)
 
@@ -114,7 +106,7 @@ export default function EmployeeDetailsPage() {
          }
       } catch (error) {
          setIsDeleting(false)
-         toast.error(error.response.data.message || error.response.data.error || "Errore durante l'eliminazione dell'impiegato")
+         toast.error(error.response.data.message || error.response.data.error || "Errore durante l'eliminazione dell'operaio")
       }
    }
 
@@ -145,7 +137,7 @@ export default function EmployeeDetailsPage() {
          }
       } catch (error) {
          setIsTogglingStatus(false)
-         toast.error(error.response.data.message || error.response.data.error || "Errore durante l'aggiornamento dello stato dell'impiegato")
+         toast.error(error.response.data.message || error.response.data.error || "Errore durante l'aggiornamento dello stato dell'opario")
       }
    }
 
@@ -190,8 +182,6 @@ export default function EmployeeDetailsPage() {
    }
 
    const openPaymentDialog = (entryId = null, type = "acconto") => {
-      console.log("entryId", entryId)
-      console.log("type", type)
       setSelectedEntryId(entryId)
       setPaymentType(type)
 
@@ -244,9 +234,9 @@ export default function EmployeeDetailsPage() {
 
    if (isLoading) {
       return (
-         <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+         <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
             <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
-            <p className="mt-4 text-lg font-medium text-slate-600">Caricamento dati impiegato...</p>
+            <p className="mt-4 text-lg font-medium text-slate-600">Caricamento dati operai...</p>
             <p className="text-sm text-slate-500">Attendere mentre recuperiamo i dati</p>
          </div>
       )
@@ -254,17 +244,17 @@ export default function EmployeeDetailsPage() {
 
    if (error) {
       return (
-         <div className="p-6 space-y-6">
+         <div className="p-4">
             <div className="flex items-center gap-4">
                <Link href={paths.employees}>
                   <Button variant="outline" size="icon">
                      <ArrowLeft className="h-4 w-4" />
                   </Button>
                </Link>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Errore</h1>
+               <h1 className="text-2xl font-bold tracking-tight text-slate-900">Errore</h1>
             </div>
 
-            <Alert className="bg-red-50 border-red-200">
+            <Alert className="mt-4 bg-red-50 border-red-200">
                <AlertTriangle className="h-5 w-5 text-red-600" />
                <AlertTitle className="text-red-800">Si è verificato un errore</AlertTitle>
                <AlertDescription className="text-red-700">
@@ -277,12 +267,12 @@ export default function EmployeeDetailsPage() {
 
    if (!employee) {
       return (
-         <div className="p-6">
-            <h1 className="text-2xl font-bold text-slate-900">Impiegato non trovato</h1>
+         <div className="p-4">
+            <h1 className="text-2xl font-bold text-slate-900">Operaio non trovato</h1>
             <Link href={paths.employees}>
                <Button className="mt-4">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Torna ai dipendenti
+                  Torna agli operai
                </Button>
             </Link>
          </div>
@@ -291,17 +281,17 @@ export default function EmployeeDetailsPage() {
 
    if (isDeleted) {
       return (
-         <div className="p-6 space-y-6">
+         <div className="p-4">
             <div className="flex items-center gap-4">
                <Link href={paths.employees}>
                   <Button variant="outline" size="icon">
                      <ArrowLeft className="h-4 w-4" />
                   </Button>
                </Link>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Impiegato eliminato</h1>
+               <h1 className="text-2xl font-bold tracking-tight text-slate-900">Operaio eliminato</h1>
             </div>
 
-            <Alert className="bg-green-50 border-green-200">
+            <Alert className="mt-4 bg-green-50 border-green-200">
                <CheckCircle2 className="h-5 w-5 text-green-600" />
                <AlertTitle className="text-green-800">Operazione completata!</AlertTitle>
                <AlertDescription className="text-green-700">
@@ -313,9 +303,9 @@ export default function EmployeeDetailsPage() {
    }
 
    return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
          {/* ACTIONS BAR */}
-         <div className="flex items-center justify-between">
+         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                <Link href={paths.employees}>
                   <Button variant="outline" size="icon">
@@ -323,7 +313,7 @@ export default function EmployeeDetailsPage() {
                   </Button>
                </Link>
                <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-slate-900">{employee.name}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{employee.name}</h1>
                   {!employee.isActive && (
                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 mt-1">
                         Disabilitato
@@ -331,24 +321,29 @@ export default function EmployeeDetailsPage() {
                   )}
                </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                <Button
                   variant={employee.isActive ? "default" : "outline"}
                   onClick={() => setIsDisableDialogOpen(true)}
                   disabled={employee.isActive && employee.toPay > 0}
-                  title={employee.isActive && employee.toPay > 0 ? "Non puoi disabilitare un dipendente con pagamenti in sospeso" : ""}
+                  title={employee.isActive && employee.toPay > 0 ? "Non puoi disabilitare un operaio con pagamenti in sospeso" : ""}
+                  className="flex-1 sm:flex-none"
                >
                   <CheckCircle2 className="mr-2 h-4 w-4" />
                   {employee.isActive ? "Disabilita" : "Abilita"}
                </Button>
-               <Link href={paths.employeeIdEdit(id)}>
-                  {/* TODO : Aggiungere la modifica dell'impiegato */}
-                  <Button variant="outline">
+               <Link href={paths.employeeIdEdit(id)} className="flex-1 sm:flex-none">
+                  <Button variant="outline" className="w-full">
                      <Edit className="mr-2 h-4 w-4" />
                      Modifica
                   </Button>
                </Link>
-               <Button disabled={employee.isActive && employee.toPay > 0} variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+               <Button 
+                  disabled={employee.isActive && employee.toPay > 0} 
+                  variant="destructive" 
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="flex-1 sm:flex-none"
+               >
                   <Trash className="mr-2 h-4 w-4" />
                   Elimina
                </Button>
@@ -356,85 +351,79 @@ export default function EmployeeDetailsPage() {
          </div>
 
          {/* STATS */}
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="shadow-sm">
-               <CardHeader>
-                  <CardTitle>Informazioni impiegato</CardTitle>
-                  <CardDescription>Dettagli personali e professionali</CardDescription>
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card className="bg-white/50 backdrop-blur-sm">
+               <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Informazioni Operaio</CardTitle>
                </CardHeader>
-               <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <p className="text-sm font-medium text-slate-500">ID</p>
-                        <p>{employee.id}</p>
-                     </div>
+               <CardContent>
+                  <div className="text-sm">
+                     <p className="text-slate-500">ID: <span className="text-slate-900">{employee.id}</span></p>
                   </div>
                </CardContent>
             </Card>
 
-            <Card className="shadow-sm">
-               <CardHeader>
-                  <CardTitle>Informazioni salario</CardTitle>
-                  <CardDescription>Dettagli salario e pagamento</CardDescription>
+            <Card className="bg-white/50 backdrop-blur-sm">
+               <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Informazioni salario</CardTitle>
                </CardHeader>
-               <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+               <CardContent className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
                      <div>
-                        <p className="text-sm font-medium text-slate-500">Giornaliero</p>
-                        <p className="text-xl font-bold">€{employee.dailyRate}</p>
+                        <p className="text-slate-500">Giornaliero</p>
+                        <p className="font-semibold">€{employee.dailyRate}</p>
                      </div>
                      <div>
-                        <p className="text-sm font-medium text-slate-500">Mezza giornata</p>
-                        <p className="text-xl font-bold">€{employee.halfDayRate}</p>
+                        <p className="text-slate-500">Mezza giornata</p>
+                        <p className="font-semibold">€{employee.halfDayRate}</p>
                      </div>
-                     <div className="col-span-2">
-                        <p className="text-sm font-medium text-slate-500">Totale da pagare</p>
-                        <p className="text-2xl font-bold text-red-600">€{employee.toPay}</p>
-                     </div>
-                     <div className="col-span-2 mt-2 flex gap-2">
-                        <Button
-                           variant="outline"
-                           className="flex-1"
-                           onClick={() => openPaymentDialog(null, "acconto")}
-                           disabled={employee.toPay <= 0}
-                        >
-                           <DollarSign className="mr-2 h-4 w-4" />
-                           Acconto
-                        </Button>
-                        <Button
-                           variant="default"
-                           className="flex-1 bg-green-600 hover:bg-green-700"
-                           onClick={() => openPaymentDialog(null, "full")}
-                           disabled={employee.toPay <= 0}
-                        >
-                           <CreditCard className="mr-2 h-4 w-4" />
-                           Paga tutto
-                        </Button>
-                     </div>
+                  </div>
+                  <div className="pt-2 border-t">
+                     <p className="text-slate-500 text-sm">Totale da pagare</p>
+                     <p className="text-xl font-bold text-red-600">€{employee.toPay}</p>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                     <Button
+                        variant="outline"
+                        className="flex-1 text-sm h-8"
+                        onClick={() => openPaymentDialog(null, "acconto")}
+                        disabled={employee.toPay <= 0}
+                     >
+                        <DollarSign className="mr-1 h-3 w-3" />
+                        Acconto
+                     </Button>
+                     <Button
+                        variant="default"
+                        className="flex-1 text-sm h-8 bg-green-600 hover:bg-green-700"
+                        onClick={() => openPaymentDialog(null, "full")}
+                        disabled={employee.toPay <= 0}
+                     >
+                        <CreditCard className="mr-1 h-3 w-3" />
+                        Paga tutto
+                     </Button>
                   </div>
                </CardContent>
             </Card>
 
-            <Card className="shadow-sm">
-               <CardHeader>
-                  <CardTitle>Resoconto lavoro</CardTitle>
-                  <CardDescription>Attività recenti</CardDescription>
+            <Card className="bg-white/50 backdrop-blur-sm sm:col-span-2 lg:col-span-1">
+               <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Resoconto lavoro</CardTitle>
                </CardHeader>
-               <CardContent className="space-y-4">
+               <CardContent className="space-y-2 text-sm">
                   <div>
-                     <p className="text-sm font-medium text-slate-500">Giorni lavorati</p>
-                     <p className="text-xl font-bold">
+                     <p className="text-slate-500">Giorni lavorati</p>
+                     <p className="font-semibold">
                         {employee.workHistory.filter((entry) => entry.type === "fullDay").length} giorni interi,{" "}
                         {employee.workHistory.filter((entry) => entry.type === "halfDay").length} mezze giornate
                      </p>
                   </div>
                   <div>
-                     <p className="text-sm font-medium text-slate-500">Totale extra</p>
-                     <p className="text-xl font-bold">€{employee.workHistory.reduce((sum, entry) => sum + entry.extras, 0)}</p>
+                     <p className="text-slate-500">Totale extra</p>
+                     <p className="font-semibold">€{employee.workHistory.reduce((sum, entry) => sum + entry.extras, 0)}</p>
                   </div>
                   <div>
-                     <p className="text-sm font-medium text-slate-500">Ultimo lavoro</p>
-                     <p>
+                     <p className="text-slate-500">Ultimo lavoro</p>
+                     <p className="font-semibold">
                         {employee.workHistory.length > 0
                            ? `${format(new Date(employee.workHistory[0].workedDay), 'dd/MM/yyyy')} (${employee.workHistory[0].type === 'fullDay' ? 'Giornata intera' : 'Mezza giornata'})`
                            : "Nessun lavoro ancora registrato"}
@@ -444,20 +433,20 @@ export default function EmployeeDetailsPage() {
             </Card>
          </div>
 
-         <Tabs defaultValue="work-history">
-            <TabsList>
-               <TabsTrigger value="work-history">Storico giornate</TabsTrigger>
-               <TabsTrigger value="add-entry" disabled={!employee.isActive}>Aggiungi giornata</TabsTrigger>
+         <Tabs defaultValue="work-history" className="mt-6">
+            <TabsList className="w-full sm:w-auto">
+               <TabsTrigger value="work-history" className="flex-1 sm:flex-none">Storico giornate</TabsTrigger>
+               <TabsTrigger value="add-entry" disabled={!employee.isActive} className="flex-1 sm:flex-none">Aggiungi giornata</TabsTrigger>
             </TabsList>
             {/* WORK HISTORY */}
             <TabsContent value="work-history" className="space-y-4">
-               <Card className="shadow-sm">
-                  <CardHeader>
+               <Card>
+                  <CardHeader className="pb-2">
                      <CardTitle>Storico giornate</CardTitle>
                      <CardDescription>Record delle giornate lavorate e dei pagamenti</CardDescription>
                   </CardHeader>
                   <CardContent>
-                     <div className="rounded-md border">
+                     <div className="rounded-md border overflow-x-auto">
                         <Table>
                            <TableHeader>
                               <TableRow>
@@ -487,7 +476,7 @@ export default function EmployeeDetailsPage() {
                                              !entry.isPaid && entry.payedAmount > 0 && "bg-orange-100 text-orange-700 border-orange-200",
                                              !entry.isPaid && entry.payedAmount === 0 && "bg-red-100 text-red-700 border-red-200"
                                           )}>
-                                             {entry.isPaid ? "Pagato" : entry.payedAmount > 0 ? `Parzialmente pagato (€${entry.payedAmount})` : "Non pagato"}
+                                             {entry.isPaid ? "Pagato" : entry.payedAmount > 0 ? `Parziale (€${entry.payedAmount})` : "Non pagato"}
                                           </Badge>
                                        </TableCell>
                                        <TableCell>{entry.notes}</TableCell>
@@ -526,14 +515,14 @@ export default function EmployeeDetailsPage() {
 
             {/* ADD WORK ENTRY */}
             <TabsContent value="add-entry">
-               <Card className="shadow-sm">
-                  <CardHeader>
+               <Card>
+                  <CardHeader className="pb-2">
                      <CardTitle>Aggiungi giornata</CardTitle>
-                     <CardDescription>Registra una nuova giornata di lavoro per questo impiegato</CardDescription>
+                     <CardDescription>Registra una nuova giornata di lavoro per questo operaio</CardDescription>
                   </CardHeader>
                   <CardContent>
-                     <form onSubmit={handleAddWorkEntry} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <form onSubmit={handleAddWorkEntry} className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                            {/* DATE */}
                            <div className="flex flex-col gap-2">
                               <Label htmlFor="workedDay">Data</Label>
@@ -655,7 +644,7 @@ export default function EmployeeDetailsPage() {
                         </div>
 
                         <div className="flex justify-end pt-4">
-                           <Button type="submit" className="w-full md:w-auto" disabled={isAddingWorkEntry}>
+                           <Button type="submit" className="w-full sm:w-auto" disabled={isAddingWorkEntry}>
                               {isAddingWorkEntry ? (
                                  <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -676,8 +665,8 @@ export default function EmployeeDetailsPage() {
             isOpen={isDeleteDialogOpen}
             onClose={() => setIsDeleteDialogOpen(false)}
             onConfirm={handleDelete}
-            title="Elimina impiegato"
-            description={`Sei sicuro di voler eliminare ${employee.name}? Questo gli impedirà di essere assegnato a nuovi lavori e non comparirà nelle liste degli impiegati attivi. Inoltre tutte le sue giornate verranno rimosse e non potranno essere recuperate.`}
+            title="Elimina operaio"
+            description={`Sei sicuro di voler eliminare ${employee.name}? Questo gli impedirà di essere assegnato a nuovi lavori e non comparirà nelle liste degli operai attivi. Inoltre tutte le sue giornate verranno rimosse e non potranno essere recuperate.`}
             isDeleting={isDeleting}
          />
 
@@ -686,7 +675,7 @@ export default function EmployeeDetailsPage() {
                <CheckCircle2 className="h-5 w-5 text-green-600" />
                <AlertTitle className="text-green-800">Operazione completata!</AlertTitle>
                <AlertDescription className="text-green-700">
-                  Lo stato dell'impiegato è stato aggiornato a {employee.isActive ? "abilitato" : "disabilitato"}.
+                  Lo stato dell'operaio è stato aggiornato a {employee.isActive ? "abilitato" : "disabilitato"}.
                </AlertDescription>
             </Alert>
          )}
@@ -695,11 +684,11 @@ export default function EmployeeDetailsPage() {
             isOpen={isDisableDialogOpen}
             onClose={() => setIsDisableDialogOpen(false)}
             onConfirm={handleToggleStatus}
-            title={employee.isActive ? "Disabilita impiegato" : "Abilita impiegato"}
+            title={employee.isActive ? "Disabilita operaio" : "Abilita operaio"}
             description={
                !employee.isActive
-                  ? `Sei sicuro di voler abilitare ${employee.name}? Questo gli consentirà di essere assegnato a nuovi lavori e comparirà nelle liste degli impiegati attivi.`
-                  : `Sei sicuro di voler disabilitare ${employee.name}? Questo gli impedirà di essere assegnato a nuovi lavori e non comparirà nelle liste degli impiegati attivi.`
+                     ? `Sei sicuro di voler abilitare ${employee.name}? Questo gli consentirà di essere assegnato a nuovi lavori e comparirà nelle liste degli operai attivi.`
+                  : `Sei sicuro di voler disabilitare ${employee.name}? Questo gli impedirà di essere assegnato a nuovi lavori e non comparirà nelle liste degli operai attivi.`
             }
             isDeleting={isTogglingStatus}
             confirmButtonText={employee.isActive ? "Disabilita" : "Abilita"}
@@ -717,7 +706,7 @@ export default function EmployeeDetailsPage() {
                      (() => {
                         const entry = employee.workHistory.find(entry => entry.id === selectedEntryId)
                         return `Pagamento per la giornata di lavoro del ${format(new Date(entry.workedDay), 'dd/MM/yyyy')}`
-                     })() : "Pagamento per l'impiegato"}
+                     })() : "Pagamento per l'operaio"}
                </DialogDescription>
 
                <div className="space-y-4 py-4">

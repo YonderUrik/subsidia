@@ -213,7 +213,7 @@ export async function POST(request) {
 
          if (employees.length !== employeeIds.length) {
             return NextResponse.json(
-               { error: 'Uno o più dipendenti non trovati' },
+               { error: 'Uno o più operai non trovati' },
                { status: 404 }
             );
          }
@@ -272,7 +272,7 @@ export async function POST(request) {
 
          if (!employee) {
             return NextResponse.json(
-               { error: 'Dipendente non trovato' },
+               { error: 'Operaio non trovato' },
                { status: 404 }
             );
          }
@@ -323,8 +323,6 @@ export async function PATCH(request) {
       const body = await request.json();
 
       const { salaryId, employeeId, paymentAmount } = body;
-
-      console.log("body", body)
 
       const salaries = await prisma.salary.findMany({
          where: {

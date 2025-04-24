@@ -18,7 +18,6 @@ export default function EmployeesPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [pageSize] = useState(10)
 
-  console.log("Employees", employees)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -38,7 +37,7 @@ export default function EmployeesPage() {
         setError('Failed to fetch employees')
       }
     } catch (err) {
-      setError('Errore nel caricamento dei dipendenti')
+      setError('Errore nel caricamento degli operai')
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -74,16 +73,16 @@ export default function EmployeesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-6">
         <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
-        <p className="mt-4 text-slate-600">Caricamento dipendenti...</p>
+        <p className="mt-4 text-slate-600">Caricamento operai...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-6">
         <div className="flex items-center gap-2 text-red-500">
           <AlertCircle className="h-6 w-6" />
           <h3 className="text-lg font-semibold">Errore di caricamento</h3>
@@ -104,63 +103,62 @@ export default function EmployeesPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dipendenti</h1>
-          <p className="text-slate-500">Gestione dipendenti</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Operai</h1>
         </div>
         <Link href={paths.addEmployee}>
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
-            Aggiungi dipendente
+            Aggiungi Operaio
           </Button>
         </Link>
       </div>
       <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
-          <Input type="search" placeholder="Cerca dipendenti..." className="pl-8" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input type="search" placeholder="Cerca operaio..." className="pl-8 w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
-      <div className="rounded-md border shadow-sm bg-white">
+      <div className="rounded-md border shadow-sm bg-white overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>Salario giornaliero</TableHead>
-              <TableHead>Tot. Giornate</TableHead>
-              <TableHead>Salario mezza giornata</TableHead>
-              <TableHead>Tot. Mezze giornate</TableHead>
-              <TableHead>Tot. da pagare</TableHead>
-              <TableHead>Attivo</TableHead>
-              <TableHead className="text-right">Azioni</TableHead>
+              <TableHead className="min-w-[120px]">Nome</TableHead>
+              <TableHead className="min-w-[100px]">Salario g.</TableHead>
+              <TableHead className="min-w-[80px]">Tot. G.</TableHead>
+              <TableHead className="min-w-[100px]">Salario 1/2g.</TableHead>
+              <TableHead className="min-w-[80px]">Tot. 1/2g.</TableHead>
+              <TableHead className="min-w-[100px]">Tot. da pagare</TableHead>
+              <TableHead className="min-w-[80px]">Attivo</TableHead>
+              <TableHead className="text-right min-w-[100px]">Azioni</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {employees.length > 0 ? (
               employees.map((employee) => (
                 <TableRow key={employee.id}>
-                  <TableCell>{employee.name}</TableCell>
+                  <TableCell className="font-medium">{employee.name}</TableCell>
                   <TableCell>€{employee.dailyRate}</TableCell>
                   <TableCell>{employee.fullDays}</TableCell>
                   <TableCell>€{employee.halfDayRate}</TableCell>
                   <TableCell>{employee.halfDays}</TableCell>
                   <TableCell>€{employee.toPay}</TableCell>
                   <TableCell>
-                  {employee.isActive ? (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      Attivo
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                      Disabilitato
-                    </Badge>
-                  )}
-                </TableCell>
+                    {employee.isActive ? (
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 whitespace-nowrap">
+                        Attivo
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 whitespace-nowrap">
+                        Disabilitato
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Link href={`${paths.employeeId(employee.id)}`}>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" className="whitespace-nowrap">
                         <Eye className="mr-2 h-4 w-4" />
                         Dettagli
                       </Button>
@@ -171,14 +169,14 @@ export default function EmployeesPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-4 text-slate-500">
-                  Nessun dipendente trovato. Aggiungi il tuo primo dipendente!
+                  Nessun operaio trovato. Aggiungi il tuo primo operaio!
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t gap-4">
             <div className="flex items-center gap-2">
               <p className="text-sm text-slate-600">
                 Pagina {currentPage} di {totalPages}
@@ -190,6 +188,7 @@ export default function EmployeesPage() {
                 size="sm"
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1}
+                className="whitespace-nowrap"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Precedente
@@ -199,6 +198,7 @@ export default function EmployeesPage() {
                 size="sm"
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
+                className="whitespace-nowrap"
               >
                 Successiva
                 <ChevronRight className="h-4 w-4" />
