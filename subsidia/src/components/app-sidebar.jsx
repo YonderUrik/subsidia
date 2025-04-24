@@ -13,6 +13,7 @@ import {
   Map,
   PieChart,
   Settings2,
+  Sprout,
   SquareTerminal,
   Users,
 } from "lucide-react"
@@ -51,6 +52,30 @@ const data = {
         {
           title: "Calendario",
           url: paths.calendar,
+        },
+      ],
+    },
+    {
+      title: "Gestione Raccolti",
+      url: "#",
+      icon: Sprout,
+      isActive: false,
+      items: [
+        {
+          title: "Panoramica",
+          url: paths.harvests,
+        },
+        {
+          title: "Raccolti",
+          url: paths.harvestsList,
+        },
+        {
+          title: "Terreni",
+          url: paths.lands,
+        },
+        {
+          title: "Statistiche",
+          url: paths.harvestsStats,
         },
       ],
     },

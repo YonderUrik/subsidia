@@ -4,12 +4,13 @@ import { redirect } from "next/navigation"
 import { paths } from "@/lib/paths"
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, Users } from "lucide-react"
+import { Plus, Sprout, Users } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import axios from "axios"
 export default function DashboardPage() {
    const { data: session, status } = useSession()
+   const currentYear = new Date().getFullYear()
 
    useEffect(() => {
       if (status === "loading") {
@@ -25,16 +26,17 @@ export default function DashboardPage() {
       totalSalaries: 0,
       totalToPay: 0
    })
+
    const [employeesStatsLoading, setEmployeesStatsLoading] = useState(false)
 
    const getEmployeesStats = useCallback(async () => {
-      try{
+      try {
          setEmployeesStatsLoading(true)
          const response = await axios.get('/api/employees-stats')
          const data = await response.data
          setEmployeesStats(data)
          setEmployeesStatsLoading(false)
-      }catch(error){
+      } catch (error) {
          console.error("Error fetching employees stats:", error)
          setEmployeesStatsLoading(false)
       }
@@ -51,6 +53,8 @@ export default function DashboardPage() {
          {/* Main Modules */}
          <h2 className="text-xl font-semibold tracking-tight mt-6 text-slate-900">Moduli</h2>
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* Gestione Paghe */}
             <Card className="hover:shadow-md transition-shadow">
                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -65,7 +69,7 @@ export default function DashboardPage() {
                         {employeesStatsLoading ? (
                            <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
                         ) : (
-                           <span className="font-medium text-emerald-600">{employeesStats.activeEmployees}</span>
+                           <span className="font-medium ">{employeesStats.activeEmployees}</span>
                         )}
                      </div>
                      <div className="flex justify-between text-sm">
@@ -73,7 +77,7 @@ export default function DashboardPage() {
                         {employeesStatsLoading ? (
                            <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
                         ) : (
-                           <span className="font-medium text-blue-600">{employeesStats.totalSalaries}</span>
+                           <span className="font-medium">{employeesStats.totalSalaries}</span>
                         )}
                      </div>
                      <div className="flex justify-between text-sm">
@@ -81,7 +85,7 @@ export default function DashboardPage() {
                         {employeesStatsLoading ? (
                            <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
                         ) : (
-                           <span className="font-semibold text-lg text-rose-600">€{employeesStats.totalToPay.toLocaleString('it-IT', {minimumFractionDigits: 2})}</span>
+                           <span className="font-semibold text-lg text-rose-600">€{employeesStats.totalToPay.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
                         )}
                      </div>
                   </div>
@@ -96,6 +100,39 @@ export default function DashboardPage() {
                </CardFooter>
             </Card>
 
+            {/* Gestione Raccolti */}
+            <Card className="hover:shadow-md transition-shadow">
+               <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                     <Sprout className="h-5 w-5 text-blue-600" />
+                     Gestione Raccolti {currentYear}
+                  </CardTitle>
+               </CardHeader>
+               <CardContent>
+                  <div className="space-y-2">
+                     <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Terreni coltivati</span>
+                        <span className="font-medium ">10 Ha</span>
+                     </div>
+                     <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Tot. Raccolto</span>
+                        <span className="font-medium ">1000 Kg</span>
+                     </div>
+                     <div className="flex justify-between text-sm">
+                        <span className="text-slate-500">Tot. Guadagnato</span>
+                        <span className="font-semibold text-lg text-green-600 ">€ 1000</span>
+                     </div>
+                  </div>
+               </CardContent>
+               <CardFooter>
+                  <Link href={paths.salaryBatchEntry} className="w-full">
+                     <Button className="w-full hover:bg-blue-700">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Aggiungi Raccolto
+                     </Button>
+                  </Link>
+               </CardFooter>
+            </Card>
 
          </div>
       </div>
