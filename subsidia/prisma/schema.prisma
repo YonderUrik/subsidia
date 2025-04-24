@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// Modelli di Dati
+model User {
+  id        String                    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String                    @unique
+  password  String
+  image     String?
+  isOnline  Boolean                   @default(false)
+  isActive  Boolean                   @default(true)
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
+  authCodes UserAuthenticationCodes[]
+  employee  Employee[]
+  salaries  Salary[]
+}
+
+model Employee {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  dailyRate   Float
+  halfDayRate Float
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  salaries    Salary[]
+}
+
+model Salary {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  employeeId   String   @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  workedDay    DateTime
+  workType     String // fullDay, halfDay
+  salaryAmount Float
+  extras       Float
+  total        Float
+  payedAmount  Float
+  isPaid       Boolean  @default(false)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model UserAuthenticationCodes {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  code      String
+  type      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
