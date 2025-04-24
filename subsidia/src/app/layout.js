@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { config } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata = {
   title: config.appName,
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
       <meta name="apple-mobile-web-app-title" content="Subsidia" />
       <link rel="manifest" href="/site.webmanifest" />
       <body>
+        <Analytics />
         <Suspense fallback={
           <div className="flex min-h-screen items-center justify-center">
             <div className="flex flex-col items-center gap-4">
