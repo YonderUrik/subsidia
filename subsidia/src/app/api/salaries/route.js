@@ -422,3 +422,55 @@ export async function PATCH(request) {
       );
    }
 }
+
+export async function DELETE(request) {
+   try {
+      // Get user session
+      const session = await getServerSession(authOptions);
+
+      if (!session) {
+         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Get salary ID from query parameter
+      const { searchParams } = new URL(request.url);
+      const salaryId = searchParams.get("id");
+
+      if (!salaryId) {
+         return NextResponse.json({ error: 'ID salario mancante' }, { status: 400 });
+      }
+
+      // Verify the salary exists and belongs to the current user
+      const salary = await prisma.salary.findFirst({
+         where: {
+            id: salaryId,
+            userId: session.user.id
+         }
+      });
+
+      if (!salary) {
+         return NextResponse.json({ error: 'Salario non trovato' }, { status: 404 });
+      }
+
+      // Delete the salary
+      await prisma.salary.delete({
+         where: {
+            id: salaryId
+         }
+      });
+
+      return NextResponse.json({
+         message: "Salario eliminato con successo",
+         success: true
+      });
+
+   } catch (error) {
+      console.error('Error deleting salary:', error);
+      return NextResponse.json(
+         { error: 'Impossibile eliminare il salario', details: error.message },
+         { status: 500 }
+      );
+   }
+}
+
+
