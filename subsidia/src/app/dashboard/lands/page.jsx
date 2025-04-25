@@ -54,8 +54,8 @@ export default function LandsPage() {
    }, [getLands])
 
    return (
-      <div className="container py-6 px-6">
-         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex min-h-screen flex-col px-6 py-6">
+         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
                <h1 className="text-3xl font-bold tracking-tight">Terreni</h1>
                <p className="text-muted-foreground">Gestione dei tuoi terreni e calcolo automatico delle aree</p>
@@ -105,7 +105,7 @@ export default function LandsPage() {
                         <CardDescription>Gestione dei tuoi terreni e dei loro dettagli</CardDescription>
                      </CardHeader>
                      <CardContent>
-                        <LandsList lands={lands} />
+                        <LandsList lands={lands} refreshData={getLands} />
                      </CardContent>
                   </Card>
                </TabsContent>

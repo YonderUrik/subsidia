@@ -64,6 +64,56 @@ const mapStyles = `
   .leaflet-draw {
     margin-top: 12px;
   }
+  
+  /* Improve draw control buttons */
+  .leaflet-draw-toolbar a {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    margin-bottom: 5px;
+  }
+  
+  .leaflet-draw-toolbar a:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Add tooltips for better usability */
+  .leaflet-draw-toolbar a[title]:after {
+    content: attr(title);
+    position: absolute;
+    left: 40px;
+    top: 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  
+  .leaflet-draw-toolbar a[title]:hover:after {
+    opacity: 1;
+  }
+  
+  /* Make actions more visible */
+  .leaflet-draw-actions {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  .leaflet-draw-actions a {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .leaflet-draw-actions a:hover {
+    background-color: #f0f0f0;
+    color: #000;
+  }
 `;
 
 // Create a safe wrapper for the MapContainer
@@ -108,8 +158,7 @@ const LocateButton = () => {
                }
             },
             (error) => {
-               console.error('Error getting location:', error)
-               alert('Could not get your location. Please check your browser permissions.')
+               alert('Non è stato possibile ottenere la tua posizione. Per favore controlla le tue autorizzazioni del browser.')
             }
          )
       }
@@ -160,6 +209,117 @@ export default function LandFormMap({ setArea, setCoordinates }) {
       // Check if react-leaflet-draw is available
       import("react-leaflet-draw").then(() => {
          setDrawControlsLoaded(true)
+         
+         // Customize Leaflet.draw strings to Italian
+         if (L.drawLocal) {
+            // Draw toolbar
+            L.drawLocal.draw = {
+               toolbar: {
+                  actions: {
+                     title: 'Annulla disegno',
+                     text: 'Annulla'
+                  },
+                  finish: {
+                     title: 'Termina disegno',
+                     text: 'Termina'
+                  },
+                  undo: {
+                     title: 'Elimina ultimo punto',
+                     text: 'Elimina ultimo punto'
+                  },
+                  buttons: {
+                     polyline: 'Disegna una linea',
+                     polygon: 'Disegna un poligono',
+                     rectangle: 'Disegna un rettangolo',
+                     circle: 'Disegna un cerchio',
+                     marker: 'Posiziona un marcatore',
+                     circlemarker: 'Posiziona un marcatore circolare'
+                  }
+               },
+               handlers: {
+                  circle: {
+                     tooltip: {
+                        start: 'Clicca e trascina per disegnare un cerchio'
+                     },
+                     radius: 'Raggio'
+                  },
+                  circlemarker: {
+                     tooltip: {
+                        start: 'Clicca per posizionare un marcatore circolare'
+                     }
+                  },
+                  marker: {
+                     tooltip: {
+                        start: 'Clicca per posizionare un marcatore'
+                     }
+                  },
+                  polygon: {
+                     tooltip: {
+                        start: 'Clicca per iniziare a disegnare un poligono',
+                        cont: 'Clicca per continuare a disegnare il poligono',
+                        end: 'Clicca sul primo punto per chiudere il poligono'
+                     }
+                  },
+                  polyline: {
+                     error: '<strong>Errore:</strong> i bordi non possono incrociarsi!',
+                     tooltip: {
+                        start: 'Clicca per iniziare a disegnare una linea',
+                        cont: 'Clicca per continuare a disegnare la linea',
+                        end: 'Clicca sull\'ultimo punto per terminare la linea'
+                     }
+                  },
+                  rectangle: {
+                     tooltip: {
+                        start: 'Clicca e trascina per disegnare un rettangolo'
+                     }
+                  },
+                  simpleshape: {
+                     tooltip: {
+                        end: 'Rilascia il mouse per terminare il disegno'
+                     }
+                  }
+               }
+            };
+            
+            // Edit toolbar
+            L.drawLocal.edit = {
+               toolbar: {
+                  actions: {
+                     save: {
+                        title: 'Salva modifiche',
+                        text: 'Salva'
+                     },
+                     cancel: {
+                        title: 'Annulla modifiche',
+                        text: 'Annulla'
+                     },
+                     clearAll: {
+                        title: 'Cancella tutti i layer',
+                        text: 'Cancella tutto'
+                     }
+                  },
+                  buttons: {
+                     edit: 'Modifica layer',
+                     editDisabled: 'Nessun layer da modificare',
+                     remove: 'Elimina layer',
+                     removeDisabled: 'Nessun layer da eliminare'
+                  }
+               },
+               handlers: {
+                  edit: {
+                     tooltip: {
+                        text: 'Trascina i punti o i marcatori per modificare',
+                        subtext: 'Clicca annulla per annullare le modifiche'
+                     }
+                  },
+                  remove: {
+                     tooltip: {
+                        text: 'Clicca su un elemento per rimuoverlo'
+                     }
+                  }
+               }
+            };
+         }
       }).catch(err => {
          console.error("Failed to load react-leaflet-draw:", err)
       })
@@ -237,6 +397,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
             zoom={16}
             style={{ height: "100%", width: "100%" }}
             ref={mapRef}
+            attributionControl={false}
          >
             {/* Stadia.AlidadeSatellite view */}
             <TileLayer
@@ -265,6 +426,11 @@ export default function LandFormMap({ setArea, setCoordinates }) {
 
             <LocateButton />
          </SafeMapContainer>
+         
+         {/* Help text for users */}
+         <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-40 p-2 rounded-md text-sm text-center text-white">
+            <p>Disegna il tuo terreno utilizzando gli strumenti di disegno. Puoi creare un rettangolo o un poligono personalizzato.</p>
+         </div>
       </div>
    )
 }

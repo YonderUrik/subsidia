@@ -8,7 +8,7 @@ import { paths } from "@/lib/paths"
 
 export default function NewLandPage() {
    return (
-      <div className="flex min-h-screen flex-col container px-6">
+      <div className="flex min-h-screen flex-col px-6 py-6">
          <div className="mb-6 flex items-center gap-2">
             <Link href={paths.lands}>
                <Button variant="outline" size="icon">

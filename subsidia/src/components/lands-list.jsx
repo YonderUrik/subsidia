@@ -18,8 +18,9 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { paths } from "@/lib/paths"
 import { DeleteConfirmation } from "@/components/delete-confirmation"
+import { Badge } from "./ui/badge"
 
-export function LandsList({ lands }) {
+export function LandsList({ lands, refreshData }) {
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
    const [landToDelete, setLandToDelete] = useState(null)
    const [isDeleting, setIsDeleting] = useState(false)
@@ -29,18 +30,50 @@ export function LandsList({ lands }) {
 
       try {
          setIsDeleting(true)
-         await axios.delete("/api/distinct-lands-year", {
+         await axios.delete("/api/lands", {
             data: { id: landToDelete.id }
          })
          toast.success("Campo eliminato con successo")
-         // Refresh the page to update the list
-         window.location.reload()
+         refreshData?.()
       } catch (error) {
          toast.error(error.response?.data?.error || "Errore durante l'eliminazione del campo")
       } finally {
          setIsDeleting(false)
          setIsDeleteDialogOpen(false)
          setLandToDelete(null)
+      }
+   }
+
+   const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false)
+   const [isTogglingStatus, setIsTogglingStatus] = useState(false)
+   const [isStatusUpdated, setIsStatusUpdated] = useState(false)
+   const [landToDisable, setLandToDisable] = useState(null)
+
+   const handleToggleStatus = async () => {
+      if (!landToDisable) return
+
+      try {
+         setIsTogglingStatus(true)
+         await axios.patch("/api/lands", {
+            id: landToDisable.id,
+            isActive: !landToDisable.isActive
+         })
+         toast.success(landToDisable.isActive ? "Campo disattivato con successo" : "Campo attivato con successo")
+         setIsTogglingStatus(false)
+         setIsDisableDialogOpen(false)
+         setIsStatusUpdated(true)
+
+         refreshData?.()
+
+         setLandToDisable(prev => ({
+            ...prev,
+            isActive: !prev.isActive
+         }))
+      } catch (error) {
+         toast.error(error.response?.data?.error || "Errore durante la modifica dello stato del campo")
+      } finally {
+         setIsTogglingStatus(false)
+         setIsDisableDialogOpen(false)
       }
    }
 
@@ -53,6 +86,7 @@ export function LandsList({ lands }) {
                   <TableHead className="text-right">Area (ha)</TableHead>
                   <TableHead>Tipo di suolo</TableHead>
                   <TableHead>Ultimo Raccolto</TableHead>
+                  <TableHead>Stato</TableHead>
                   <TableHead className="text-right">Azioni</TableHead>
                </TableRow>
             </TableHeader>
@@ -67,6 +101,13 @@ export function LandsList({ lands }) {
                      <TableCell className="text-right">{land.area.toFixed(2)}</TableCell>
                      <TableCell>{land.soilType}</TableCell>
                      <TableCell>{land.lastHarvest}</TableCell>
+                     <TableCell>
+                        {land.isActive ? (
+                           <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Attivo</Badge>
+                        ) : (
+                           <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Disattivo</Badge>
+                        )}
+                     </TableCell>
                      <TableCell className="text-right">
                         <DropdownMenu>
                            <DropdownMenuTrigger asChild>
@@ -84,7 +125,10 @@ export function LandsList({ lands }) {
                                  </Link>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem >
+                              <DropdownMenuItem onClick={() => {
+                                 setLandToDisable(land)
+                                 setIsDisableDialogOpen(true)
+                              }}>
                                  Disattiva
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => {
@@ -113,6 +157,22 @@ export function LandsList({ lands }) {
             description={`Sei sicuro di voler eliminare il campo "${landToDelete?.name}"? Questa azione non può essere annullata.`}
             isDeleting={isDeleting}
          />
+
+         <DeleteConfirmation
+            isOpen={isDisableDialogOpen}
+            onClose={() => setIsDisableDialogOpen(false)}
+            onConfirm={handleToggleStatus}
+            title={landToDisable?.isActive ? "Disabilita campo" : "Abilita campo"}
+            description={
+               !landToDisable?.isActive
+                  ? `Sei sicuro di voler disabilitare il campo "${landToDisable?.name}"? Questo impedirà di essere assegnato a nuovi lavori e non comparirà nelle liste degli operai attivi.`
+                  : `Sei sicuro di voler abilitare il campo "${landToDisable?.name}"? Questo consentirà di essere assegnato a nuovi lavori e comparirà nelle liste degli operai attivi.`
+            }
+            isDeleting={isTogglingStatus}
+            confirmButtonText={landToDisable?.isActive ? "Disabilita" : "Abilita"}
+            confirmButtonVariant={landToDisable?.isActive ? "default" : "secondary"}
+         />
+
       </div>
    )
 }

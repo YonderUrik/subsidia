@@ -53,14 +53,6 @@ export function LandsMap({ lands }) {
 
          <div className="relative">
             <MapWithNoSSR lands={lands} />
-
-            <div className="absolute bottom-24 right-4 z-[400]">
-               <Link href="/lands/new">
-                  <Button size="icon" className="h-10 w-10 rounded-full shadow-md">
-                     <Plus size={18} />
-                  </Button>
-               </Link>
-            </div>
          </div>
       </>
    )

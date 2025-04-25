@@ -35,23 +35,3 @@ export async function GET() {
       );
    }
 }
-
-export async function DELETE(request) {
-   try {
-      const session = await getServerSession(authOptions)
-      if (!session) {
-         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      }
-
-      const { id } = await request.json()
-
-      await prisma.land.delete({
-         where: { id, userId: session.user.id }
-      })
-
-      return NextResponse.json({ message: "Campo eliminato con successo" }, { status: 200 })
-   } catch (error) {
-      console.error("Errore nell'eliminazione del campo:", error)
-      return NextResponse.json({ error: "Errore nell'eliminazione del campo" }, { status: 500 })
-   }
-}
