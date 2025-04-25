@@ -18,6 +18,10 @@ export async function GET(request) {
       // Get date range params
       const fromDate = searchParams.get("from");
       const toDate = searchParams.get("to");
+      
+      // Pagination parameters
+      const page = searchParams.get("page") ? parseInt(searchParams.get("page")) : null;
+      const pageSize = searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")) : null;
 
       // Get distinct years
       const distinctYearsResult = await prisma.salary.findMany({
@@ -40,32 +44,75 @@ export async function GET(request) {
       if (fromDate && toDate) {
          dateFilter = {
             workedDay: {
-               gte: new Date(fromDate),
-               lte: new Date(toDate)
+               gte: fromDate,
+               lt: toDate
             }
          };
       }
-
-      let salaries = await prisma.salary.findMany({
-         where: {
-            userId: session.user.id,
-            ...dateFilter,
-            ...(search && {
-               employee: {
-                  name: {
-                     contains: search,
-                     mode: "insensitive"
-                  }
+      
+      // Define base filter conditions
+      const baseFilter = {
+         userId: session.user.id,
+         ...dateFilter,
+         ...(search && {
+            employee: {
+               name: {
+                  contains: search,
+                  mode: "insensitive"
                }
-            })
-         },
+            }
+         })
+      };
+      
+      // Get total count for pagination - this needs to account for grouping
+      let totalCount = 0;
+      
+      if (groupBy === 'day') {
+         totalCount = await prisma.salary.count({
+            where: baseFilter
+         });
+      }
+      
+      // Create query object
+      const baseQuery = {
+         where: baseFilter,
          include: {
             employee: true
          },
          orderBy: {
             workedDay: 'desc'
          }
+      };
+      
+      // For grouped results, we need to fetch all data first, then group and paginate in memory
+      // Only apply database-level pagination for day grouping (no grouping)
+      const shouldPaginateInDb = groupBy === 'day' && page !== null && pageSize !== null;
+      
+      if (shouldPaginateInDb) {
+         baseQuery.skip = (page - 1) * pageSize;
+         baseQuery.take = pageSize;
+      }
+      
+      // Fetch all salaries data for totals calculation
+      const allSalariesForTotals = await prisma.salary.findMany({
+         where: baseFilter,
+         select: {
+            salaryAmount: true,
+            extras: true,
+            total: true,
+            payedAmount: true
+         }
       });
+      
+      // Calculate totals from ALL matching records
+      const totalPayed = allSalariesForTotals.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
+      const totalToPay = allSalariesForTotals.reduce((sum, salary) => {
+         const difference = salary.total - (salary.payedAmount || 0);
+         return sum + (difference > 0 ? difference : 0);
+      }, 0);
+
+      // Fetch the actual data for display
+      let salaries = await prisma.salary.findMany(baseQuery);
 
       if (groupBy !== 'day') {
          const groupedSalaries = salaries.reduce((acc, salary) => {
@@ -121,20 +168,26 @@ export async function GET(request) {
          }, {});
 
          salaries = Object.values(groupedSalaries);
+         
+         // Calculate total count for grouped results
+         totalCount = salaries.length;
+         
+         // Apply pagination to grouped results if needed
+         if (page !== null && pageSize !== null) {
+            const startIndex = (page - 1) * pageSize;
+            salaries = salaries.slice(startIndex, startIndex + pageSize);
+         }
       }
-
-      // Calculate totals
-      const totalPayed = salaries.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
-      const totalToPay = salaries.reduce((sum, salary) => {
-         const difference = salary.total - (salary.payedAmount || 0);
-         return sum + (difference > 0 ? difference : 0);
-      }, 0);
 
       return NextResponse.json({
          data: salaries,
          years,
          totalPayed,
          totalToPay,
+         totalCount,
+         page: page !== null ? page : 1,
+         pageSize: pageSize !== null ? pageSize : totalCount,
+         totalPages: pageSize !== null ? Math.ceil(totalCount / pageSize) : 1,
          success: true
       });
    } catch (error) {

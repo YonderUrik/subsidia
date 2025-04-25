@@ -15,6 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import axios from "axios"
 import { toast } from "sonner"
 import { debounce } from "lodash"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
 
 import {
    AlertDialog,
@@ -26,6 +29,10 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+
+// Initialize dayjs plugins
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const months = [
    "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -63,25 +70,71 @@ export default function SalaryPage() {
          let fromDate, toDate;
          
          if (periodType === "month") {
-            // First day of selected month
-            fromDate = new Date(Date.UTC(year, parseInt(selectedMonth), 1, 0, 0, 0, 0));
-            // First day of next month
-            toDate = new Date(Date.UTC(year, parseInt(selectedMonth) + 1, 1, 0, 0, 0, 0));
+            // First create dates in local timezone, then convert to UTC
+            const startYear = parseInt(year);
+            const startMonth = parseInt(selectedMonth);
+            
+            // Start of month in local timezone
+            fromDate = dayjs()
+               .year(startYear)
+               .month(startMonth)
+               .date(1)
+               .hour(0)
+               .minute(0)
+               .second(0)
+               .millisecond(0)
+               // Convert to UTC
+               .utc()
+               .format();
+            
+            // Start of next month in local timezone
+            toDate = dayjs()
+               .year(startMonth === 11 ? startYear + 1 : startYear)
+               .month(startMonth === 11 ? 0 : startMonth + 1)
+               .date(1)
+               .hour(0)
+               .minute(0)
+               .second(0)
+               .millisecond(0)
+               // Convert to UTC
+               .utc()
+               .format();
          } else if (periodType === "year") {
-            // First day of selected year
-            fromDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
-            // First day of next year
-            toDate = new Date(Date.UTC(parseInt(year) + 1, 0, 1, 0, 0, 0, 0));
+            // Start of year in local timezone
+            fromDate = dayjs()
+               .year(parseInt(year))
+               .month(0)
+               .date(1)
+               .hour(0)
+               .minute(0)
+               .second(0)
+               .millisecond(0)
+               // Convert to UTC
+               .utc()
+               .format();
+            
+            // Start of next year in local timezone
+            toDate = dayjs()
+               .year(parseInt(year) + 1)
+               .month(0)
+               .date(1)
+               .hour(0)
+               .minute(0)
+               .second(0)
+               .millisecond(0)
+               // Convert to UTC
+               .utc()
+               .format();
          } else {
-            // All time - use very distant dates
-            fromDate = new Date(Date.UTC(2000, 0, 1, 0, 0, 0, 0));
-            toDate = new Date(Date.UTC(2100, 0, 1, 0, 0, 0, 0));
+            // All time - use distant dates (local to UTC)
+            fromDate = dayjs('2000-01-01').utc().format();
+            toDate = dayjs('2100-01-01').utc().format();
          }
          
          const response = await axios.get('/api/salaries', {
             params: {
-               from: fromDate.toISOString(),
-               to: toDate.toISOString(),
+               from: fromDate,
+               to: toDate,
                search: search,
                groupBy: groupBy,
                page: currentPage,

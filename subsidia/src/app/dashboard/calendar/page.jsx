@@ -23,6 +23,13 @@ import {
 import { paths } from "@/lib/paths"
 import { toast } from "sonner"
 import axios from "axios"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
+
+// Initialize dayjs plugins
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 export default function CalendarPage() {
    const [currentDate, setCurrentDate] = useState(new Date())
@@ -37,13 +44,35 @@ export default function CalendarPage() {
       try {
          setIsLoading(true)
          
-         // Calculate first and last day of current month
-         const firstDayOfMonth = startOfMonth(currentDate)
-         const lastDayOfMonth = endOfMonth(currentDate)
+         // Get the current month from the date
+         const currentMonth = dayjs(currentDate).month()
+         const currentYear = dayjs(currentDate).year()
          
-         // Format dates as ISO strings
-         const fromDate = firstDayOfMonth.toISOString()
-         const toDate = lastDayOfMonth.toISOString()
+         // First day of month - first create in local timezone, then convert to UTC
+         const fromDate = dayjs()
+            .year(currentYear)
+            .month(currentMonth)
+            .date(1)
+            .hour(0)
+            .minute(0)
+            .second(0)
+            .millisecond(0)
+            // Convert to UTC
+            .utc()
+            .format()
+         
+         // First day of next month - first create in local timezone, then convert to UTC
+         const toDate = dayjs()
+            .year(currentMonth === 11 ? currentYear + 1 : currentYear)
+            .month(currentMonth === 11 ? 0 : currentMonth + 1)
+            .date(1)
+            .hour(0)
+            .minute(0)
+            .second(0)
+            .millisecond(0)
+            // Convert to UTC
+            .utc()
+            .format()
          
          const response = await axios.get('/api/salaries', {
             params: {
