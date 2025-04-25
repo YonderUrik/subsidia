@@ -59,11 +59,29 @@ export default function SalaryPage() {
       setIsLoading(true)
       setError(null)
       try {
+         // Calculate date range based on selected period
+         let fromDate, toDate;
+         
+         if (periodType === "month") {
+            // First day of selected month
+            fromDate = new Date(Date.UTC(year, parseInt(selectedMonth), 1, 0, 0, 0, 0));
+            // First day of next month
+            toDate = new Date(Date.UTC(year, parseInt(selectedMonth) + 1, 1, 0, 0, 0, 0));
+         } else if (periodType === "year") {
+            // First day of selected year
+            fromDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+            // First day of next year
+            toDate = new Date(Date.UTC(parseInt(year) + 1, 0, 1, 0, 0, 0, 0));
+         } else {
+            // All time - use very distant dates
+            fromDate = new Date(Date.UTC(2000, 0, 1, 0, 0, 0, 0));
+            toDate = new Date(Date.UTC(2100, 0, 1, 0, 0, 0, 0));
+         }
+         
          const response = await axios.get('/api/salaries', {
             params: {
-               periodRange: periodType,
-               year: parseInt(year),
-               month: parseInt(selectedMonth) + 1,
+               from: fromDate.toISOString(),
+               to: toDate.toISOString(),
                search: search,
                groupBy: groupBy,
                page: currentPage,

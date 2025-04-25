@@ -36,11 +36,19 @@ export default function CalendarPage() {
    const getWorkEntries = useCallback(async () => {
       try {
          setIsLoading(true)
+         
+         // Calculate first and last day of current month
+         const firstDayOfMonth = startOfMonth(currentDate)
+         const lastDayOfMonth = endOfMonth(currentDate)
+         
+         // Format dates as ISO strings
+         const fromDate = firstDayOfMonth.toISOString()
+         const toDate = lastDayOfMonth.toISOString()
+         
          const response = await axios.get('/api/salaries', {
             params: {
-               periodRange: "month",
-               year: currentDate.getFullYear(),
-               month: currentDate.getMonth() + 1
+               from: fromDate,
+               to: toDate
             }
          })
          const data = response.data
