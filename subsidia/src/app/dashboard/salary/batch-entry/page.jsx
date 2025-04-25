@@ -17,13 +17,16 @@ import { paths } from "@/lib/paths"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Select } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export default function BatchEntryPage() {
    const [selectedEmployees, setSelectedEmployees] = useState([])
    const [dateRange, setDateRange] = useState({
       from: new Date(),
-      to: addDays(new Date(), 0),
+      to: new Date(),
    })
+   const [dateMode, setDateMode] = useState("single")
    const [workType, setWorkType] = useState("fullDay")
    const [extras, setExtras] = useState(0)
    const [notes, setNotes] = useState("")
@@ -33,12 +36,27 @@ export default function BatchEntryPage() {
    const [employees, setEmployees] = useState([])
    const router = useRouter()
 
+   const resetForm = () => {
+      setSelectedEmployees([])
+      setDateRange({
+         from: new Date(),
+         to: new Date(),
+      })
+      setDateMode("single")
+      setWorkType("fullDay")
+      setExtras(0)
+      setNotes("")
+      setIsPaid(false)
+   }
+
    useEffect(() => {
       const fetchEmployees = async () => {
          try {
             const response = await axios.get("/api/distinct-employees?isActive=true")
             const data = response.data
-            setEmployees(data)
+            // Sort employees by name in ascending order
+            const sortedEmployees = [...data].sort((a, b) => a.name.localeCompare(b.name))
+            setEmployees(sortedEmployees)
          } catch (error) {
             console.error("Error fetching employees:", error)
             toast.error(error.response.data.error || "Impossibile caricare gli operai. Riprova più tardi.")
@@ -95,17 +113,11 @@ export default function BatchEntryPage() {
             }
          }
 
-         // Create all salary entries
-         await Promise.all(
-            entries.map((entry) =>
-               axios.post("/api/salaries", entry)
-            )
-         )
+         await axios.post("/api/salaries", { entries })
 
          toast.success("Entrate di lavoro create con successo")
 
-         router.push(paths.salary)
-         router.refresh()
+         resetForm()
 
       } catch (error) {
          console.error("Error creating entries:", error)
@@ -153,8 +165,12 @@ export default function BatchEntryPage() {
                         </TableHeader>
                         <TableBody>
                            {employees.map((employee) => (
-                              <TableRow key={employee.id}>
-                                 <TableCell>
+                              <TableRow 
+                                 key={employee.id} 
+                                 className="cursor-pointer hover:bg-slate-50"
+                                 onClick={() => handleEmployeeToggle(employee.id)}
+                              >
+                                 <TableCell onClick={(e) => e.stopPropagation()}>
                                     <Checkbox
                                        checked={selectedEmployees.includes(employee.id)}
                                        onCheckedChange={() => handleEmployeeToggle(employee.id)}
@@ -183,6 +199,27 @@ export default function BatchEntryPage() {
                      <CardContent className="space-y-4">
                         <div className="space-y-2">
                            <Label>Periodo</Label>
+                           <div className="flex items-center space-x-4 mb-2">
+                              <RadioGroup 
+                                 value={dateMode} 
+                                 onValueChange={(value) => {
+                                    setDateMode(value)
+                                    if (value === "single") {
+                                       setDateRange(prev => ({...prev, to: prev.from}))
+                                    }
+                                 }}
+                                 className="flex space-x-4"
+                              >
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="single" id="single" />
+                                    <Label htmlFor="single">Giorno Singolo</Label>
+                                 </div>
+                                 <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="range" id="range" />
+                                    <Label htmlFor="range">Intervallo</Label>
+                                 </div>
+                              </RadioGroup>
+                           </div>
                            <Popover>
                               <PopoverTrigger asChild>
                                  <Button
@@ -191,7 +228,7 @@ export default function BatchEntryPage() {
                                  >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     {dateRange?.from ? (
-                                       dateRange.to ? (
+                                       dateMode === "range" && dateRange.to && dateRange.from.getTime() !== dateRange.to.getTime() ? (
                                           <>
                                              {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
                                           </>
@@ -206,10 +243,16 @@ export default function BatchEntryPage() {
                               <PopoverContent className="w-auto p-0" align="start">
                                  <Calendar
                                     initialFocus
-                                    mode="range"
+                                    mode={dateMode === "single" ? "single" : "range"}
                                     defaultMonth={dateRange?.from}
-                                    selected={dateRange}
-                                    onSelect={setDateRange}
+                                    selected={dateMode === "single" ? dateRange.from : dateRange}
+                                    onSelect={(value) => {
+                                       if (dateMode === "single") {
+                                          setDateRange({ from: value, to: value })
+                                       } else {
+                                          setDateRange(value)
+                                       }
+                                    }}
                                     numberOfMonths={2}
                                  />
                               </PopoverContent>

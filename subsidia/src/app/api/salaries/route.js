@@ -18,6 +18,10 @@ export async function GET(request) {
       const periodRange = searchParams.get("periodRange") || "month";
       const year = searchParams.get("year") || new Date().getFullYear();
       const month = searchParams.get("month") || new Date().getMonth();
+      
+      // Pagination parameters
+      const page = searchParams.get("page") ? parseInt(searchParams.get("page")) : null;
+      const pageSize = searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")) : null;
 
       // Get distinct years
       const distinctYearsResult = await prisma.salary.findMany({
@@ -37,14 +41,20 @@ export async function GET(request) {
 
       const getDateRange = (periodRange, year, month) => {
          if (periodRange === "month") {
-            const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
-            const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+            // Create dates in Rome timezone (UTC+1/+2)
+            const startDate = new Date(year, month - 1, 1);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(year, month, 1); 
+            endDate.setHours(0, 0, 0, 0);
             return { startDate, endDate };
          }
          
          if (periodRange === "year") {
-            const startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
-            const endDate = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0, 0));
+            // Create dates in Rome timezone (UTC+1/+2)
+            const startDate = new Date(year, 0, 1);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(year + 1, 0, 1);
+            endDate.setHours(0, 0, 0, 0);
             return { startDate, endDate };
          }
          
@@ -53,32 +63,76 @@ export async function GET(request) {
 
       const dateRange = getDateRange(periodRange, parseInt(year), parseInt(month));
 
-      let salaries = await prisma.salary.findMany({
-         where: {
-            userId: session.user.id,
-            ...(dateRange && {
-               workedDay: {
-                  gte: dateRange.startDate,
-                  lt: dateRange.endDate
+      // Define base query filter conditions - used for both data fetching and totals calculation
+      const baseFilter = {
+         userId: session.user.id,
+         ...(dateRange && {
+            workedDay: {
+               gte: dateRange.startDate,
+               lt: dateRange.endDate
+            }
+         }),
+         ...(search && {
+            employee: {
+               name: {
+                  contains: search,
+                  mode: "insensitive"
                }
-            }),
-            ...(search && {
-               employee: {
-                  name: {
-                     contains: search,
-                     mode: "insensitive"
-                  }
-               }
-            })
-         },
+            }
+         })
+      };
+
+      // Create the base query 
+      const baseQuery = {
+         where: baseFilter,
          include: {
             employee: true
          },
          orderBy: {
             workedDay: 'desc'
          }
+      };
+
+      // For grouped results, we need to fetch all data first, then group and paginate in memory
+      // Only apply database-level pagination for day grouping (no grouping)
+      const shouldPaginateInDb = groupBy === 'day' && page !== null && pageSize !== null;
+      
+      if (shouldPaginateInDb) {
+         baseQuery.skip = (page - 1) * pageSize;
+         baseQuery.take = pageSize;
+      }
+
+      // Get total count for pagination - this needs to account for grouping
+      let totalCount = 0;
+      
+      if (groupBy === 'day') {
+         totalCount = await prisma.salary.count({
+            where: baseFilter
+         });
+      }
+
+      // Fetch all salaries data for calculating accurate totals
+      const allSalariesForTotals = await prisma.salary.findMany({
+         where: baseFilter,
+         select: {
+            salaryAmount: true,
+            extras: true,
+            total: true,
+            payedAmount: true
+         }
       });
 
+      // Calculate totals from ALL matching records
+      const totalPayed = allSalariesForTotals.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
+      const totalToPay = allSalariesForTotals.reduce((sum, salary) => {
+         const difference = salary.total - (salary.payedAmount || 0);
+         return sum + (difference > 0 ? difference : 0);
+      }, 0);
+
+      // Fetch salaries data for display (possibly paginated)
+      let salaries = await prisma.salary.findMany(baseQuery);
+
+      // Group by option other than day
       if (groupBy !== 'day') {
          const groupedSalaries = salaries.reduce((acc, salary) => {
             const workedDate = new Date(salary.workedDay);
@@ -133,20 +187,26 @@ export async function GET(request) {
          }, {});
 
          salaries = Object.values(groupedSalaries);
+         
+         // Calculate total count for grouped results
+         totalCount = salaries.length;
+         
+         // Apply pagination to grouped results if needed
+         if (page !== null && pageSize !== null) {
+            const startIndex = (page - 1) * pageSize;
+            salaries = salaries.slice(startIndex, startIndex + pageSize);
+         }
       }
-
-      // Calculate totals
-      const totalPayed = salaries.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
-      const totalToPay = salaries.reduce((sum, salary) => {
-         const difference = salary.total - (salary.payedAmount || 0);
-         return sum + (difference > 0 ? difference : 0);
-      }, 0);
 
       return NextResponse.json({
          data: salaries,
          years,
          totalPayed,
          totalToPay,
+         totalCount,
+         page: page !== null ? page : 1,
+         pageSize: pageSize !== null ? pageSize : totalCount,
+         totalPages: pageSize !== null ? Math.ceil(totalCount / pageSize) : 1,
          success: true
       });
    } catch (error) {
@@ -377,6 +437,54 @@ export async function PATCH(request) {
       console.error('Error updating salary:', error);
       return NextResponse.json(
          { error: 'Failed to update salary' },
+         { status: 500 }
+      );
+   }
+}
+
+export async function DELETE(request) {
+   try {
+      // Get user session
+      const session = await getServerSession(authOptions);
+
+      if (!session) {
+         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      const { searchParams } = new URL(request.url);
+      const salaryId = searchParams.get("id");
+
+      if (!salaryId) {
+         return NextResponse.json({ error: 'ID del salario mancante' }, { status: 400 });
+      }
+
+      // Verify the salary exists and belongs to the user
+      const salary = await prisma.salary.findFirst({
+         where: {
+            id: salaryId,
+            userId: session.user.id
+         }
+      });
+
+      if (!salary) {
+         return NextResponse.json({ error: 'Salario non trovato o non autorizzato' }, { status: 404 });
+      }
+
+      // Delete the salary
+      await prisma.salary.delete({
+         where: {
+            id: salaryId
+         }
+      });
+
+      return NextResponse.json({
+         message: "Salario eliminato con successo",
+         success: true
+      });
+   } catch (error) {
+      console.error('Error deleting salary:', error);
+      return NextResponse.json(
+         { error: 'Impossibile eliminare il salario' },
          { status: 500 }
       );
    }

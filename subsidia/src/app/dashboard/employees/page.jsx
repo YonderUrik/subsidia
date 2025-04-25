@@ -31,7 +31,7 @@ export default function EmployeesPage() {
         }
       })
       if (response.data.success) {
-        setEmployees(response.data.data)
+        setEmployees([...response.data.data].sort((a, b) => a.name.localeCompare(b.name)))
         setTotalPages(Math.ceil(response.data.total / pageSize))
       } else {
         setError('Failed to fetch employees')

@@ -11,8 +11,9 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     // Get number of active employees
-    const activeEmployees = await prisma.user.count({
+    const activeEmployees = await prisma.employee.count({
       where: {
+        userId: session.user.id,
         isActive: true
       }
     });
@@ -20,6 +21,7 @@ export async function GET() {
     // Get salaries data
     const salaries = await prisma.salary.findMany({
       where: {
+        userId: session.user.id,
         isPaid: false
       },
       include: {
