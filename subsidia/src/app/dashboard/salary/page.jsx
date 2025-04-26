@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarIcon, ChevronLeft, ChevronRight, Plus, Search, Trash2 } from "lucide-react"
+import { CalendarIcon, ChevronLeft, ChevronRight, Plus, Search, Trash2, Tag } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -30,6 +30,12 @@ import {
    AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from "@/components/ui/popover"
+
 // Initialize dayjs plugins
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -44,6 +50,9 @@ export default function SalaryPage() {
    const [periodType, setPeriodType] = useState("month") // month, year, all
    const [year, setYear] = useState(new Date().getFullYear())
    const [searchTerm, setSearchTerm] = useState("")
+   const [notesKeyword, setNotesKeyword] = useState("")
+   const [notesKeywordInput, setNotesKeywordInput] = useState("")
+   const [notesKeywords, setNotesKeywords] = useState([])
    const [salaries, setSalaries] = useState([])
    const [totalPayed, setTotalPayed] = useState(0)
    const [totalToPay, setTotalToPay] = useState(0)
@@ -136,6 +145,7 @@ export default function SalaryPage() {
                from: fromDate,
                to: toDate,
                search: search,
+               notesKeyword: notesKeyword,
                groupBy: groupBy,
                page: currentPage,
                pageSize: pageSize
@@ -149,30 +159,66 @@ export default function SalaryPage() {
          setYear(response.data.years[0])
          setTotalCount(response.data.totalCount)
          setTotalPages(response.data.totalPages)
+         
+         if (response.data.notesKeywords) {
+            setNotesKeywords(response.data.notesKeywords);
+         }
       } catch (error) {
          setError(error.response?.data?.error || "Errore nel caricamento delle giornate")
          toast.error(error.response?.data?.error || "Errore nel caricamento delle giornate")
       } finally {
          setIsLoading(false)
       }
-   }, [periodType, year, selectedMonth, groupBy, currentPage, pageSize])
+   }, [periodType, year, selectedMonth, groupBy, currentPage, pageSize, notesKeyword])
+
+   // Get notes keywords separately
+   useEffect(() => {
+      const fetchNotesKeywords = async () => {
+         try {
+            const response = await axios.get('/api/notes-keywords');
+            if (response.data.success) {
+               setNotesKeywords(response.data.data);
+            }
+         } catch (error) {
+            console.error('Error fetching notes keywords:', error);
+         }
+      };
+      
+      fetchNotesKeywords();
+   }, []);
 
    const debouncedSearch = useMemo(
       () => debounce((search) => getSalaries(search), 500),
       [getSalaries]
    )
 
+   // Debounced function for handling notes keyword input
+   const debouncedNotesSearch = useMemo(
+      () => debounce((value) => {
+         setNotesKeyword(value);
+      }, 500),
+      []
+   )
+
+   // Handle input change with debounce
+   const handleNotesInputChange = (e) => {
+      const value = e.target.value;
+      setNotesKeywordInput(value);
+      debouncedNotesSearch(value);
+   };
+
    useEffect(() => {
       debouncedSearch(searchTerm)
       return () => {
          debouncedSearch.cancel()
+         debouncedNotesSearch.cancel()
       }
    }, [debouncedSearch, searchTerm])
    
    // Reset to first page when filters change
    useEffect(() => {
       setCurrentPage(1)
-   }, [periodType, year, selectedMonth, groupBy, searchTerm])
+   }, [periodType, year, selectedMonth, groupBy, searchTerm, notesKeyword])
 
    const handlePageChange = (newPage) => {
       if (newPage >= 1 && newPage <= totalPages) {
@@ -209,6 +255,16 @@ export default function SalaryPage() {
          setSalaryToDelete(null)
          setIsDeleteDialogOpen(false)
       }
+   }
+   
+   const handleNotesKeywordSelect = (keyword) => {
+      setNotesKeywordInput(keyword);
+      setNotesKeyword(keyword);
+   }
+   
+   const clearNotesFilter = () => {
+      setNotesKeywordInput("");
+      setNotesKeyword("");
    }
 
    return (
@@ -262,7 +318,7 @@ export default function SalaryPage() {
                         <SelectContent>
                            <SelectItem value="month">Mese specifico</SelectItem>
                            <SelectItem value="year">Anno intero</SelectItem>
-                           <SelectItem value="all">Tutti i periodi</SelectItem>
+                           {/* <SelectItem value="all">Tutti i periodi</SelectItem> */}
                         </SelectContent>
                      </Select>
 
@@ -318,6 +374,63 @@ export default function SalaryPage() {
                      onChange={(e) => setSearchTerm(e.target.value)}
                   />
                </div>
+               <div className="w-full sm:w-auto">
+                  <Popover>
+                     <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full h-9 justify-between">
+                           <div className="flex items-center gap-2">
+                              <Tag className="h-4 w-4" />
+                              {notesKeyword ? (
+                                 <span className="max-w-[150px] truncate">{notesKeyword}</span>
+                              ) : (
+                                 <span>Filtra per parola chiave</span>
+                              )}
+                           </div>
+                        </Button>
+                     </PopoverTrigger>
+                     <PopoverContent className="w-[240px] p-0">
+                        <div className="p-2">
+                           <div className="relative mb-2">
+                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                              <Input
+                                 type="search"
+                                 placeholder="Cerca parole chiave..."
+                                 className="pl-8 w-full"
+                                 value={notesKeywordInput}
+                                 onChange={handleNotesInputChange}
+                              />
+                           </div>
+                           {notesKeyword && (
+                              <Button 
+                                 variant="ghost" 
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                 onClick={clearNotesFilter}
+                              >
+                                 Cancella filtro
+                              </Button>
+                           )}
+                           <div className="max-h-[200px] overflow-y-auto">
+                              {notesKeywords.length > 0 ? (
+                                 <div className="flex flex-wrap gap-1 p-1">
+                                    {notesKeywords.map((keyword) => (
+                                       <Badge 
+                                          key={keyword} 
+                                          variant="secondary" 
+                                          className="cursor-pointer hover:bg-slate-200"
+                                          onClick={() => handleNotesKeywordSelect(keyword)}
+                                       >
+                                          {keyword}
+                                       </Badge>
+                                    ))}
+                                 </div>
+                              ) : (
+                                 <div className="p-2 text-center text-slate-500 text-sm">Nessuna parola chiave trovata</div>
+                              )}
+                           </div>
+                        </div>
+                     </PopoverContent>
+                  </Popover>
+               </div>
             </div>
 
             <Card className="shadow-sm overflow-hidden">
@@ -347,6 +460,7 @@ export default function SalaryPage() {
                                     <TableHead>Extra</TableHead>
                                     <TableHead>Stato</TableHead>
                                     <TableHead className="text-right">Totale</TableHead>
+                                    {groupBy === 'day' && <TableHead>Note</TableHead>}
                                     <TableHead className="w-[50px]"></TableHead>
                                  </TableRow>
                               </TableHeader>
@@ -384,6 +498,17 @@ export default function SalaryPage() {
                                           </Badge>
                                        </TableCell>
                                        <TableCell className="text-right font-medium">€{salary.total}</TableCell>
+                                       {groupBy === 'day' && (
+                                          <TableCell>
+                                             {salary.notes ? (
+                                                <div className="max-w-[200px] truncate text-slate-600">
+                                                   {salary.notes}
+                                                </div>
+                                             ) : (
+                                                <span className="text-slate-400">-</span>
+                                             )}
+                                          </TableCell>
+                                       )}
                                        <TableCell>
                                           <Button
                                              variant="ghost"

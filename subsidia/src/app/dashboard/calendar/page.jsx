@@ -1,12 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { ChevronLeft, ChevronRight, Plus, CalendarIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, CalendarIcon, Search, Tag } from "lucide-react"
 import {
    format,
    startOfMonth,
@@ -26,6 +26,13 @@ import axios from "axios"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
+import { Input } from "@/components/ui/input"
+import { debounce } from "lodash"
+import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from "@/components/ui/popover"
 
 // Initialize dayjs plugins
 dayjs.extend(utc)
@@ -39,6 +46,9 @@ export default function CalendarPage() {
    const [isLoading, setIsLoading] = useState(true)
    const [employees, setEmployees] = useState([])
    const [workEntries, setWorkEntries] = useState([])
+   const [notesKeyword, setNotesKeyword] = useState("")
+   const [notesKeywordInput, setNotesKeywordInput] = useState("")
+   const [notesKeywords, setNotesKeywords] = useState([])
 
    const getWorkEntries = useCallback(async () => {
       try {
@@ -77,7 +87,8 @@ export default function CalendarPage() {
          const response = await axios.get('/api/salaries', {
             params: {
                from: fromDate,
-               to: toDate
+               to: toDate,
+               notesKeyword: notesKeyword
             }
          })
          const data = response.data
@@ -88,11 +99,49 @@ export default function CalendarPage() {
       } finally {
          setIsLoading(false)
       }
-   }, [currentDate])
+   }, [currentDate, notesKeyword])
+
+   // Debounced function for handling notes keyword input
+   const debouncedNotesSearch = useMemo(
+      () => debounce((value) => {
+         setNotesKeyword(value);
+      }, 500),
+      []
+   )
+
+   // Handle input change with debounce
+   const handleNotesInputChange = (e) => {
+      const value = e.target.value;
+      setNotesKeywordInput(value);
+      debouncedNotesSearch(value);
+   };
 
    useEffect(() => {
       getWorkEntries()
    }, [getWorkEntries])
+
+   // Cleanup debounce on unmount
+   useEffect(() => {
+      return () => {
+         debouncedNotesSearch.cancel();
+      };
+   }, [debouncedNotesSearch]);
+
+   // Get notes keywords
+   useEffect(() => {
+      const fetchNotesKeywords = async () => {
+         try {
+            const response = await axios.get('/api/notes-keywords');
+            if (response.data.success) {
+               setNotesKeywords(response.data.data);
+            }
+         } catch (error) {
+            console.error('Error fetching notes keywords:', error);
+         }
+      };
+      
+      fetchNotesKeywords();
+   }, []);
 
    useEffect(() => {
       const fetchEmployees = async () => {
@@ -158,6 +207,16 @@ export default function CalendarPage() {
    const handleDayClick = (day) => {
       setSelectedDay(isSameDay(day, selectedDay) ? null : day)
    }
+   
+   const handleNotesKeywordSelect = (keyword) => {
+      setNotesKeywordInput(keyword);
+      setNotesKeyword(keyword);
+   }
+   
+   const clearNotesFilter = () => {
+      setNotesKeywordInput("");
+      setNotesKeyword("");
+   }
 
    return (
       <div className="p-2 sm:p-6 space-y-4 sm:space-y-6">
@@ -195,7 +254,7 @@ export default function CalendarPage() {
                               Oggi
                            </Button>
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
                            <Select
                               value={selectedEmployee || "all"}
                               onValueChange={(value) => setSelectedEmployee(value === "all" ? null : value)}
@@ -212,6 +271,60 @@ export default function CalendarPage() {
                                  ))}
                               </SelectContent>
                            </Select>
+                           
+                           <Popover>
+                              <PopoverTrigger asChild>
+                                 <Button variant="outline" size="sm" className="flex items-center gap-1">
+                                    <Tag className="h-4 w-4" />
+                                    {notesKeyword ? (
+                                       <span className="max-w-[120px] truncate">{notesKeyword}</span>
+                                    ) : (
+                                       <span>Note</span>
+                                    )}
+                                 </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[240px] p-0">
+                                 <div className="p-2">
+                                    <div className="relative mb-2">
+                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                                       <Input
+                                          type="search"
+                                          placeholder="Cerca parole chiave..."
+                                          className="pl-8 w-full"
+                                          value={notesKeywordInput}
+                                          onChange={handleNotesInputChange}
+                                       />
+                                    </div>
+                                    {notesKeyword && (
+                                       <Button 
+                                          variant="ghost" 
+                                          className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                          onClick={clearNotesFilter}
+                                       >
+                                          Cancella filtro
+                                       </Button>
+                                    )}
+                                    <div className="max-h-[200px] overflow-y-auto">
+                                       {notesKeywords.length > 0 ? (
+                                          <div className="flex flex-wrap gap-1 p-1">
+                                             {notesKeywords.map((keyword) => (
+                                                <Badge 
+                                                   key={keyword} 
+                                                   variant="secondary" 
+                                                   className="cursor-pointer hover:bg-slate-200"
+                                                   onClick={() => handleNotesKeywordSelect(keyword)}
+                                                >
+                                                   {keyword}
+                                                </Badge>
+                                             ))}
+                                          </div>
+                                       ) : (
+                                          <div className="p-2 text-center text-slate-500 text-sm">Nessuna parola chiave trovata</div>
+                                       )}
+                                    </div>
+                                 </div>
+                              </PopoverContent>
+                           </Popover>
                         </div>
                      </div>
                   </CardHeader>
@@ -261,6 +374,9 @@ export default function CalendarPage() {
                                                    } ${entry.isPaid ? "border-l-2 border-green-500" : "border-l-2 border-red-500"}`}
                                              >
                                                 {entry.employee.name}
+                                                {entry.notes && (
+                                                   <span className="ml-1 text-slate-500">📝</span>
+                                                )}
                                              </div>
                                           ))}
                                           {dayEntries.length > 2 && (
@@ -303,6 +419,11 @@ export default function CalendarPage() {
                                                    <div className="text-sm text-slate-600">
                                                       {entry.workType === "fullDay" ? "Giornata intera" : "Mezza giornata"} - €{entry.total}
                                                    </div>
+                                                   {entry.notes && (
+                                                      <div className="text-sm text-slate-600 mt-1">
+                                                         <span className="text-slate-500">Note:</span> {entry.notes}
+                                                      </div>
+                                                   )}
                                                 </div>
                                              ))}
                                           </div>
@@ -393,6 +514,12 @@ export default function CalendarPage() {
                            <div className="w-4 h-4 rounded border-l-2 border-red-500"></div>
                            <span className="text-sm">Non pagato</span>
                         </div>
+                        {notesKeyword && (
+                           <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 flex items-center justify-center">📝</div>
+                              <span className="text-sm">Filtro note: {notesKeyword}</span>
+                           </div>
+                        )}
                      </div>
                   </CardContent>
                </Card>

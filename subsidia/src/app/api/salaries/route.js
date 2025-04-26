@@ -14,6 +14,7 @@ export async function GET(request) {
       const { searchParams } = new URL(request.url);
       const search = searchParams.get("search") || "";
       const groupBy = searchParams.get("groupBy") || "day";
+      const notesKeyword = searchParams.get("notesKeyword") || "";
 
       // Get date range params
       const fromDate = searchParams.get("from");
@@ -61,8 +62,43 @@ export async function GET(request) {
                   mode: "insensitive"
                }
             }
+         }),
+         ...(notesKeyword && {
+            notes: {
+               contains: notesKeyword,
+               mode: "insensitive"
+            }
          })
       };
+      
+      // Get distinct notes keywords for filtering options
+      const distinctNotes = await prisma.salary.findMany({
+         where: {
+            userId: session.user.id,
+            notes: {
+               not: null,
+               not: ""
+            }
+         },
+         select: {
+            notes: true
+         },
+         distinct: ['notes']
+      });
+      
+      // Extract keywords from notes
+      const notesKeywords = distinctNotes
+         .filter(note => note.notes)
+         .flatMap(note => {
+            // Split notes by spaces and remove common words, punctuation
+            const words = note.notes.split(/\s+|,|\.|;|:|\/|-|_/)
+               .filter(word => word.length > 2) // Filter out short words
+               .map(word => word.toLowerCase().trim())
+               .filter(Boolean); // Remove empty strings
+            return words;
+         })
+         .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+         .sort();
       
       // Get total count for pagination - this needs to account for grouping
       let totalCount = 0;
@@ -188,6 +224,7 @@ export async function GET(request) {
          page: page !== null ? page : 1,
          pageSize: pageSize !== null ? pageSize : totalCount,
          totalPages: pageSize !== null ? Math.ceil(totalCount / pageSize) : 1,
+         notesKeywords,
          success: true
       });
    } catch (error) {
