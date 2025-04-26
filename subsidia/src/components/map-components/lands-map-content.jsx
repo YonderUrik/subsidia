@@ -442,8 +442,6 @@ const Field = ({ land, zoom }) => {
       }
    }, [zoom]);
 
-
-
    // Create custom DivIcon for area measurement
    const createAreaIcon = useCallback((area) => {
       if (!L) return null;
@@ -453,7 +451,7 @@ const Field = ({ land, zoom }) => {
       return L.divIcon({
          className: '',
          html: `
-            <div class="${labelClass}" style="color: ${land.color}">
+            <div class="${labelClass}" style="color: #FFFFFF; background-color: rgba(46, 204, 113, 0.7); border: 2px solid white;">
                <strong>${formatArea(area)} ha</strong>
             </div>
          `,
@@ -471,7 +469,7 @@ const Field = ({ land, zoom }) => {
       return L.divIcon({
          className: '',
          html: `
-            <div class="${labelClass}" style="color: ${land.color}">
+            <div class="${labelClass}" style="color: #FFFFFF; background-color: ${land.color}; border: 1px solid white;">
                ${formatDistance(length)}
             </div>
          `,

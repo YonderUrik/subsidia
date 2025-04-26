@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma";
 
-// GET /api/lands?year=2023
+// GET /api/lands?year=2023&name=campo&soilType=argilloso
 export async function GET(request) {
    try {
       const session = await getServerSession(authOptions)
@@ -13,11 +13,15 @@ export async function GET(request) {
 
       const { searchParams } = new URL(request.url)
       const year = searchParams.get("year")
+      const name = searchParams.get("name")
+      const soilType = searchParams.get("soilType")
 
       const lands = await prisma.land.findMany({
          where: {
             userId: session.user.id,
-            ...(year && { year: parseInt(year) })
+            ...(year && { year: parseInt(year) }),
+            ...(name && { name: { contains: name, mode: 'insensitive' } }),
+            ...(soilType && { soilType })
          },
          orderBy: {
             createdAt: "desc"
@@ -59,6 +63,7 @@ export async function POST(request) {
       const existingLand = await prisma.land.findFirst({
          where: {
             userId: session.user.id,
+            year: data.year,
             name: data.name
          }
       })
@@ -107,8 +112,6 @@ export async function POST(request) {
       )
    }
 }
-
-
 
 export async function PATCH(request) {
    try {
