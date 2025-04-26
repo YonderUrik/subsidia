@@ -10,29 +10,33 @@ import axios from "axios"
 import { paths } from "@/lib/paths"
 import { debounce } from "lodash"
 import { Badge } from "@/components/ui/badge"
+import { formatNumber } from "@/lib/utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function EmployeesPage() {
   const [search, setSearch] = useState("")
   const [employees, setEmployees] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
-  const [pageSize] = useState(10)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalItems, setTotalItems] = useState(0)
 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchEmployees = async (searchTerm, page = 1) => {
+  const fetchEmployees = async (searchTerm, page = 1, size = pageSize) => {
     try {
       const response = await axios.get('/api/employees', {
         params: {
           search: searchTerm,
           page,
-          pageSize
+          pageSize: size
         }
       })
       if (response.data.success) {
-        setEmployees(response.data.data)
-        setTotalPages(Math.ceil(response.data.total / pageSize))
+        setEmployees([...response.data.data].sort((a, b) => a.name.localeCompare(b.name)))
+        setTotalPages(response.data.pagination.totalPages)
+        setTotalItems(response.data.pagination.totalItems)
       } else {
         setError('Failed to fetch employees')
       }
@@ -45,21 +49,21 @@ export default function EmployeesPage() {
   }
 
   const debouncedFetch = useMemo(
-    () => debounce((searchTerm, page) => fetchEmployees(searchTerm, page), 1000),
+    () => debounce((searchTerm, page, size) => fetchEmployees(searchTerm, page, size), 500),
     []
   )
 
   useEffect(() => {
     setCurrentPage(1) // Reset to first page on new search
-    debouncedFetch(search, 1)
+    debouncedFetch(search, 1, pageSize)
     return () => {
       debouncedFetch.cancel()
     }
-  }, [search, debouncedFetch])
+  }, [search, pageSize, debouncedFetch])
 
   useEffect(() => {
-    if (currentPage > 1) {
-      fetchEmployees(search, currentPage)
+    if (currentPage > 1 || pageSize !== 10) {
+      fetchEmployees(search, currentPage, pageSize)
     }
   }, [currentPage])
 
@@ -69,6 +73,11 @@ export default function EmployeesPage() {
 
   const handleNextPage = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+  }
+  
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(parseInt(newSize))
+    setCurrentPage(1) // Reset to first page when changing page size
   }
 
   if (isLoading) {
@@ -93,7 +102,7 @@ export default function EmployeesPage() {
           onClick={() => {
             setError(null)
             setIsLoading(true)
-            fetchEmployees(search, currentPage)
+            fetchEmployees(search, currentPage, pageSize)
           }}
         >
           Riprova
@@ -140,11 +149,11 @@ export default function EmployeesPage() {
               employees.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell className="font-medium">{employee.name}</TableCell>
-                  <TableCell>€{employee.dailyRate}</TableCell>
+                  <TableCell>{formatNumber(employee.dailyRate)}</TableCell>
                   <TableCell>{employee.fullDays}</TableCell>
-                  <TableCell>€{employee.halfDayRate}</TableCell>
+                  <TableCell>{formatNumber(employee.halfDayRate)}</TableCell>
                   <TableCell>{employee.halfDays}</TableCell>
-                  <TableCell>€{employee.toPay}</TableCell>
+                  <TableCell>{formatNumber(employee.toPay)}</TableCell>
                   <TableCell>
                     {employee.isActive ? (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 whitespace-nowrap">
@@ -175,34 +184,52 @@ export default function EmployeesPage() {
             )}
           </TableBody>
         </Table>
-        {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t gap-4">
+        
+        {employees.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
             <div className="flex items-center gap-2">
-              <p className="text-sm text-slate-600">
-                Pagina {currentPage} di {totalPages}
-              </p>
+              <span className="text-sm text-slate-500">
+                Righe per pagina:
+              </span>
+              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue placeholder="10" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className="whitespace-nowrap"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Precedente
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className="whitespace-nowrap"
-              >
-                Successiva
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+            
+            <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
+              <span className="text-sm text-slate-500 mr-2">
+                {totalItems > 0 
+                  ? `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalItems)} di ${totalItems}`
+                  : "0 risultati"}
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="h-8 w-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         )}

@@ -14,10 +14,19 @@ export async function GET(request) {
       const { searchParams } = new URL(request.url);
       const search = searchParams.get("search") || "";
       const groupBy = searchParams.get("groupBy") || "day";
+      const notesKeyword = searchParams.get("notesKeyword") || "";
 
-      const periodRange = searchParams.get("periodRange") || "month";
-      const year = searchParams.get("year") || new Date().getFullYear();
-      const month = searchParams.get("month") || new Date().getMonth();
+      // Get date range params
+      const fromDate = searchParams.get("from");
+      const toDate = searchParams.get("to");
+      
+      // Payment and work type filter params
+      const isPaid = searchParams.get("isPaid");
+      const workType = searchParams.get("workType");
+      
+      // Pagination parameters
+      const page = searchParams.get("page") ? parseInt(searchParams.get("page")) : null;
+      const pageSize = searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")) : null;
 
       // Get distinct years
       const distinctYearsResult = await prisma.salary.findMany({
@@ -35,49 +44,133 @@ export async function GET(request) {
          new Date().getFullYear()
       ])].sort((a, b) => b - a);
 
-      const getDateRange = (periodRange, year, month) => {
-         if (periodRange === "month") {
-            const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
-            const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
-            return { startDate, endDate };
-         }
-         
-         if (periodRange === "year") {
-            const startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
-            const endDate = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0, 0));
-            return { startDate, endDate };
-         }
-         
-         return null;
+      // Build date filter based on provided from/to dates
+      let dateFilter = {};
+      if (fromDate && toDate) {
+         dateFilter = {
+            workedDay: {
+               gte: fromDate,
+               lt: toDate
+            }
+         };
+      }
+      
+      // Define base filter conditions
+      const baseFilter = {
+         userId: session.user.id,
+         ...dateFilter,
+         ...(search && {
+            employee: {
+               name: {
+                  contains: search,
+                  mode: "insensitive"
+               }
+            }
+         }),
+         ...(notesKeyword && {
+            notes: {
+               contains: notesKeyword,
+               mode: "insensitive"
+            }
+         }),
+         ...(isPaid === 'true' && { isPaid: true }),
+         ...(isPaid === 'false' && { isPaid: false }),
+         ...(workType && { workType })
       };
-
-      const dateRange = getDateRange(periodRange, parseInt(year), parseInt(month));
-
-      let salaries = await prisma.salary.findMany({
+      
+      // Get distinct notes keywords for filtering options
+      const distinctNotes = await prisma.salary.findMany({
          where: {
             userId: session.user.id,
-            ...(dateRange && {
-               workedDay: {
-                  gte: dateRange.startDate,
-                  lt: dateRange.endDate
-               }
-            }),
-            ...(search && {
-               employee: {
-                  name: {
-                     contains: search,
-                     mode: "insensitive"
-                  }
-               }
-            })
+            notes: {
+               not: null,
+               not: ""
+            }
          },
+         select: {
+            notes: true
+         },
+         distinct: ['notes']
+      });
+      
+      // Extract keywords from notes
+      const notesKeywords = distinctNotes
+         .filter(note => note.notes)
+         .flatMap(note => {
+            // Split notes by spaces and remove common words, punctuation
+            const words = note.notes.split(/\s+|,|\.|;|:|\/|-|_/)
+               .filter(word => word.length > 2) // Filter out short words
+               .map(word => word.toLowerCase().trim())
+               .filter(Boolean); // Remove empty strings
+            return words;
+         })
+         .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+         .sort();
+      
+      // Get total count for pagination - this needs to account for grouping
+      let totalCount = 0;
+      
+      if (groupBy === 'day') {
+         totalCount = await prisma.salary.count({
+            where: baseFilter
+         });
+      }
+      
+      // Create query object
+      const baseQuery = {
+         where: baseFilter,
          include: {
             employee: true
          },
          orderBy: {
             workedDay: 'desc'
          }
+      };
+      
+      // For grouped results, we need to fetch all data first, then group and paginate in memory
+      // Only apply database-level pagination for day grouping (no grouping)
+      const shouldPaginateInDb = groupBy === 'day' && page !== null && pageSize !== null;
+      
+      if (shouldPaginateInDb) {
+         baseQuery.skip = (page - 1) * pageSize;
+         baseQuery.take = pageSize;
+      }
+      
+      // Fetch all salaries data for totals calculation
+      const allSalariesForTotals = await prisma.salary.findMany({
+         where: baseFilter,
+         select: {
+            salaryAmount: true,
+            extras: true,
+            total: true,
+            payedAmount: true
+         }
       });
+      
+      // Calculate totals from ALL matching records
+      const totalPayed = allSalariesForTotals.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
+      const totalToPay = allSalariesForTotals.reduce((sum, salary) => {
+         const difference = salary.total - (salary.payedAmount || 0);
+         return sum + (difference > 0 ? difference : 0);
+      }, 0);
+
+      // Count full days and half days
+      const fullDaysCount = await prisma.salary.count({
+         where: {
+            ...baseFilter,
+            workType: 'fullDay'
+         }
+      });
+      
+      const halfDaysCount = await prisma.salary.count({
+         where: {
+            ...baseFilter,
+            workType: 'halfDay'
+         }
+      });
+
+      // Fetch the actual data for display
+      let salaries = await prisma.salary.findMany(baseQuery);
 
       if (groupBy !== 'day') {
          const groupedSalaries = salaries.reduce((acc, salary) => {
@@ -133,20 +226,29 @@ export async function GET(request) {
          }, {});
 
          salaries = Object.values(groupedSalaries);
+         
+         // Calculate total count for grouped results
+         totalCount = salaries.length;
+         
+         // Apply pagination to grouped results if needed
+         if (page !== null && pageSize !== null) {
+            const startIndex = (page - 1) * pageSize;
+            salaries = salaries.slice(startIndex, startIndex + pageSize);
+         }
       }
-
-      // Calculate totals
-      const totalPayed = salaries.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
-      const totalToPay = salaries.reduce((sum, salary) => {
-         const difference = salary.total - (salary.payedAmount || 0);
-         return sum + (difference > 0 ? difference : 0);
-      }, 0);
 
       return NextResponse.json({
          data: salaries,
          years,
          totalPayed,
          totalToPay,
+         totalCount,
+         fullDaysCount,
+         halfDaysCount,
+         page: page !== null ? page : 1,
+         pageSize: pageSize !== null ? pageSize : totalCount,
+         totalPages: pageSize !== null ? Math.ceil(totalCount / pageSize) : 1,
+         notesKeywords,
          success: true
       });
    } catch (error) {
@@ -381,3 +483,55 @@ export async function PATCH(request) {
       );
    }
 }
+
+export async function DELETE(request) {
+   try {
+      // Get user session
+      const session = await getServerSession(authOptions);
+
+      if (!session) {
+         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      // Get salary ID from query parameter
+      const { searchParams } = new URL(request.url);
+      const salaryId = searchParams.get("id");
+
+      if (!salaryId) {
+         return NextResponse.json({ error: 'ID salario mancante' }, { status: 400 });
+      }
+
+      // Verify the salary exists and belongs to the current user
+      const salary = await prisma.salary.findFirst({
+         where: {
+            id: salaryId,
+            userId: session.user.id
+         }
+      });
+
+      if (!salary) {
+         return NextResponse.json({ error: 'Salario non trovato' }, { status: 404 });
+      }
+
+      // Delete the salary
+      await prisma.salary.delete({
+         where: {
+            id: salaryId
+         }
+      });
+
+      return NextResponse.json({
+         message: "Salario eliminato con successo",
+         success: true
+      });
+
+   } catch (error) {
+      console.error('Error deleting salary:', error);
+      return NextResponse.json(
+         { error: 'Impossibile eliminare il salario', details: error.message },
+         { status: 500 }
+      );
+   }
+}
+
+

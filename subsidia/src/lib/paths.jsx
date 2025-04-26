@@ -19,6 +19,7 @@ export const paths = {
    salaryBatchEntry: "/dashboard/salary/batch-entry",
    // Calendar
    calendar: "/dashboard/calendar",
+   salaryStats: "/dashboard/salary/stats",
    // harvestes
    harvests: "/dashboard/harvests",
    harvestsList: "/dashboard/harvests/list",
