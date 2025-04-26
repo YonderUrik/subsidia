@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Plus, Search, Filter, X } from "lucide-react"
+import { Plus, Search, Filter, X, Layout, Layers, Leaf } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +18,7 @@ import { LandsMap } from "@/components/lands-map"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 import axios from "axios"
+import { formatNumber } from "@/lib/utils"
 
 export default function LandsPage() {
    const [lands, setLands] = useState([])
@@ -29,6 +30,11 @@ export default function LandsPage() {
    const [soilTypes, setSoilTypes] = useState([])
    const [filtersOpen, setFiltersOpen] = useState(false)
    const [activeFiltersCount, setActiveFiltersCount] = useState(0)
+   const [stats, setStats] = useState({
+      totalHectares: 0,
+      landCount: 0,
+      hectaresBySoilType: {}
+   })
 
    useEffect(() => {
       // Calculate active filters count
@@ -79,6 +85,23 @@ export default function LandsPage() {
             }
          })
          setLands(response.data)
+         
+         // Calculate statistics
+         const totalHectares = response.data.reduce((sum, land) => sum + (land.area || 0), 0);
+         const landCount = response.data.length;
+         
+         // Group by soil type
+         const hectaresBySoilType = response.data.reduce((acc, land) => {
+            const soilType = land.soilType || "Non specificato";
+            acc[soilType] = (acc[soilType] || 0) + (land.area || 0);
+            return acc;
+         }, {});
+         
+         setStats({
+            totalHectares,
+            landCount,
+            hectaresBySoilType
+         });
       } catch (error) {
          toast.error(error.response.data.error || "Errore nel fetch dei campi")
       } finally {
@@ -202,6 +225,51 @@ export default function LandsPage() {
                   </Button>
                </Link>
             </div>
+         </div>
+
+         {/* Stats cards */}
+         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 shadow-sm p-0">
+               <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <Layout className="h-5 w-5 text-green-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Ettari totali</p>
+                        <p className="text-xl font-bold text-green-700">{stats.totalHectares} ha</p>
+                     </div>
+                  </div>
+               </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 shadow-sm p-0">
+               <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                     <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Layers className="h-5 w-5 text-blue-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Numero terreni</p>
+                        <p className="text-xl font-bold text-blue-700">{stats.landCount}</p>
+                     </div>
+                  </div>
+               </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 shadow-sm p-0">
+               <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                     <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                        <Leaf className="h-5 w-5 text-amber-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Nr. di Colture</p>
+                        <p className="text-xl font-bold text-amber-700">{Object.keys(stats.hectaresBySoilType).length}</p>
+                     </div>
+                  </div>
+               </CardContent>
+            </Card>
          </div>
 
          <div className="mt-6">
