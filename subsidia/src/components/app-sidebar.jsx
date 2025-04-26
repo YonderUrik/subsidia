@@ -52,6 +52,10 @@ const data = {
           title: "Calendario",
           url: paths.calendar,
         },
+        {
+          title: "Statistiche",
+          url: paths.salaryStats,
+        }
       ],
     },
   ],
