@@ -20,6 +20,10 @@ export async function GET(request) {
       const fromDate = searchParams.get("from");
       const toDate = searchParams.get("to");
       
+      // Payment and work type filter params
+      const isPaid = searchParams.get("isPaid");
+      const workType = searchParams.get("workType");
+      
       // Pagination parameters
       const page = searchParams.get("page") ? parseInt(searchParams.get("page")) : null;
       const pageSize = searchParams.get("pageSize") ? parseInt(searchParams.get("pageSize")) : null;
@@ -68,7 +72,10 @@ export async function GET(request) {
                contains: notesKeyword,
                mode: "insensitive"
             }
-         })
+         }),
+         ...(isPaid === 'true' && { isPaid: true }),
+         ...(isPaid === 'false' && { isPaid: false }),
+         ...(workType && { workType })
       };
       
       // Get distinct notes keywords for filtering options
@@ -147,6 +154,21 @@ export async function GET(request) {
          return sum + (difference > 0 ? difference : 0);
       }, 0);
 
+      // Count full days and half days
+      const fullDaysCount = await prisma.salary.count({
+         where: {
+            ...baseFilter,
+            workType: 'fullDay'
+         }
+      });
+      
+      const halfDaysCount = await prisma.salary.count({
+         where: {
+            ...baseFilter,
+            workType: 'halfDay'
+         }
+      });
+
       // Fetch the actual data for display
       let salaries = await prisma.salary.findMany(baseQuery);
 
@@ -221,6 +243,8 @@ export async function GET(request) {
          totalPayed,
          totalToPay,
          totalCount,
+         fullDaysCount,
+         halfDaysCount,
          page: page !== null ? page : 1,
          pageSize: pageSize !== null ? pageSize : totalCount,
          totalPages: pageSize !== null ? Math.ceil(totalCount / pageSize) : 1,

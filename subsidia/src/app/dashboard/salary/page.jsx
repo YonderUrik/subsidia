@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CalendarIcon, ChevronLeft, ChevronRight, Plus, Search, Trash2, Tag } from "lucide-react"
+import { CreditCard, Circle, Clock, SquareDashedBottomCode, Euro, Square } from "lucide-react"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,7 @@ import { debounce } from "lodash"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import {
    AlertDialog,
@@ -35,6 +37,7 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "@/components/ui/popover"
+import { formatNumber } from "@/lib/utils"
 
 // Initialize dayjs plugins
 dayjs.extend(utc)
@@ -61,15 +64,23 @@ export default function SalaryPage() {
    const [isLoading, setIsLoading] = useState(false)
    const [error, setError] = useState(null)
    
+   // Work type counts
+   const [fullDaysCount, setFullDaysCount] = useState(0)
+   const [halfDaysCount, setHalfDaysCount] = useState(0)
+   
    // Pagination states
    const [currentPage, setCurrentPage] = useState(1)
    const [pageSize, setPageSize] = useState(10)
    const [totalCount, setTotalCount] = useState(0)
    const [totalPages, setTotalPages] = useState(1)
 
+   // Filter state
+   const [activeFilter, setActiveFilter] = useState(null) // 'paid', 'unpaid', 'fullDay', 'halfDay'
+
    // Delete dialog states
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
    const [salaryToDelete, setSalaryToDelete] = useState(null)
+   const [selectedSalaries, setSelectedSalaries] = useState([])
 
    const getSalaries = useCallback(async (search) => {
       setIsLoading(true)
@@ -139,6 +150,18 @@ export default function SalaryPage() {
             fromDate = dayjs('2000-01-01').utc().format();
             toDate = dayjs('2100-01-01').utc().format();
          }
+
+         // Build additional filter based on active filter
+         let additionalFilter = {};
+         if (activeFilter === 'paid') {
+            additionalFilter = { isPaid: 'true' };
+         } else if (activeFilter === 'unpaid') {
+            additionalFilter = { isPaid: 'false' };
+         } else if (activeFilter === 'fullDay') {
+            additionalFilter = { workType: 'fullDay' };
+         } else if (activeFilter === 'halfDay') {
+            additionalFilter = { workType: 'halfDay' };
+         }
          
          const response = await axios.get('/api/salaries', {
             params: {
@@ -148,7 +171,8 @@ export default function SalaryPage() {
                notesKeyword: notesKeyword,
                groupBy: groupBy,
                page: currentPage,
-               pageSize: pageSize
+               pageSize: pageSize,
+               ...additionalFilter
             }
          })
 
@@ -163,13 +187,17 @@ export default function SalaryPage() {
          if (response.data.notesKeywords) {
             setNotesKeywords(response.data.notesKeywords);
          }
+         
+         // Set work type counts
+         setFullDaysCount(response.data.fullDaysCount || 0)
+         setHalfDaysCount(response.data.halfDaysCount || 0)
       } catch (error) {
          setError(error.response?.data?.error || "Errore nel caricamento delle giornate")
          toast.error(error.response?.data?.error || "Errore nel caricamento delle giornate")
       } finally {
          setIsLoading(false)
       }
-   }, [periodType, year, selectedMonth, groupBy, currentPage, pageSize, notesKeyword])
+   }, [periodType, year, selectedMonth, groupBy, currentPage, pageSize, notesKeyword, activeFilter])
 
    // Get notes keywords separately
    useEffect(() => {
@@ -218,7 +246,7 @@ export default function SalaryPage() {
    // Reset to first page when filters change
    useEffect(() => {
       setCurrentPage(1)
-   }, [periodType, year, selectedMonth, groupBy, searchTerm, notesKeyword])
+   }, [periodType, year, selectedMonth, groupBy, searchTerm, notesKeyword, activeFilter])
 
    const handlePageChange = (newPage) => {
       if (newPage >= 1 && newPage <= totalPages) {
@@ -245,18 +273,56 @@ export default function SalaryPage() {
       if (!salaryToDelete) return
       
       try {
-         await axios.delete(`/api/salaries?id=${salaryToDelete.id}`)
-         toast.success("Giornata eliminata con successo")
+         if (Array.isArray(salaryToDelete)) {
+            // Bulk deletion
+            await axios.delete(`/api/salaries/bulk`, {
+               data: { ids: salaryToDelete.map(s => s.id) }
+            })
+            toast.success(`${salaryToDelete.length} giornate eliminate con successo`)
+            setSelectedSalaries([])
+         } else {
+            // Single deletion
+            await axios.delete(`/api/salaries?id=${salaryToDelete.id}`)
+            toast.success("Giornata eliminata con successo")
+         }
          getSalaries(searchTerm) // Refresh the list
       } catch (error) {
          console.error("Error deleting salary:", error)
-         toast.error(error.response?.data?.error || "Errore durante l'eliminazione della giornata")
+         toast.error(error.response?.data?.error || "Errore durante l'eliminazione delle giornate")
       } finally {
          setSalaryToDelete(null)
          setIsDeleteDialogOpen(false)
       }
    }
    
+   const handleBulkDeleteClick = () => {
+      if (selectedSalaries.length > 0) {
+         setSalaryToDelete(selectedSalaries)
+         setIsDeleteDialogOpen(true)
+      }
+   }
+   
+   const handleSelectRow = (salary, checked) => {
+      if (checked) {
+         setSelectedSalaries(prev => [...prev, salary])
+      } else {
+         setSelectedSalaries(prev => prev.filter(s => s.id !== salary.id))
+      }
+   }
+   
+   const handleSelectAll = (checked) => {
+      if (checked) {
+         setSelectedSalaries(salaries.filter(s => groupBy === 'day'))
+      } else {
+         setSelectedSalaries([])
+      }
+   }
+   
+   // Clear selections when filters change
+   useEffect(() => {
+      setSelectedSalaries([])
+   }, [periodType, year, selectedMonth, groupBy, currentPage])
+
    const handleNotesKeywordSelect = (keyword) => {
       setNotesKeywordInput(keyword);
       setNotesKeyword(keyword);
@@ -265,6 +331,16 @@ export default function SalaryPage() {
    const clearNotesFilter = () => {
       setNotesKeywordInput("");
       setNotesKeyword("");
+   }
+
+   const toggleFilter = (filter) => {
+      if (activeFilter === filter) {
+         // If clicking the currently active filter, clear it
+         setActiveFilter(null);
+      } else {
+         // Otherwise set the new filter
+         setActiveFilter(filter);
+      }
    }
 
    return (
@@ -291,25 +367,73 @@ export default function SalaryPage() {
          </div>
 
          {/* TOTALS */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="bg-white/40">
-               <CardContent className="py-3">
-                  <div className="flex items-center justify-between">
-                     <p className="text-sm text-slate-500">Totale pagato</p>
-                     <p className="text-lg font-semibold">€{totalPayed.toLocaleString()}</p>
+         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <Card 
+               className={`bg-gradient-to-br p-1 from-blue-50 to-blue-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'paid' ? 'ring-2 ring-blue-400' : ''}`}
+               onClick={() => toggleFilter('paid')}
+            >
+               <CardContent className="p-2">
+                  <div className="flex items-center gap-2">
+                     <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <CreditCard className="h-4 w-4 text-blue-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Totale pagato</p>
+                        <p className="text-lg font-bold text-blue-700 leading-tight">{formatNumber(totalPayed)}</p>
+                     </div>
                   </div>
                </CardContent>
             </Card>
-            <Card className="bg-white/40">
-               <CardContent className="py-3">
-                  <div className="flex items-center justify-between">
-                     <p className="text-sm text-slate-500">Da pagare</p>
-                     <p className="text-lg font-semibold">€{totalToPay.toLocaleString()}</p>
+            <Card 
+               className={`bg-gradient-to-br p-1 from-amber-50 to-amber-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'unpaid' ? 'ring-2 ring-amber-400' : ''}`}
+               onClick={() => toggleFilter('unpaid')}
+            >
+               <CardContent className="p-2">
+                  <div className="flex items-center gap-2">
+                     <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-amber-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Da pagare</p>
+                        <p className="text-lg font-bold text-amber-700 leading-tight">{formatNumber(totalToPay)}</p>
+                     </div>
                   </div>
                </CardContent>
             </Card>
-            <Card className="sm:col-span-2 bg-white/40">
-               <CardContent className="py-3">
+            <Card 
+               className={`bg-gradient-to-br p-1 from-green-50 to-green-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'fullDay' ? 'ring-2 ring-green-400' : ''}`}
+               onClick={() => toggleFilter('fullDay')}
+            >
+               <CardContent className="p-2">
+                  <div className="flex items-center gap-2">
+                     <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <Circle className="h-4 w-4 text-green-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Giornate intere</p>
+                        <p className="text-lg font-bold text-green-700 leading-tight">{fullDaysCount}</p>
+                     </div>
+                  </div>
+               </CardContent>
+            </Card>
+            <Card 
+               className={`bg-gradient-to-br p-1 from-purple-50 to-purple-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'halfDay' ? 'ring-2 ring-purple-400' : ''}`}
+               onClick={() => toggleFilter('halfDay')}
+            >
+               <CardContent className="p-2">
+                  <div className="flex items-center gap-2">
+                     <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Square className="h-4 w-4 text-purple-700" />
+                     </div>
+                     <div className="flex flex-col flex-1">
+                        <p className="text-xs text-slate-500 leading-none">Mezze giornate</p>
+                        <p className="text-lg font-bold text-purple-700 leading-tight">{halfDaysCount}</p>
+                     </div>
+                  </div>
+               </CardContent>
+            </Card>
+            <Card className="sm:col-span-2 p-0 lg:col-span-4 bg-white shadow-sm">
+               <CardContent className="py-3 px-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center flex-wrap gap-2">
                      <Select value={periodType} onValueChange={setPeriodType}>
                         <SelectTrigger className="h-9 w-full sm:w-auto min-w-[150px]">
@@ -374,7 +498,17 @@ export default function SalaryPage() {
                      onChange={(e) => setSearchTerm(e.target.value)}
                   />
                </div>
-               <div className="w-full sm:w-auto">
+               <div className="w-full sm:w-auto flex gap-2">
+                  {activeFilter && (
+                     <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setActiveFilter(null)} 
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                     >
+                        Rimuovi filtro
+                     </Button>
+                  )}
                   <Popover>
                      <PopoverTrigger asChild>
                         <Button variant="outline" className="w-full h-9 justify-between">
@@ -433,6 +567,24 @@ export default function SalaryPage() {
                </div>
             </div>
 
+            {/* Bulk actions */}
+            {groupBy === 'day' && selectedSalaries.length > 0 && (
+               <div className="flex justify-between items-center">
+                  <p className="text-sm text-slate-600">
+                     {selectedSalaries.length} {selectedSalaries.length === 1 ? 'giornata selezionata' : 'giornate selezionate'}
+                  </p>
+                  <Button 
+                     variant="destructive" 
+                     size="sm" 
+                     onClick={handleBulkDeleteClick}
+                     className="bg-red-600 hover:bg-red-700"
+                  >
+                     <Trash2 className="h-4 w-4 mr-2" />
+                     Elimina selezionate
+                  </Button>
+               </div>
+            )}
+
             <Card className="shadow-sm overflow-hidden">
                <CardContent className="p-0">
                   {isLoading ? (
@@ -453,6 +605,15 @@ export default function SalaryPage() {
                            <Table>
                               <TableHeader>
                                  <TableRow>
+                                    {groupBy === 'day' && (
+                                       <TableHead className="w-[40px]">
+                                          <Checkbox 
+                                             checked={selectedSalaries.length === salaries.length}
+                                             onCheckedChange={handleSelectAll}
+                                             aria-label="Seleziona tutte le righe"
+                                          />
+                                       </TableHead>
+                                    )}
                                     <TableHead>Operaio</TableHead>
                                     <TableHead>Data</TableHead>
                                     <TableHead>Tipo</TableHead>
@@ -467,6 +628,15 @@ export default function SalaryPage() {
                               <TableBody>
                                  {salaries.map((salary) => (
                                     <TableRow key={salary.id}>
+                                       {groupBy === 'day' && (
+                                          <TableCell>
+                                             <Checkbox 
+                                                checked={selectedSalaries.some(s => s.id === salary.id)}
+                                                onCheckedChange={(checked) => handleSelectRow(salary, checked)}
+                                                aria-label={`Seleziona giornata di ${salary.employee.name}`}
+                                             />
+                                          </TableCell>
+                                       )}
                                        <TableCell className="whitespace-nowrap">{salary.employee.name}</TableCell>
                                        <TableCell className="whitespace-nowrap">
                                           {groupBy === 'day' ? 
@@ -585,15 +755,32 @@ export default function SalaryPage() {
                <AlertDialogHeader>
                   <AlertDialogTitle>Conferma eliminazione</AlertDialogTitle>
                   <AlertDialogDescription>
-                     Sei sicuro di voler eliminare questa giornata di lavoro?
+                     {Array.isArray(salaryToDelete) 
+                        ? `Sei sicuro di voler eliminare ${salaryToDelete.length} giornate di lavoro?` 
+                        : 'Sei sicuro di voler eliminare questa giornata di lavoro?'}
                   </AlertDialogDescription>
                </AlertDialogHeader>
                
-               {salaryToDelete && (
+               {!Array.isArray(salaryToDelete) && salaryToDelete && (
                   <div className="mt-2 p-3 bg-slate-50 rounded-md">
                      <div className="mb-1"><strong>Operaio:</strong> {salaryToDelete.employee.name}</div>
                      <div className="mb-1"><strong>Data:</strong> {format(new Date(salaryToDelete.workedDay), "dd/MM/yyyy")}</div>
                      <div><strong>Importo:</strong> €{salaryToDelete.total}</div>
+                  </div>
+               )}
+               
+               {Array.isArray(salaryToDelete) && salaryToDelete?.length > 0 && (
+                  <div className="mt-2 max-h-[200px] overflow-y-auto p-3 bg-slate-50 rounded-md">
+                     <p className="mb-2 font-medium">Riepilogo delle giornate da eliminare:</p>
+                     {salaryToDelete.slice(0, 5).map(salary => (
+                        <div key={salary.id} className="mb-2 pb-2 border-b border-slate-200">
+                           <div><strong>Operaio:</strong> {salary.employee.name}</div>
+                           <div><strong>Data:</strong> {format(new Date(salary.workedDay), "dd/MM/yyyy")}</div>
+                        </div>
+                     ))}
+                     {salaryToDelete.length > 5 && (
+                        <p className="text-slate-600 italic">e altre {salaryToDelete.length - 5} giornate...</p>
+                     )}
                   </div>
                )}
                

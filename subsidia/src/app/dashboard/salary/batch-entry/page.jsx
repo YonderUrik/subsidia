@@ -159,8 +159,8 @@ export default function BatchEntryPage() {
                                  />
                               </TableHead>
                               <TableHead>Nome</TableHead>
-                              <TableHead>Tariffa Giornaliera</TableHead>
-                              <TableHead>Tariffa Mezza Giornata</TableHead>
+                              <TableHead>Tariffa 1 gg.</TableHead>
+                              <TableHead>Tariffa 1/2 gg.</TableHead>
                            </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -296,8 +296,8 @@ export default function BatchEntryPage() {
                      </CardContent>
                   </Card>
 
-                  <div className="flex justify-between">
-                     <Link href="/salary">
+                  <div className="flex justify-between mb-10">
+                     <Link href={paths.salary}>
                         <Button variant="outline">Annulla</Button>
                      </Link>
                      <Button

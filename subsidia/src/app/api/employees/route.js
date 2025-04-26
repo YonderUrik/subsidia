@@ -28,6 +28,8 @@ export async function GET(request) {
       const id = searchParams.get("id");
       const page = parseInt(searchParams.get("page")) || 1;
       const pageSize = parseInt(searchParams.get("pageSize")) || 20;
+      const historyPage = parseInt(searchParams.get("historyPage")) || 1;
+      const historyPageSize = parseInt(searchParams.get("historyPageSize")) || 10;
 
       if (id) {
          // If ID is provided, fetch single employee
@@ -60,8 +62,8 @@ export async function GET(request) {
             return acc;
          }, { fullDays: 0, halfDays: 0, toPay: 0 });
 
-         // Map salaries to workHistory array and sort by workedDay descending
-         const workHistory = employee.salaries
+         // Map all salaries to sortedWorkHistory array
+         const sortedWorkHistory = employee.salaries
             .map(salary => ({
                id: salary.id,
                workedDay: salary.workedDay,
@@ -75,10 +77,28 @@ export async function GET(request) {
             }))
             .sort((a, b) => new Date(b.workedDay) - new Date(a.workedDay));
 
+         // Calculate total pages for work history
+         const totalItems = sortedWorkHistory.length;
+         const totalPages = Math.ceil(totalItems / historyPageSize);
+
+         // Apply pagination to workHistory
+         const startIndex = (historyPage - 1) * historyPageSize;
+         const workHistory = sortedWorkHistory.slice(startIndex, startIndex + historyPageSize);
+
          const { salaries, ...employeeData } = employee;
          return NextResponse.json({
             success: true,
-            data: { ...employeeData, ...salaryStats, workHistory }
+            data: { 
+               ...employeeData, 
+               ...salaryStats, 
+               workHistory,
+               workHistoryPagination: {
+                  currentPage: historyPage,
+                  totalPages,
+                  totalItems,
+                  pageSize: historyPageSize
+               }
+            }
          });
       }
 
@@ -128,9 +148,27 @@ export async function GET(request) {
          };
       });
 
+      // Get total count for pagination
+      const totalCount = await prisma.employee.count({
+         where: {
+            userId: session.user.id,
+            name: {
+               contains: search,
+               mode: "insensitive"
+            },
+            ...(isActive === "true" && { isActive: true })
+         }
+      });
+
       return NextResponse.json({
          success: true,
-         data: employeesWithStats
+         data: employeesWithStats,
+         pagination: {
+            totalItems: totalCount,
+            totalPages: Math.ceil(totalCount / pageSize),
+            currentPage: page,
+            pageSize: pageSize
+         }
       });
    } catch (error) {
       console.error("Error fetching employees:", error);

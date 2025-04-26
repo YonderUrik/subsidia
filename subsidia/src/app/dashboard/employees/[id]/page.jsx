@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AlertTriangle, ArrowLeft, CalendarIcon, Edit, Loader2, Trash, DollarSign, CreditCard } from "lucide-react"
+import { AlertTriangle, ArrowLeft, CalendarIcon, Edit, Loader2, Trash, DollarSign, CreditCard, ChevronLeft, ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -23,6 +23,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { formatNumber } from "@/lib/utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function EmployeeDetailsPage() {
    const params = useParams()
@@ -33,9 +35,13 @@ export default function EmployeeDetailsPage() {
    const [error, setError] = useState(null)
    const [isLoading, setIsLoading] = useState(true)
 
+   // Add pagination state
+   const [historyPage, setHistoryPage] = useState(1)
+   const [historyPageSize, setHistoryPageSize] = useState(10)
+
    const fetchEmployee = useCallback(async () => {
       try {
-         const response = await axios.get(`/api/employees?id=${id}`)
+         const response = await axios.get(`/api/employees?id=${id}&historyPage=${historyPage}&historyPageSize=${historyPageSize}`)
          setEmployee(response.data.data)
          setIsLoading(false)
       } catch (error) {
@@ -43,7 +49,7 @@ export default function EmployeeDetailsPage() {
          setError(error.response.data.message || error.response.data.error || "Errore nel caricamento dei dati dell'operaio")
          setIsLoading(false)
       }
-   }, [id])
+   }, [id, historyPage, historyPageSize])
 
    useEffect(() => {
       fetchEmployee()
@@ -371,16 +377,16 @@ export default function EmployeeDetailsPage() {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                      <div>
                         <p className="text-slate-500">Giornaliero</p>
-                        <p className="font-semibold">€{employee.dailyRate}</p>
+                        <p className="font-semibold">{formatNumber(employee.dailyRate)}</p>
                      </div>
                      <div>
                         <p className="text-slate-500">Mezza giornata</p>
-                        <p className="font-semibold">€{employee.halfDayRate}</p>
+                        <p className="font-semibold">{formatNumber(employee.halfDayRate)}</p>
                      </div>
                   </div>
                   <div className="pt-2 border-t">
                      <p className="text-slate-500 text-sm">Totale da pagare</p>
-                     <p className="text-xl font-bold text-red-600">€{employee.toPay}</p>
+                     <p className="text-xl font-bold text-red-600">{formatNumber(employee.toPay)}</p>
                   </div>
                   <div className="flex gap-2 pt-2">
                      <Button
@@ -419,7 +425,7 @@ export default function EmployeeDetailsPage() {
                   </div>
                   <div>
                      <p className="text-slate-500">Totale extra</p>
-                     <p className="font-semibold">€{employee.workHistory.reduce((sum, entry) => sum + entry.extras, 0)}</p>
+                     <p className="font-semibold">{formatNumber(employee.workHistory.reduce((sum, entry) => sum + entry.extras, 0))}</p>
                   </div>
                   <div>
                      <p className="text-slate-500">Ultimo lavoro</p>
@@ -467,16 +473,16 @@ export default function EmployeeDetailsPage() {
                                     <TableRow key={index}>
                                        <TableCell>{format(new Date(entry.workedDay), 'dd/MM/yyyy')}</TableCell>
                                        <TableCell className="capitalize">{entry.type === 'fullDay' ? 'Giornata intera' : 'Mezza giornata'}</TableCell>
-                                       <TableCell>€{entry.salaryAmount}</TableCell>
-                                       <TableCell>€{entry.extras}</TableCell>
-                                       <TableCell>€{entry.total}</TableCell>
+                                       <TableCell>{formatNumber(entry.salaryAmount)}</TableCell>
+                                       <TableCell>{formatNumber(entry.extras)}</TableCell>
+                                       <TableCell>{formatNumber(entry.total)}</TableCell>
                                        <TableCell>
                                           <Badge variant={entry.isPaid ? "default" : "outline"} className={cn(
                                              entry.isPaid && "bg-green-100 text-green-700 border-green-200",
                                              !entry.isPaid && entry.payedAmount > 0 && "bg-orange-100 text-orange-700 border-orange-200",
                                              !entry.isPaid && entry.payedAmount === 0 && "bg-red-100 text-red-700 border-red-200"
                                           )}>
-                                             {entry.isPaid ? "Pagato" : entry.payedAmount > 0 ? `Parziale (€${entry.payedAmount})` : "Non pagato"}
+                                             {entry.isPaid ? "Pagato" : entry.payedAmount > 0 ? `Parziale (${formatNumber(entry.payedAmount)})` : "Non pagato"}
                                           </Badge>
                                        </TableCell>
                                        <TableCell>{entry.notes}</TableCell>
@@ -509,6 +515,59 @@ export default function EmployeeDetailsPage() {
                            </TableBody>
                         </Table>
                      </div>
+                     
+                     {/* Pagination controls */}
+                     {employee.workHistoryPagination && (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
+                           <div className="flex items-center gap-2">
+                              <span className="text-sm text-slate-500">
+                                 Righe per pagina:
+                              </span>
+                              <Select value={historyPageSize.toString()} onValueChange={(value) => {
+                                 setHistoryPageSize(Number(value))
+                                 setHistoryPage(1) // Reset to first page when changing page size
+                              }}>
+                                 <SelectTrigger className="h-8 w-[70px]">
+                                    <SelectValue placeholder="10" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectItem value="5">5</SelectItem>
+                                    <SelectItem value="10">10</SelectItem>
+                                    <SelectItem value="20">20</SelectItem>
+                                    <SelectItem value="50">50</SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </div>
+                           
+                           <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
+                              <span className="text-sm text-slate-500 mr-2">
+                                 {employee.workHistoryPagination.totalItems > 0 
+                                    ? `${(historyPage - 1) * historyPageSize + 1}-${Math.min(historyPage * historyPageSize, employee.workHistoryPagination.totalItems)} di ${employee.workHistoryPagination.totalItems}`
+                                    : "0 risultati"}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                 <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setHistoryPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={historyPage === 1}
+                                    className="h-8 w-8"
+                                 >
+                                    <ChevronLeft className="h-4 w-4" />
+                                 </Button>
+                                 <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setHistoryPage(prev => Math.min(prev + 1, employee.workHistoryPagination.totalPages))}
+                                    disabled={historyPage === employee.workHistoryPagination.totalPages}
+                                    className="h-8 w-8"
+                                 >
+                                    <ChevronRight className="h-4 w-4" />
+                                 </Button>
+                              </div>
+                           </div>
+                        </div>
+                     )}
                   </CardContent>
                </Card>
             </TabsContent>
@@ -731,9 +790,9 @@ export default function EmployeeDetailsPage() {
                         Importo massimo: {selectedEntryId
                            ? (() => {
                               const entry = employee.workHistory.find(entry => entry.id === selectedEntryId)
-                              return entry ? `${entry.total - entry.payedAmount}€` : "0€"
+                              return entry ? `${formatNumber(entry.total - entry.payedAmount)}` : formatNumber(0)
                            })()
-                           : `${employee.toPay}€`
+                           : `${formatNumber(employee.toPay)}`
                         }
                      </p>
                   </div>
