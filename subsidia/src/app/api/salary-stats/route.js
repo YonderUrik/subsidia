@@ -58,6 +58,7 @@ export async function GET(request) {
     
     // Build the query filter
     let where = {
+      userId: session.user.id,
       workedDay: {
         gte: startDate,
         lte: endDate
@@ -91,6 +92,7 @@ export async function GET(request) {
     // Get all employees for reference
     const employees = await prisma.employee.findMany({
       where: {
+        userId: session.user.id,
         isActive: true,
       },
       orderBy: {
@@ -130,7 +132,7 @@ export async function GET(request) {
     const notesKeywords = analyzeNotes(salaries);
     
     // Get all unique notes keywords for dropdown
-    const allNotesKeywords = await getUniqueNotesKeywords();
+    const allNotesKeywords = await getUniqueNotesKeywords(session);
     
     return NextResponse.json({
       salaryTrend,
@@ -344,10 +346,11 @@ function analyzeNotes(salaries) {
 }
 
 // Function to get all unique keywords from notes
-async function getUniqueNotesKeywords() {
+async function getUniqueNotesKeywords(session) {
   try {
     const salaries = await prisma.salary.findMany({
       where: {
+        userId: session.user.id,
         notes: {
           not: null,
         },

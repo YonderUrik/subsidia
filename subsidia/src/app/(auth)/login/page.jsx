@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [mounted, setMounted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loadingProvider, setLoadingProvider] = useState(null)
   const [loginError, setLoginError] = useState(() => {
     // Get error from URL params if present
     if (typeof window !== 'undefined') {
@@ -58,6 +59,11 @@ export default function LoginPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleProviderSignIn = (providerId) => {
+    setLoadingProvider(providerId);
+    signIn(providerId);
   }
 
   return (
@@ -149,11 +155,17 @@ export default function LoginPage() {
                         variant="outline"
                         type="button"
                         className="w-full h-11 rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground flex items-center justify-center gap-2 transition-all"
-                        onClick={() => signIn(provider.id)}
-                        disabled={isSubmitting}
+                        onClick={() => handleProviderSignIn(provider.id)}
+                        disabled={isSubmitting || loadingProvider !== null}
                       >
-                        {provider.icon}
-                        <span>Continua con {provider.name}</span>
+                        {loadingProvider === provider.id ? (
+                          <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <>
+                            {provider.icon}
+                            <span>Continua con {provider.name}</span>
+                          </>
+                        )}
                       </Button>
                     ))}
                   </div>
