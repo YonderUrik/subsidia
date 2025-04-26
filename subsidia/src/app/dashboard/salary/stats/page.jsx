@@ -41,6 +41,11 @@ import {
 } from "@/components/ui/popover";
 import { debounce } from 'lodash';
 import { formatNumber } from '@/lib/utils';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+// Configure dayjs with UTC plugin
+dayjs.extend(utc);
 
 // Helper function to format week labels
 const formatWeekLabel = (value) => {
@@ -97,12 +102,12 @@ export default function SalaryStatsPage() {
 
    // Initialize date inputs on component mount
    useEffect(() => {
-      const today = new Date();
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(today.getMonth() - 1);
+      const today = dayjs();
+      const startOfYear = today.startOf('year').utc();
+      const currentDate = today.utc();
 
-      setToDate(today);
-      setFromDate(oneMonthAgo);
+      setToDate(currentDate.format());
+      setFromDate(startOfYear.format());
    }, []);
 
    // Fetch initial data when component mounts and dates are set
@@ -144,7 +149,7 @@ export default function SalaryStatsPage() {
             
             // Always use date range approach for consistency
             if (fromDate && toDate) {
-               url = `/api/salary-stats?startDate=${format(fromDate, 'yyyy-MM-dd')}&endDate=${format(toDate, 'yyyy-MM-dd')}&groupBy=${groupBy}`;
+               url = `/api/salary-stats?startDate=${fromDate}&endDate=${toDate}&groupBy=${groupBy}`;
             } else {
                url = `/api/salary-stats?timeRange=${timeRange}&groupBy=${groupBy}`;
             }
@@ -316,11 +321,11 @@ export default function SalaryStatsPage() {
                      <div className="flex space-x-2">
                         <Button
                            onClick={() => {
-                              const today = new Date();
-                              setToDate(today);
-                              const oneMonthAgo = new Date();
-                              oneMonthAgo.setMonth(today.getMonth() - 1);
-                              setFromDate(oneMonthAgo);
+                              const today = dayjs();
+                              const startOfMonth = today.startOf('month');
+                              const endOfMonth = today.endOf('month');
+                              setToDate(endOfMonth.utc().format());
+                              setFromDate(startOfMonth.utc().format());
                               setTimeRange('month');
                            }}
                            variant={timeRange === 'month' ? 'default' : 'outline'}
@@ -330,11 +335,11 @@ export default function SalaryStatsPage() {
                         </Button>
                         <Button
                            onClick={() => {
-                              const today = new Date();
-                              setToDate(today);
-                              const oneYearAgo = new Date();
-                              oneYearAgo.setFullYear(today.getFullYear() - 1);
-                              setFromDate(oneYearAgo);
+                              const today = dayjs();
+                              const startOfYear = today.startOf('year');
+                              const endOfYear = today.endOf('year');
+                              setToDate(endOfYear.utc().format());
+                              setFromDate(startOfYear.utc().format());
                               setTimeRange('year');
                            }}
                            variant={timeRange === 'year' ? 'default' : 'outline'}
@@ -470,11 +475,11 @@ export default function SalaryStatsPage() {
                      <div className="flex flex-wrap gap-1 sm:gap-2 w-full sm:w-auto">
                         <Button
                            onClick={() => {
-                              const today = new Date();
-                              setToDate(today);
-                              const oneMonthAgo = new Date();
-                              oneMonthAgo.setMonth(today.getMonth() - 1);
-                              setFromDate(oneMonthAgo);
+                              const today = dayjs();
+                              const startOfMonth = today.startOf('month');
+                              const endOfMonth = today.endOf('month');
+                              setToDate(endOfMonth.utc().format());
+                              setFromDate(startOfMonth.utc().format());
                               setTimeRange('month');
                            }}
                            variant={timeRange === 'month' ? 'default' : 'outline'}
@@ -485,11 +490,11 @@ export default function SalaryStatsPage() {
                         </Button>
                         <Button
                            onClick={() => {
-                              const today = new Date();
-                              setToDate(today);
-                              const oneYearAgo = new Date();
-                              oneYearAgo.setFullYear(today.getFullYear() - 1);
-                              setFromDate(oneYearAgo);
+                              const today = dayjs();
+                              const startOfYear = today.startOf('year');
+                              const endOfYear = today.endOf('year');
+                              setToDate(endOfYear.utc().format());
+                              setFromDate(startOfYear.utc().format());
                               setTimeRange('year');
                            }}
                            variant={timeRange === 'year' ? 'default' : 'outline'}
