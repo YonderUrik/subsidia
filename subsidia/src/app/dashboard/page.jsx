@@ -8,6 +8,7 @@ import { Plus, Users } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import axios from "axios"
+import { formatNumber } from "@/lib/utils"
 export default function DashboardPage() {
    const { data: session, status } = useSession()
 
@@ -81,7 +82,7 @@ export default function DashboardPage() {
                         {employeesStatsLoading ? (
                            <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
                         ) : (
-                           <span className="font-semibold text-lg text-rose-600">€{employeesStats.totalToPay.toLocaleString('it-IT', {minimumFractionDigits: 2})}</span>
+                           <span className="font-semibold text-lg text-rose-600">{formatNumber(employeesStats.totalToPay)}</span>
                         )}
                      </div>
                   </div>
