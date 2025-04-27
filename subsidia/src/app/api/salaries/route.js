@@ -451,16 +451,12 @@ export async function PATCH(request) {
       let remainingAmount = paymentAmount;
       const updateOperations = [];
 
-      console.log("REMAINING AMOUNT", remainingAmount)
-
       // Prepare all update operations
       for (const salary of sortedSalaries) {
          if (remainingAmount <= 0) break;
 
          const unpaidAmount = salary.total - salary.payedAmount;
-         console.log("UNPAID AMOUNT", unpaidAmount)
          const amountToPayForThis = Math.min(remainingAmount, unpaidAmount);
-         console.log("AMOUNT TO PAY FOR THIS", amountToPayForThis)
          updateOperations.push(
             prisma.salary.update({
                where: { id: salary.id },
