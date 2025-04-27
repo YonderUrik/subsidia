@@ -59,8 +59,23 @@ export async function GET(request) {
                   acc.toPay += salary.total;
                }
             }
+            acc.totalExtras += salary.extras;
             return acc;
-         }, { fullDays: 0, halfDays: 0, toPay: 0 });
+         }, { fullDays: 0, halfDays: 0, toPay: 0, totalExtras: 0 });
+
+         // Find the most recent worked day
+         let lastWorkedDay = null;
+         let lastWorkType = null;
+         if (employee.salaries.length > 0) {
+            const lastSalary = employee.salaries.reduce((latest, salary) => {
+               const currentDate = new Date(salary.workedDay);
+               const latestDate = new Date(latest.workedDay);
+               return currentDate > latestDate ? salary : latest;
+            }, employee.salaries[0]);
+            
+            lastWorkedDay = new Date(lastSalary.workedDay);
+            lastWorkType = lastSalary.workType;
+         }
 
          // Map all salaries to sortedWorkHistory array
          const sortedWorkHistory = employee.salaries
@@ -92,6 +107,8 @@ export async function GET(request) {
                ...employeeData, 
                ...salaryStats, 
                workHistory,
+               lastWorkedDay: lastWorkedDay ? lastWorkedDay.toISOString() : null,
+               lastWorkType,
                workHistoryPagination: {
                   currentPage: historyPage,
                   totalPages,
@@ -137,8 +154,9 @@ export async function GET(request) {
                   acc.toPay += salary.total;
                }
             }
+            acc.totalExtras += salary.extras;
             return acc;
-         }, { fullDays: 0, halfDays: 0, toPay: 0 });
+         }, { fullDays: 0, halfDays: 0, toPay: 0, totalExtras: 0 });
 
          // Remove salaries array and add stats
          const { salaries, ...employeeData } = employee;

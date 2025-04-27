@@ -22,7 +22,6 @@ export async function GET() {
     const salaries = await prisma.salary.findMany({
       where: {
         userId: session.user.id,
-        isPaid: false
       },
       include: {
         employee: true
