@@ -91,58 +91,74 @@ export function LandsList({ lands, refreshData }) {
                </TableRow>
             </TableHeader>
             <TableBody>
-               {lands.map((land) => (
-                  <TableRow key={land.id}>
-                     <TableCell className="font-medium">
-                        <Link href={`/lands/${land.id}`} className="hover:underline text-primary">
-                           {land.name}
-                        </Link>
-                     </TableCell>
-                     <TableCell className="text-right">{land.area.toFixed(2)}</TableCell>
-                     <TableCell>{land.soilType}</TableCell>
-                     <TableCell>{land.lastHarvest}</TableCell>
-                     <TableCell>
-                        {land.isActive ? (
-                           <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Attivo</Badge>
-                        ) : (
-                           <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Disattivo</Badge>
-                        )}
-                     </TableCell>
-                     <TableCell className="text-right">
-                        <DropdownMenu>
-                           <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                 <span className="sr-only">Apri menu</span>
-                                 <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                           </DropdownMenuTrigger>
-                           <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Azioni</DropdownMenuLabel>
-                              <DropdownMenuItem>
-                                 <Link href={paths.landIdEdit(land.id)} className="flex w-full items-center">
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Modifica
+               {lands.length > 0 ? (
+                  lands.map((land) => (
+                     <TableRow key={land.id}>
+                        <TableCell className="font-medium">
+                           <Link href={`/lands/${land.id}`} className="hover:underline text-primary">
+                              {land.name}
+                           </Link>
+                        </TableCell>
+                        <TableCell className="text-right">{land.area.toFixed(2)}</TableCell>
+                        <TableCell>{land.soilType}</TableCell>
+                        <TableCell>{land.lastHarvest}</TableCell>
+                        <TableCell>
+                           {land.isActive ? (
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Attivo</Badge>
+                           ) : (
+                              <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Disattivo</Badge>
+                           )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                           <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Apri menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                 </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                 <DropdownMenuLabel>Azioni</DropdownMenuLabel>
+                                 <DropdownMenuSeparator />
+                                 <Link href={paths.landIdEdit(land.id)}>
+                                    <DropdownMenuItem className="cursor-pointer">
+                                       <Pencil className="mr-2 h-4 w-4" />
+                                       Modifica
+                                    </DropdownMenuItem>
                                  </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => {
-                                 setLandToDisable(land)
-                                 setIsDisableDialogOpen(true)
-                              }}>
-                                 Disattiva
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                 setLandToDelete(land)
-                                 setIsDeleteDialogOpen(true)
-                              }}>
-                                 <Trash className="mr-2 h-4 w-4" />
-                                 Elimina
-                              </DropdownMenuItem>
-                           </DropdownMenuContent>
-                        </DropdownMenu>
+                                 <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                       setLandToDisable(land)
+                                       setIsDisableDialogOpen(true)
+                                    }}
+                                 >
+                                    Disattiva
+                                 </DropdownMenuItem>
+                                 <DropdownMenuItem
+                                    className="cursor-pointer text-destructive focus:text-destructive"
+                                    onClick={() => {
+                                       setLandToDelete(land)
+                                       setIsDeleteDialogOpen(true)
+                                    }}
+                                 >
+                                    <Trash className="mr-2 h-4 w-4" />
+                                    Elimina
+                                 </DropdownMenuItem>
+                              </DropdownMenuContent>
+                           </DropdownMenu>
+                        </TableCell>
+                     </TableRow>
+                  ))
+               ) : (
+                  <TableRow>
+                     <TableCell colSpan={6} className="h-24 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                           <p>Nessun terreno trovato</p>
+                        </div>
                      </TableCell>
                   </TableRow>
-               ))}
+               )}
             </TableBody>
          </Table>
 

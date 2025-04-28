@@ -59,22 +59,6 @@ export async function POST(request) {
          }
       }
 
-      // Check if land with same name already exists for this user
-      const existingLand = await prisma.land.findFirst({
-         where: {
-            userId: session.user.id,
-            year: data.year,
-            name: data.name
-         }
-      })
-
-      if (existingLand) {
-         return NextResponse.json(
-            { error: "Un campo con questo nome esiste già" },
-            { status: 400 }
-         )
-      }
-
       // Generate a random pleasant color
       const colors = [
          "#4CAF50", // Green

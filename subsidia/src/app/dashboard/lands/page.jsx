@@ -285,7 +285,32 @@ export default function LandsPage() {
                         <CardDescription>Visualizza e modifica i tuoi terreni sulla mappa</CardDescription>
                      </CardHeader>
                      <CardContent className="p-0">
-                        <LandsMap lands={lands} />
+                        {isLoading ? (
+                           <div className="h-[600px] w-full flex items-center justify-center bg-muted/20">
+                              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                 <Layout className="h-8 w-8 animate-pulse" />
+                                 <p>Caricamento terreni...</p>
+                              </div>
+                           </div>
+                        ) : lands.length === 0 ? (
+                           <div className="h-[600px] w-full flex items-center justify-center bg-muted/20">
+                              <div className="flex flex-col items-center gap-4 text-muted-foreground max-w-md text-center p-6">
+                                 <Layout className="h-8 w-8" />
+                                 <div>
+                                    <p className="text-lg font-medium mb-1">Nessun terreno trovato</p>
+                                    <p className="text-sm">Non ci sono terreni per i filtri selezionati. Modifica i filtri o aggiungi un nuovo terreno.</p>
+                                 </div>
+                                 <Link href={paths.new_land}>
+                                    <Button>
+                                       <Plus className="mr-2 h-4 w-4" />
+                                       Aggiungi Terreno
+                                    </Button>
+                                 </Link>
+                              </div>
+                           </div>
+                        ) : (
+                           <LandsMap lands={lands} />
+                        )}
                      </CardContent>
                   </Card>
                </TabsContent>
@@ -296,7 +321,32 @@ export default function LandsPage() {
                         <CardDescription>Gestione dei tuoi terreni e dei loro dettagli</CardDescription>
                      </CardHeader>
                      <CardContent>
-                        <LandsList lands={lands} refreshData={getLands} />
+                        {isLoading ? (
+                           <div className="w-full py-24 flex items-center justify-center">
+                              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                 <Layers className="h-8 w-8 animate-pulse" />
+                                 <p>Caricamento terreni...</p>
+                              </div>
+                           </div>
+                        ) : lands.length === 0 ? (
+                           <div className="w-full py-16 flex items-center justify-center">
+                              <div className="flex flex-col items-center gap-4 text-muted-foreground max-w-md text-center">
+                                 <Layers className="h-8 w-8" />
+                                 <div>
+                                    <p className="text-lg font-medium mb-1">Nessun terreno trovato</p>
+                                    <p className="text-sm">Non ci sono terreni per i filtri selezionati. Modifica i filtri o aggiungi un nuovo terreno.</p>
+                                 </div>
+                                 <Link href={paths.new_land}>
+                                    <Button>
+                                       <Plus className="mr-2 h-4 w-4" />
+                                       Aggiungi Terreno
+                                    </Button>
+                                 </Link>
+                              </div>
+                           </div>
+                        ) : (
+                           <LandsList lands={lands} refreshData={getLands} />
+                        )}
                      </CardContent>
                   </Card>
                </TabsContent>

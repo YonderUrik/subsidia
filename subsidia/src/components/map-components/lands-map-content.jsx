@@ -732,7 +732,7 @@ export default function LandsMapContent({ lands }) {
             ))}
 
             <LocateButton />
-            <MapLegend lands={lands} />
+            {lands.length > 0 && <MapLegend lands={lands} />}
          </SafeMapContainer>
       </div>
    )
