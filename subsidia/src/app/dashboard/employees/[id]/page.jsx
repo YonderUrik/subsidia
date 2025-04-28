@@ -419,19 +419,19 @@ export default function EmployeeDetailsPage() {
                   <div>
                      <p className="text-slate-500">Giorni lavorati</p>
                      <p className="font-semibold">
-                        {employee.workHistory.filter((entry) => entry.type === "fullDay").length} giorni interi,{" "}
-                        {employee.workHistory.filter((entry) => entry.type === "halfDay").length} mezze giornate
+                        {employee.fullDays} giorni interi,{" "}
+                        {employee.halfDays} mezze giornate
                      </p>
                   </div>
                   <div>
                      <p className="text-slate-500">Totale extra</p>
-                     <p className="font-semibold">{formatNumber(employee.workHistory.reduce((sum, entry) => sum + entry.extras, 0))}</p>
+                     <p className="font-semibold">{formatNumber(employee.totalExtras)}</p>
                   </div>
                   <div>
                      <p className="text-slate-500">Ultimo lavoro</p>
                      <p className="font-semibold">
-                        {employee.workHistory.length > 0
-                           ? `${format(new Date(employee.workHistory[0].workedDay), 'dd/MM/yyyy')} (${employee.workHistory[0].type === 'fullDay' ? 'Giornata intera' : 'Mezza giornata'})`
+                        {employee.lastWorkedDay
+                           ? `${format(new Date(employee.lastWorkedDay), 'dd/MM/yyyy')} (${employee.lastWorkType === 'fullDay' ? 'Giornata intera' : 'Mezza giornata'})`
                            : "Nessun lavoro ancora registrato"}
                      </p>
                   </div>

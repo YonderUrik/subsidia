@@ -433,7 +433,7 @@ export async function PATCH(request) {
             isPaid: false,
             ...(salaryId ? { id: salaryId } : {})
          }
-      })
+      });
 
       if (salaries.length === 0) {
          return NextResponse.json({ error: 'Nessuna giornata di lavoro trovata' }, { status: 404 });
@@ -449,25 +449,30 @@ export async function PATCH(request) {
       const sortedSalaries = salaries.sort((a, b) => a.workedDay.getTime() - b.workedDay.getTime());
 
       let remainingAmount = paymentAmount;
+      const updateOperations = [];
 
-      // Start MongoDB transaction
-      const result = await prisma.$transaction(async (tx) => {
-         for (const salary of sortedSalaries) {
-            if (remainingAmount <= 0) break;
+      // Prepare all update operations
+      for (const salary of sortedSalaries) {
+         if (remainingAmount <= 0) break;
 
-            const unpaidAmount = salary.total - salary.payedAmount;
-            const amountToPayForThis = Math.min(remainingAmount, unpaidAmount);
-
-            await tx.salary.update({
+         const unpaidAmount = salary.total - salary.payedAmount;
+         const amountToPayForThis = Math.min(remainingAmount, unpaidAmount);
+         updateOperations.push(
+            prisma.salary.update({
                where: { id: salary.id },
                data: {
                   payedAmount: salary.payedAmount + amountToPayForThis,
                   isPaid: (salary.payedAmount + amountToPayForThis) >= salary.total
                }
-            });
+            })
+         );
+         
+         remainingAmount -= amountToPayForThis;
+      }
 
-            remainingAmount -= amountToPayForThis;
-         }
+      // Execute all updates in a single transaction
+      await prisma.$transaction(updateOperations, {
+         timeout: 10000 // Increase timeout to 10 seconds
       });
 
       return NextResponse.json({

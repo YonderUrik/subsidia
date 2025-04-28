@@ -650,8 +650,8 @@ export default function SalaryPage() {
                                              : String(salary.workedDay)}
                                        </TableCell>
                                        <TableCell>{groupBy === 'day' ? (salary.workType === 'fullDay' ? 'Giornata' : 'Mezza') : '-'}</TableCell>
-                                       <TableCell>€{salary.salaryAmount}</TableCell>
-                                       <TableCell>€{salary.extras}</TableCell>
+                                       <TableCell>{formatNumber(salary.salaryAmount)}</TableCell>
+                                       <TableCell>{formatNumber(salary.extras)}</TableCell>
                                        <TableCell>
                                           <Badge
                                              variant="outline"
@@ -660,14 +660,13 @@ export default function SalaryPage() {
                                                 "bg-yellow-50 text-yellow-700 border-yellow-200"
                                              }
                                           >
-                                             Da pagare : {" "}
                                              {salary.payedAmount >= salary.total ?
-                                                `€${salary.payedAmount}` :
-                                                `€${(salary.total - salary.payedAmount).toFixed(2)}`
+                                                "Pagato" :
+                                                `Da pagare: ${formatNumber(salary.total - salary.payedAmount)}`
                                              }
                                           </Badge>
                                        </TableCell>
-                                       <TableCell className="text-right font-medium">€{salary.total}</TableCell>
+                                       <TableCell className="text-right font-medium">{formatNumber(salary.total)}</TableCell>
                                        {groupBy === 'day' && (
                                           <TableCell>
                                              {salary.notes ? (
@@ -765,7 +764,7 @@ export default function SalaryPage() {
                   <div className="mt-2 p-3 bg-slate-50 rounded-md">
                      <div className="mb-1"><strong>Operaio:</strong> {salaryToDelete.employee.name}</div>
                      <div className="mb-1"><strong>Data:</strong> {format(new Date(salaryToDelete.workedDay), "dd/MM/yyyy")}</div>
-                     <div><strong>Importo:</strong> €{salaryToDelete.total}</div>
+                     <div><strong>Importo:</strong> {formatNumber(salaryToDelete.total)}</div>
                   </div>
                )}
                

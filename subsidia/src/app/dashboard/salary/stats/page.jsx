@@ -163,7 +163,6 @@ export default function SalaryStatsPage() {
                url += `&notesKeyword=${encodeURIComponent(notesKeyword)}`;
             }
             
-            console.log("Fetching data with URL:", url);
             const response = await axios.get(url);
             setStats(response.data);
 
