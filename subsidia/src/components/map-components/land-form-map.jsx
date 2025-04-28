@@ -145,19 +145,28 @@ const mapStyles = `
     background-color: white;
     border: none;
     cursor: pointer;
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     margin-right: 10px;
+    transition: all 0.2s ease;
   }
 
   .locate-button:hover,
   .fullscreen-button:hover {
     background-color: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+  }
+  
+  .locate-button:active,
+  .fullscreen-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   }
   
   /* Fix position conflicts */
@@ -177,12 +186,38 @@ const mapStyles = `
   .leaflet-draw-toolbar a {
     background-color: white;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    margin-bottom: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+    position: relative;
+    border: none !important;
   }
   
   .leaflet-draw-toolbar a:hover {
-    background-color: #f0f0f0;
+    background-color: #f8f8f8;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+  }
+  
+  .leaflet-draw-toolbar a:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  
+  /* Better highlighting for selected tools */
+  .leaflet-draw-toolbar a.leaflet-draw-draw-polygon,
+  .leaflet-draw-toolbar a.leaflet-draw-draw-rectangle {
+    position: relative;
+  }
+  
+  .leaflet-draw-toolbar a.leaflet-draw-edit-edit,
+  .leaflet-draw-toolbar a.leaflet-draw-edit-remove {
+    position: relative;
+  }
+  
+  .leaflet-draw-actions {
+    left: 40px !important;
+    top: 0 !important;
   }
   
   /* Add tooltips for better usability */
@@ -193,29 +228,43 @@ const mapStyles = `
     top: 0;
     background: rgba(0,0,0,0.8);
     color: white;
-    padding: 2px 8px;
-    border-radius: 3px;
+    padding: 4px 10px;
+    border-radius: 4px;
     font-size: 12px;
     white-space: nowrap;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s ease, transform 0.2s ease;
     pointer-events: none;
+    transform: translateX(-10px);
+    z-index: 1000;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   }
   
   .leaflet-draw-toolbar a[title]:hover:after {
     opacity: 1;
+    transform: translateX(0);
   }
   
   /* Make actions more visible */
   .leaflet-draw-actions {
     background-color: white;
     border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    overflow: hidden;
   }
   
   .leaflet-draw-actions a {
     color: #333;
     font-weight: 500;
+    transition: all 0.15s ease;
+    padding: 8px 12px !important;
+    position: relative;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .leaflet-draw-actions a:last-child {
+    border-bottom: none;
   }
   
   .leaflet-draw-actions a:hover {
@@ -223,15 +272,19 @@ const mapStyles = `
     color: #000;
   }
   
+  .leaflet-draw-actions a:active {
+    background-color: #e8e8e8;
+  }
+  
   /* Custom measurement label styles */
   .measurement-label {
     background-color: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 4px;
-    padding: 3px 6px;
-    font-size: 11px;
+    padding: 4px 8px;
+    font-size: 12px;
     white-space: nowrap;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     pointer-events: none !important;
     text-align: center;
     transition: all 0.15s ease;
@@ -241,8 +294,8 @@ const mapStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
 
   /* Fullscreen map styles */
@@ -269,29 +322,44 @@ const mapStyles = `
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .fullscreen-map .exit-fullscreen:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+  }
+  
+  .fullscreen-map .exit-fullscreen:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   }
   
   /* Area measurement specific styles */
   .measurement-label.area {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
     font-weight: bold;
-    font-size: 12px;
-    padding: 1px 1px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 13px;
+    padding: 5px 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.22);
     z-index: 700 !important;
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(46, 204, 113, 0.5);
     min-width: 60px;
+    color: #2ecc71;
   }
 
   /* Side measurement styles */
   .measurement-label.side {
-    color: rgba(0, 0, 0, 0.85);
+    color: #3498db;
     font-size: 12px;
     font-weight: 500;
-    padding: 1px 1px;
+    padding: 2px 6px;
     min-width: 40px;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(255, 255, 255, 0.95);
     transform: translate(-50%, -50%) scale(0.95);
+    border: 1px solid rgba(52, 152, 219, 0.5);
   }
   
   /* Measurement badge styles */
@@ -358,6 +426,27 @@ const mapStyles = `
     .zoom-level-12.side,
     .zoom-level-11.side {
       opacity: 0;
+    }
+  }
+  
+  /* Touch-friendly adjustments for mobile */
+  @media (max-width: 768px) {
+    .leaflet-draw-toolbar a {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    
+    .leaflet-draw-tooltip {
+      font-size: 14px !important;
+      padding: 6px 10px !important;
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      border-radius: 4px !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
+    
+    .leaflet-draw-actions a {
+      padding: 10px 12px !important;
+      font-size: 14px !important;
     }
   }
 `;
@@ -573,12 +662,12 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
    // Create custom DivIcon for area measurement
    const createAreaIcon = (area) => {
       const labelClass = getLabelClasses('measurement-label', 'area');
-      const color = '#FFFFFF'; // White text for better visibility
+      const color = '#2ecc71'; // Green color for area
 
       return L.divIcon({
          className: '',
          html: `
-            <div class="${labelClass}" style="color: ${color}; background-color: rgba(46, 204, 113, 0.7); border: 2px solid white;">
+            <div class="${labelClass}" style="color: ${color};">
                <strong>${formatArea(area)} ha</strong>
             </div>
          `,
@@ -590,12 +679,12 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
    // Create custom DivIcon for side measurements
    const createSideIcon = (length) => {
       const labelClass = getLabelClasses('measurement-label', 'side');
-      const color = '#FFFFFF'; // White text for better visibility
+      const color = '#3498db'; // Blue color for distance
 
       return L.divIcon({
          className: '',
          html: `
-            <div class="${labelClass}" style="color: ${color}; background-color: rgba(52, 152, 219, 0.8); border: 1px solid white;">
+            <div class="${labelClass}" style="color: ${color};">
                ${formatDistance(length)}
             </div>
          `,
@@ -647,9 +736,10 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
                         <Polyline
                            positions={perpLine}
                            pathOptions={{
-                              color: 'white',
-                              weight: 2.5,
-                              opacity: Math.min(0.8, currentZoom / 20),
+                              color: '#3498db',
+                              weight: 2,
+                              opacity: Math.min(0.9, currentZoom / 18),
+                              dashArray: '4, 4'
                            }}
                         />
                      )}
@@ -926,9 +1016,31 @@ export default function LandFormMap({ setArea, setCoordinates }) {
 
    // Get draw options based on device
    const getDrawOptions = () => {
+      const baseShapeOptions = {
+         stroke: true,
+         color: '#3498db',
+         weight: 3,
+         opacity: 0.8,
+         fill: true,
+         fillColor: '#3498db',
+         fillOpacity: 0.15,
+         clickable: true
+      }
+
       const baseOptions = {
-         rectangle: true,
-         polygon: true,
+         rectangle: {
+            shapeOptions: baseShapeOptions,
+            showArea: true,
+         },
+         polygon: {
+            shapeOptions: baseShapeOptions,
+            showArea: true,
+            allowIntersection: false,
+            drawError: {
+               color: '#e74c3c',
+               timeout: 1000
+            },
+         },
          polyline: false,
          circle: false,
          circlemarker: false,
@@ -942,8 +1054,6 @@ export default function LandFormMap({ setArea, setCoordinates }) {
             // Make drawing more touch-friendly by setting options
             polygon: {
                ...baseOptions.polygon,
-               showLength: true,
-               showArea: true,
                icon: new L.DivIcon({
                   iconSize: new L.Point(14, 14),
                   className: 'leaflet-div-icon leaflet-editing-icon'
@@ -953,29 +1063,9 @@ export default function LandFormMap({ setArea, setCoordinates }) {
                   className: 'leaflet-div-icon leaflet-editing-icon touch-friendly'
                }),
                guidelineDistance: 10,
-               shapeOptions: {
-                  stroke: true,
-                  color: '#3388ff',
-                  weight: 4,
-                  opacity: 0.7,
-                  fill: true,
-                  fillColor: '#3388ff',
-                  fillOpacity: 0.2,
-                  clickable: true
-               }
             },
             rectangle: {
                ...baseOptions.rectangle,
-               shapeOptions: {
-                  stroke: true,
-                  color: '#3388ff',
-                  weight: 4,
-                  opacity: 0.7,
-                  fill: true,
-                  fillColor: '#3388ff',
-                  fillOpacity: 0.2,
-                  clickable: true
-               }
             }
          }
       }
