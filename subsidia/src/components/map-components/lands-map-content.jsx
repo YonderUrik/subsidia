@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useEffect, useState } from "react"
-import { MapPin } from "lucide-react"
+import { MapPin, Maximize2 } from "lucide-react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import { getAllBounds } from "@/lib/lands-utils"
@@ -9,6 +9,7 @@ import { fixLeafletIcon } from "@/lib/leaflet-utils"
 import { paths } from "@/lib/paths"
 import React from "react"
 import { LayerGroup } from "react-leaflet"
+import { createPortal } from "react-dom"
 
 // Utility functions for calculating polygon properties
 const calculatePolygonCenter = (coordinates) => {
@@ -180,7 +181,8 @@ const mapStyles = `
     box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
   }
 
-  .locate-button {
+  .locate-button,
+  .fullscreen-button {
     background-color: white;
     border: none;
     cursor: pointer;
@@ -190,11 +192,45 @@ const mapStyles = `
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   }
 
-  .locate-button:hover {
+  .locate-button:hover,
+  .fullscreen-button:hover {
     background-color: #f0f0f0;
+  }
+
+  /* Fullscreen map styles */
+  .fullscreen-map {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    background-color: white;
+  }
+
+  .fullscreen-map .leaflet-container {
+    height: 100vh !important;
+    width: 100vw !important;
+    z-index: 99999 !important;
+  }
+
+  .fullscreen-map .exit-fullscreen {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100000;
+    background: white;
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   }
 
   /* Custom measurement label styles */
@@ -205,7 +241,7 @@ const mapStyles = `
     padding: 3px 6px;
     font-size: 11px;
     white-space: nowrap;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     pointer-events: none !important;
     text-align: center;
     transition: all 0.15s ease;
@@ -566,8 +602,26 @@ const Field = ({ land, zoom }) => {
    )
 }
 
+// FullscreenButton component to toggle fullscreen map view
+const FullscreenButton = ({ isFullscreen, toggleFullscreen }) => {
+   return (
+      <div className="leaflet-top leaflet-right" style={{ marginTop: "90px" }}>
+         <div className="leaflet-control">
+            <button
+               type="button"
+               className="fullscreen-button"
+               title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+               onClick={toggleFullscreen}
+            >
+               <Maximize2 size={16} />
+            </button>
+         </div>
+      </div>
+   )
+}
+
 // Create a safe wrapper for the MapContainer
-const SafeMapContainer = React.forwardRef(({ children, ...props }, ref) => {
+const SafeMapContainer = React.forwardRef(({ children, isFullscreen, ...props }, ref) => {
    const [isClient, setIsClient] = useState(false)
 
    useEffect(() => {
@@ -647,11 +701,37 @@ export default function LandsMapContent({ lands }) {
 
    // State to track current zoom level
    const [currentZoom, setCurrentZoom] = useState(16);
+   // State for fullscreen mode
+   const [isFullscreen, setIsFullscreen] = useState(false);
 
    // Track zoom changes
    const handleZoomChange = useCallback((e) => {
       setCurrentZoom(e.target._zoom);
    }, []);
+
+   // Toggle fullscreen mode
+   const toggleFullscreen = useCallback(() => {
+      setIsFullscreen(prev => !prev)
+
+      // Let the resize event propagate
+      setTimeout(() => {
+         if (window.leafletMap) {
+            window.leafletMap.invalidateSize()
+         }
+      }, 100)
+   }, []);
+
+   // Handle Escape key to exit fullscreen
+   useEffect(() => {
+      const handleEscKey = (e) => {
+         if (e.key === "Escape" && isFullscreen) {
+            setIsFullscreen(false);
+         }
+      };
+
+      window.addEventListener('keydown', handleEscKey);
+      return () => window.removeEventListener('keydown', handleEscKey);
+   }, [isFullscreen]);
 
    // Calculate bounds using memoization to avoid unnecessary recalculations
    const bounds = useMemo(() => {
@@ -714,30 +794,58 @@ export default function LandsMapContent({ lands }) {
       }
    }, [mapInstance, bounds, handleZoomChange])
 
+   // Create the map component for rendering in both normal and fullscreen modes
+   const mapComponent = (
+      <SafeMapContainer
+         center={center}
+         zoom={16}
+         style={{ height: "100%", width: "100%" }}
+         ref={mapRef}
+         attributionControl={false}
+         isFullscreen={isFullscreen}
+      >
+         <LayerGroup>
+            <TileLayer
+               attribution="Google Maps Satellite"
+               url="https://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
+            />
+            <TileLayer url="https://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}" />
+         </LayerGroup>
+
+         {lands.map((land) => (
+            <Field key={land.id} land={land} zoom={currentZoom} />
+         ))}
+
+         <LocateButton />
+         <FullscreenButton 
+            isFullscreen={isFullscreen} 
+            toggleFullscreen={toggleFullscreen} 
+         />
+         {lands.length > 0 && <MapLegend lands={lands} />}
+      </SafeMapContainer>
+   );
+
+   // Render either the normal map or the fullscreen version
    return (
-      <div className="h-[600px] w-full z-0">
-         <SafeMapContainer
-            center={center}
-            zoom={16}
-            style={{ height: "100%", width: "100%" }}
-            ref={mapRef}
-            attributionControl={false}
-         >
-            <LayerGroup>
-               <TileLayer
-                  attribution="Google Maps Satellite"
-                  url="https://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
-               />
-               <TileLayer url="https://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}" />
-            </LayerGroup>
-
-            {lands.map((land) => (
-               <Field key={land.id} land={land} zoom={currentZoom} />
-            ))}
-
-            <LocateButton />
-            {lands.length > 0 && <MapLegend lands={lands} />}
-         </SafeMapContainer>
-      </div>
+      <>
+         {!isFullscreen && (
+            <div className="h-[600px] w-full z-0">
+               {mapComponent}
+            </div>
+         )}
+         {isFullscreen && typeof document !== 'undefined' && createPortal(
+            <div className="fullscreen-map">
+               <button
+                  className="exit-fullscreen"
+                  onClick={toggleFullscreen}
+                  aria-label="Exit fullscreen"
+               >
+                  <Maximize2 className="h-5 w-5" />
+               </button>
+               {mapComponent}
+            </div>,
+            document.body
+         )}
+      </>
    )
 }
