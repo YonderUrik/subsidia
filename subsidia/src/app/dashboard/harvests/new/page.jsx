@@ -10,7 +10,7 @@ export default function NewHarvestPage() {
    return (
       <div className="flex min-h-screen flex-col px-6 py-6">
          <div className="mb-6 flex items-center gap-2">
-            <Link href={paths.harvests}>
+            <Link href={paths.harvestsList}>
                <Button variant="outline" size="icon">
                   <ArrowLeft className="h-4 w-4" />
                </Button>

@@ -158,7 +158,9 @@ export default function HarvestsListPage() {
          }
          
          if (response.data.lands) {
-            setLandOptions(response.data.lands)
+            const distinctLands = [...new Set(response.data.lands.map(land => land.name))]
+               .map(name => response.data.lands.find(land => land.name === name))
+            setLandOptions(distinctLands)
          }
          
          if (response.data.soilTypes) {

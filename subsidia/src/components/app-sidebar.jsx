@@ -66,10 +66,6 @@ const data = {
       isActive: false,
       items: [
         {
-          title: "Panoramica",
-          url: paths.harvests,
-        },
-        {
           title: "Raccolti",
           url: paths.harvestsList,
         },
