@@ -1,11 +1,12 @@
 "use client"
 
 import { useRef, useEffect, useState, useCallback, useMemo } from "react"
-import { MapPin } from "lucide-react"
+import { MapPin, Maximize2 } from "lucide-react"
 import dynamic from "next/dynamic"
 import L from "leaflet"
 import { calculateAreaInHectares, formatCoordinates, fixLeafletIcon } from "@/lib/leaflet-utils"
 import React from "react"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 // Utility functions for calculating polygon properties
 const calculatePolygonCenter = (coordinates) => {
@@ -135,9 +136,11 @@ const mapStyles = `
     height: 100%;
     width: 100%;
     z-index: 0;
+    touch-action: none;
   }
   
-  .locate-button {
+  .locate-button,
+  .fullscreen-button {
     background-color: white;
     border: none;
     cursor: pointer;
@@ -151,7 +154,8 @@ const mapStyles = `
     margin-right: 10px;
   }
 
-  .locate-button:hover {
+  .locate-button:hover,
+  .fullscreen-button:hover {
     background-color: #f0f0f0;
   }
   
@@ -239,6 +243,32 @@ const mapStyles = `
     backdrop-filter: blur(1px);
     -webkit-backdrop-filter: blur(1px);
   }
+
+  /* Fullscreen map styles */
+  .fullscreen-map {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+  }
+
+  .fullscreen-map .exit-fullscreen {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
   
   /* Area measurement specific styles */
   .measurement-label.area {
@@ -320,6 +350,15 @@ const mapStyles = `
   .zoom-level-3.side {
     opacity: 0;
   }
+
+  /* Hide measurements on small screens at certain zoom levels */
+  @media (max-width: 480px) {
+    .zoom-level-13.side,
+    .zoom-level-12.side,
+    .zoom-level-11.side {
+      opacity: 0;
+    }
+  }
 `;
 
 // Create a safe wrapper for the MapContainer
@@ -386,8 +425,26 @@ const LocateButton = () => {
    )
 }
 
+// FullscreenButton component to toggle fullscreen map view
+const FullscreenButton = ({ isFullscreen, toggleFullscreen }) => {
+   return (
+      <div className="leaflet-top leaflet-right" style={{ marginTop: "90px" }}>
+         <div className="leaflet-control">
+            <button
+               type="button"
+               className="fullscreen-button"
+               title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+               onClick={toggleFullscreen}
+            >
+               <Maximize2 size={16} />
+            </button>
+         </div>
+      </div>
+   )
+}
+
 // MeasurementOverlay component to show area and side measurements
-const MeasurementOverlay = ({ layer, currentZoom, areaValue }) => {
+const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
    // Return empty if no layer exists
    if (!layer) return null;
    
@@ -438,7 +495,7 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue }) => {
    // Use the passed area value instead of recalculating it
    const area = areaValue || 0;
    
-   // Determine how many side measurements to show based on zoom level
+   // Determine how many side measurements to show based on zoom level and device
    const getVisibleSidesRatio = () => {
       if (currentZoom >= 15) return 1; // Show all sides at high zoom levels
       if (currentZoom >= 13) return 0.75; // Show 75% of sides
@@ -510,7 +567,7 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue }) => {
    };
 
    // Determine if we should show divider lines for measurements
-   const showDividers = currentZoom >= 14;
+   const showDividers = currentZoom >= 14 && !isMobile;
 
    // Create custom DivIcon for area measurement
    const createAreaIcon = (area) => {
@@ -608,11 +665,27 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue }) => {
 
 export default function LandFormMap({ setArea, setCoordinates }) {
    const featureGroupRef = useRef(null)
+   const mapContainerRef = useRef(null)
    const [drawControlsLoaded, setDrawControlsLoaded] = useState(false)
    const [initialPosition, setInitialPosition] = useState([51.505, -0.09])
    const [currentLayer, setCurrentLayer] = useState(null)
    const [currentZoom, setCurrentZoom] = useState(16)
    const [areaValue, setAreaValue] = useState(0)
+   const [isFullscreen, setIsFullscreen] = useState(false)
+   const isMobile = useMediaQuery("(max-width: 768px)")
+   const isSmallScreen = useMediaQuery("(max-width: 480px)")
+
+   // Toggle fullscreen mode
+   const toggleFullscreen = useCallback(() => {
+      setIsFullscreen(prev => !prev)
+      
+      // Let the resize event propagate
+      setTimeout(() => {
+         if (window.leafletMap) {
+            window.leafletMap.invalidateSize()
+         }
+      }, 100)
+   }, [])
 
    // Fix Leaflet icon issue on component mount and get initial position
    useEffect(() => {
@@ -634,6 +707,15 @@ export default function LandFormMap({ setArea, setCoordinates }) {
             }
          )
       }
+
+      // Handle exit fullscreen on escape key
+      const handleEscKey = (e) => {
+         if (e.key === "Escape" && isFullscreen) {
+            setIsFullscreen(false)
+         }
+      }
+      
+      window.addEventListener('keydown', handleEscKey)
 
       // Check if react-leaflet-draw is available
       import("react-leaflet-draw").then(() => {
@@ -757,8 +839,9 @@ export default function LandFormMap({ setArea, setCoordinates }) {
          if (style.parentNode) {
             document.head.removeChild(style)
          }
+         window.removeEventListener('keydown', handleEscKey)
       }
-   }, [])
+   }, [isFullscreen])
 
    // Function to handle when a shape is created
    const handleCreated = (e) => {
@@ -840,14 +923,105 @@ export default function LandFormMap({ setArea, setCoordinates }) {
       }
    }, [handleZoomChange])
 
+   // Get draw options based on device
+   const getDrawOptions = () => {
+      const baseOptions = {
+         rectangle: true,
+         polygon: true,
+         polyline: false,
+         circle: false,
+         circlemarker: false,
+         marker: false,
+      }
+      
+      // Add touch-friendly options for mobile devices
+      if (isMobile) {
+         return {
+            ...baseOptions,
+            // Make drawing more touch-friendly by setting options
+            polygon: {
+               ...baseOptions.polygon,
+               showLength: true,
+               showArea: true,
+               icon: new L.DivIcon({
+                  iconSize: new L.Point(14, 14),
+                  className: 'leaflet-div-icon leaflet-editing-icon'
+               }),
+               touchIcon: new L.DivIcon({
+                  iconSize: new L.Point(20, 20),
+                  className: 'leaflet-div-icon leaflet-editing-icon touch-friendly'
+               }),
+               guidelineDistance: 10,
+               shapeOptions: {
+                  stroke: true,
+                  color: '#3388ff',
+                  weight: 4,
+                  opacity: 0.7,
+                  fill: true,
+                  fillColor: '#3388ff',
+                  fillOpacity: 0.2,
+                  clickable: true
+               }
+            },
+            rectangle: {
+               ...baseOptions.rectangle,
+               shapeOptions: {
+                  stroke: true,
+                  color: '#3388ff',
+                  weight: 4,
+                  opacity: 0.7,
+                  fill: true,
+                  fillColor: '#3388ff',
+                  fillOpacity: 0.2,
+                  clickable: true
+               }
+            }
+         }
+      }
+      
+      return baseOptions
+   }
+
+   // Calculate responsive height based on device and fullscreen state
+   const getMapHeight = () => {
+      if (isFullscreen) {
+         return "100%"
+      }
+      
+      if (isMobile) {
+         return isSmallScreen ? "400px" : "450px"
+      }
+      
+      return "500px"
+   }
+
    return (
-      <div className="h-[500px] w-full relative">
+      <div 
+         ref={mapContainerRef}
+         className={`relative w-full ${isFullscreen ? 'fullscreen-map' : ''}`}
+         style={{ height: getMapHeight() }}
+      >
+         {isFullscreen && (
+            <button
+               className="exit-fullscreen"
+               onClick={toggleFullscreen}
+               aria-label="Exit fullscreen"
+            >
+               <Maximize2 className="h-5 w-5" />
+            </button>
+         )}
+         
          <SafeMapContainer
             center={initialPosition}
-            zoom={16}
+            zoom={isMobile ? 15 : 16}
             style={{ height: "100%", width: "100%" }}
             ref={mapRef}
             attributionControl={false}
+            zoomControl={!isSmallScreen}
+            doubleClickZoom={!isMobile} // Disable double click zoom on mobile to prevent accidental zooms
+            touchZoom={true}
+            dragging={true}
+            scrollWheelZoom={!isMobile} // Disable mouse wheel zoom on mobile
          >
             {/* Stadia.AlidadeSatellite view */}
             <TileLayer
@@ -862,22 +1036,24 @@ export default function LandFormMap({ setArea, setCoordinates }) {
                      onCreated={handleCreated}
                      onEdited={handleEdited}
                      onDeleted={handleDeleted}
-                     draw={{
-                        rectangle: true,
-                        polygon: true,
-                        polyline: false,
-                        circle: false,
-                        circlemarker: false,
-                        marker: false,
-                     }}
+                     draw={getDrawOptions()}
                   />
                )}
             </FeatureGroup>
             
             {/* Add measurements overlay */}
-            <MeasurementOverlay layer={currentLayer} currentZoom={currentZoom} areaValue={areaValue} />
+            <MeasurementOverlay 
+               layer={currentLayer} 
+               currentZoom={currentZoom} 
+               areaValue={areaValue}
+               isMobile={isMobile}
+            />
 
             <LocateButton />
+            <FullscreenButton 
+               isFullscreen={isFullscreen} 
+               toggleFullscreen={toggleFullscreen} 
+            />
          </SafeMapContainer>
 
       </div>
