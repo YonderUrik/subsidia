@@ -7,6 +7,7 @@ import L from "leaflet"
 import { calculateAreaInHectares, formatCoordinates, fixLeafletIcon } from "@/lib/leaflet-utils"
 import React from "react"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { LayerGroup } from "react-leaflet"
 
 // Utility functions for calculating polygon properties
 const calculatePolygonCenter = (coordinates) => {
@@ -447,7 +448,7 @@ const FullscreenButton = ({ isFullscreen, toggleFullscreen }) => {
 const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
    // Return empty if no layer exists
    if (!layer) return null;
-   
+
    // Get polygon coordinates from the layer
    const getLatLngs = () => {
       try {
@@ -466,7 +467,7 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
    const coordinates = Array.isArray(latLngs) ? latLngs.map(p => [p.lat, p.lng]) : [];
    const center = calculatePolygonCenter(coordinates);
    const sides = calculateSideLengths(coordinates);
-   
+
    // Format area with appropriate precision
    const formatArea = (area) => {
       if (!area || isNaN(area)) return "0.00";
@@ -476,7 +477,7 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
          return area.toFixed(2); // Two decimals for smaller areas
       }
    };
-   
+
    // Format distance with appropriate units
    const formatDistance = (distance) => {
       if (distance >= 1000) {
@@ -485,16 +486,16 @@ const MeasurementOverlay = ({ layer, currentZoom, areaValue, isMobile }) => {
          return `${Math.round(distance)} m`;
       }
    };
-   
+
    // Determine label classes based on zoom level
    const getLabelClasses = (baseClass, type) => {
       const zoomLevel = Math.min(Math.max(Math.floor(currentZoom), 5), 16);
       return `${baseClass} ${type} zoom-level-${zoomLevel}`;
    };
-   
+
    // Use the passed area value instead of recalculating it
    const area = areaValue || 0;
-   
+
    // Determine how many side measurements to show based on zoom level and device
    const getVisibleSidesRatio = () => {
       if (currentZoom >= 15) return 1; // Show all sides at high zoom levels
@@ -678,7 +679,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
    // Toggle fullscreen mode
    const toggleFullscreen = useCallback(() => {
       setIsFullscreen(prev => !prev)
-      
+
       // Let the resize event propagate
       setTimeout(() => {
          if (window.leafletMap) {
@@ -714,13 +715,13 @@ export default function LandFormMap({ setArea, setCoordinates }) {
             setIsFullscreen(false)
          }
       }
-      
+
       window.addEventListener('keydown', handleEscKey)
 
       // Check if react-leaflet-draw is available
       import("react-leaflet-draw").then(() => {
          setDrawControlsLoaded(true)
-         
+
          // Customize Leaflet.draw strings to Italian
          if (L.drawLocal) {
             // Draw toolbar
@@ -791,7 +792,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
                   }
                }
             };
-            
+
             // Edit toolbar
             L.drawLocal.edit = {
                toolbar: {
@@ -879,7 +880,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
       layers.eachLayer((layer) => {
          // Update current layer reference
          setCurrentLayer(layer)
-         
+
          // Get coordinates from the layer
          let latLngs = []
 
@@ -914,10 +915,10 @@ export default function LandFormMap({ setArea, setCoordinates }) {
    const mapRef = useCallback(node => {
       if (node !== null) {
          window.leafletMap = node;
-         
+
          // Add zoom event listener
          node.on('zoomend', handleZoomChange);
-         
+
          // Set initial zoom
          setCurrentZoom(node.getZoom());
       }
@@ -933,7 +934,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
          circlemarker: false,
          marker: false,
       }
-      
+
       // Add touch-friendly options for mobile devices
       if (isMobile) {
          return {
@@ -978,7 +979,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
             }
          }
       }
-      
+
       return baseOptions
    }
 
@@ -987,16 +988,16 @@ export default function LandFormMap({ setArea, setCoordinates }) {
       if (isFullscreen) {
          return "100%"
       }
-      
+
       if (isMobile) {
          return isSmallScreen ? "400px" : "450px"
       }
-      
+
       return "500px"
    }
 
    return (
-      <div 
+      <div
          ref={mapContainerRef}
          className={`relative w-full ${isFullscreen ? 'fullscreen-map' : ''}`}
          style={{ height: getMapHeight() }}
@@ -1010,7 +1011,7 @@ export default function LandFormMap({ setArea, setCoordinates }) {
                <Maximize2 className="h-5 w-5" />
             </button>
          )}
-         
+
          <SafeMapContainer
             center={initialPosition}
             zoom={isMobile ? 15 : 16}
@@ -1023,11 +1024,13 @@ export default function LandFormMap({ setArea, setCoordinates }) {
             dragging={true}
             scrollWheelZoom={!isMobile} // Disable mouse wheel zoom on mobile
          >
-            {/* Stadia.AlidadeSatellite view */}
-            <TileLayer
-               attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-               url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
-            />
+            <LayerGroup>
+               <TileLayer
+                  attribution="Google Maps Satellite"
+                  url="https://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
+               />
+               <TileLayer url="https://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}" />
+            </LayerGroup>
 
             <FeatureGroup ref={featureGroupRef}>
                {drawControlsLoaded && (
@@ -1040,19 +1043,19 @@ export default function LandFormMap({ setArea, setCoordinates }) {
                   />
                )}
             </FeatureGroup>
-            
+
             {/* Add measurements overlay */}
-            <MeasurementOverlay 
-               layer={currentLayer} 
-               currentZoom={currentZoom} 
+            <MeasurementOverlay
+               layer={currentLayer}
+               currentZoom={currentZoom}
                areaValue={areaValue}
                isMobile={isMobile}
             />
 
             <LocateButton />
-            <FullscreenButton 
-               isFullscreen={isFullscreen} 
-               toggleFullscreen={toggleFullscreen} 
+            <FullscreenButton
+               isFullscreen={isFullscreen}
+               toggleFullscreen={toggleFullscreen}
             />
          </SafeMapContainer>
 

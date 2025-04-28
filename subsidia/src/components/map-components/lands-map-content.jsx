@@ -8,6 +8,7 @@ import { getAllBounds } from "@/lib/lands-utils"
 import { fixLeafletIcon } from "@/lib/leaflet-utils"
 import { paths } from "@/lib/paths"
 import React from "react"
+import { LayerGroup } from "react-leaflet"
 
 // Utility functions for calculating polygon properties
 const calculatePolygonCenter = (coordinates) => {
@@ -722,10 +723,13 @@ export default function LandsMapContent({ lands }) {
             ref={mapRef}
             attributionControl={false}
          >
-            <TileLayer
-               attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-               url="https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.jpg"
-            />
+            <LayerGroup>
+               <TileLayer
+                  attribution="Google Maps Satellite"
+                  url="https://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
+               />
+               <TileLayer url="https://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}" />
+            </LayerGroup>
 
             {lands.map((land) => (
                <Field key={land.id} land={land} zoom={currentZoom} />
