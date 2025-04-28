@@ -445,42 +445,40 @@ export default function CalendarPage() {
                {/* GIORNO SELEZIONATO */}
                {selectedDay && (
                   <Card className="shadow-sm">
-                     <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">{format(selectedDay, "d MMMM yyyy")}</CardTitle>
-                        <CardDescription className="text-sm">
+                     <CardHeader>
+                        <CardTitle>{format(selectedDay, "d MMMM yyyy")}</CardTitle>
+                        <CardDescription>
                            {selectedDayEntries.length} {selectedDayEntries.length === 1 ? "giornata" : "giornate"}
                         </CardDescription>
                      </CardHeader>
-                     <CardContent className="max-h-[400px] overflow-y-auto">
+                     <CardContent>
                         {selectedDayEntries.length > 0 ? (
-                           <div className="space-y-2">
+                           <div className="space-y-3">
                               {selectedDayEntries.map((entry) => (
-                                 <div key={entry.id} className="border rounded-lg p-2 space-y-1.5 transition-all hover:shadow-sm">
-                                    <div className="flex items-center justify-between gap-2">
-                                       <div className="font-medium text-sm truncate">{entry.employee.name}</div>
-                                       <Badge variant="outline" className={`text-xs ${entry.isPaid ?
+                                 <div key={entry.id} className="border rounded-lg p-3 space-y-2 transition-all hover:shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                       <div className="font-medium">{entry.employee.name}</div>
+                                       <Badge variant="outline" className={entry.isPaid ?
                                           "bg-green-50 text-green-700 border-green-200 whitespace-nowrap" :
                                           "bg-red-50 text-red-700 border-red-200 whitespace-nowrap"
-                                       }`}>
+                                       }>
                                           {entry.isPaid ? "Pagato" : "Non pagato"}
                                        </Badge>
                                     </div>
-                                    <div className="grid grid-cols-2 text-xs gap-1">
-                                       <div>
-                                          <span className="text-slate-500">Tipo:</span>{" "}
-                                          <span className="capitalize">{entry.workType === "fullDay" ? "Giornata intera" : "Mezza giornata"}</span>
-                                       </div>
-                                       <div>
-                                          <span className="text-slate-500">Totale:</span> €{entry.total}
-                                       </div>
-                                       {entry.extras > 0 && (
-                                          <div>
-                                             <span className="text-slate-500">Extra:</span> €{entry.extras}
-                                          </div>
-                                       )}
+                                    <div className="text-sm">
+                                       <span className="text-slate-500">Tipo:</span>{" "}
+                                       <span className="capitalize">{entry.workType === "fullDay" ? "Giornata intera" : "Mezza giornata"}</span>
                                     </div>
+                                    <div className="text-sm">
+                                       <span className="text-slate-500">Totale:</span> €{entry.total}
+                                    </div>
+                                    {entry.extras > 0 && (
+                                       <div className="text-sm">
+                                          <span className="text-slate-500">Extra:</span> €{entry.extras}
+                                       </div>
+                                    )}
                                     {entry.notes && (
-                                       <div className="text-xs">
+                                       <div className="text-sm">
                                           <span className="text-slate-500">Note:</span> {entry.notes}
                                        </div>
                                     )}
@@ -488,7 +486,7 @@ export default function CalendarPage() {
                               ))}
                            </div>
                         ) : (
-                           <div className="text-center py-3 text-slate-500 text-sm">Nessuna giornata per questo giorno</div>
+                           <div className="text-center py-4 text-slate-500">Nessuna giornata per questo giorno</div>
                         )}
                      </CardContent>
                   </Card>

@@ -13,6 +13,7 @@ import {
   Map,
   PieChart,
   Settings2,
+  Sprout,
   SquareTerminal,
   Users,
 } from "lucide-react"
@@ -56,6 +57,26 @@ const data = {
           title: "Statistiche",
           url: paths.salaryStats,
         }
+      ],
+    },
+    {
+      title: "Gestione Raccolti",
+      url: "#",
+      icon: Sprout,
+      isActive: false,
+      items: [
+        {
+          title: "Raccolti",
+          url: paths.harvestsList,
+        },
+        {
+          title: "Terreni",
+          url: paths.lands,
+        },
+        {
+          title: "Statistiche",
+          url: paths.harvestsStats,
+        },
       ],
     },
   ],

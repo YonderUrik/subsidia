@@ -21,6 +21,8 @@ model User {
   authCodes UserAuthenticationCodes[]
   employee  Employee[]
   salaries  Salary[]
+  lands     Land[]
+  harvests Harvest[]
 }
 
 model Employee {
@@ -54,6 +56,43 @@ model Salary {
   updatedAt    DateTime @updatedAt
 
   @@index([notes])
+}
+
+model Land {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  area      Float
+  color     String
+  coordinates Json[]
+  soilType  String
+  variety   String?
+  notes     String?
+  lastHarvest DateTime?
+  isActive Boolean @default(true)
+  year      Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  harvests Harvest[]
+}
+
+model Harvest {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  landId    String   @db.ObjectId
+  land      Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
+  quantity  Float
+  price     Float
+  total     Float
+  isPaid    Boolean  @default(false)
+  paidAmount Float?
+  client    String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  harvestDay DateTime?
 }
 
 model UserAuthenticationCodes {
