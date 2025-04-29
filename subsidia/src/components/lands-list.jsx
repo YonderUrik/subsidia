@@ -19,6 +19,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { paths } from "@/lib/paths"
 import { DeleteConfirmation } from "@/components/delete-confirmation"
 import { Badge } from "./ui/badge"
+import { formatNumber } from "@/lib/utils"
+import { format } from "date-fns"
 
 export function LandsList({ lands, refreshData }) {
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -99,9 +101,9 @@ export function LandsList({ lands, refreshData }) {
                               {land.name}
                            </Link>
                         </TableCell>
-                        <TableCell className="text-right">{land.area.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{formatNumber(land.area.toFixed(4), false)}</TableCell>
                         <TableCell>{land.soilType}</TableCell>
-                        <TableCell>{land.lastHarvest}</TableCell>
+                        <TableCell>{land.lastHarvest ? format(land.lastHarvest, "dd/MM/yyyy") : "N/A"}</TableCell>
                         <TableCell>
                            {land.isActive ? (
                               <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Attivo</Badge>
