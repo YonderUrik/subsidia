@@ -12,128 +12,183 @@ import { formatNumber } from '@/lib/utils';
 
 class CustomFullscreenControl {
    constructor(container) {
-      this._container = container; // The map's container element
+      this._container = container; // The map's container element (e.g., mapContainerRef.current)
+      this._isCssFullscreen = false; // Track CSS fullscreen state
    }
 
    onAdd(map) {
       this._map = map;
       this._controlContainer = document.createElement('div');
-      this._controlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group'; // Use Mapbox classes for styling
+      this._controlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
 
       this._button = document.createElement('button');
-      this._button.className = 'mapboxgl-ctrl-icon mapboxgl-ctrl-fullscreen'; // Use Mapbox classes
+      this._button.className = 'mapboxgl-ctrl-icon';
       this._button.type = 'button';
-      this._button.setAttribute('aria-label', 'Enter fullscreen');
       this._button.onclick = () => this.toggleFullscreen();
 
       this._controlContainer.appendChild(this._button);
 
-      // Listen for fullscreen changes to update button state (optional but good UX)
-      document.addEventListener('fullscreenchange', this._updateButtonState);
-      document.addEventListener('webkitfullscreenchange', this._updateButtonState); // Safari prefix
-      document.addEventListener('mozfullscreenchange', this._updateButtonState);    // Firefox prefix
-      document.addEventListener('MSFullscreenChange', this._updateButtonState);   // IE/Edge prefix
+      // Listen for native fullscreen changes
+      document.addEventListener('fullscreenchange', this._handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', this._handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', this._handleFullscreenChange);
+      document.addEventListener('MSFullscreenChange', this._handleFullscreenChange);
 
-      this._updateButtonState(); // Initial state
+      this._updateButtonState(); // Set initial state
 
       return this._controlContainer;
    }
 
    onRemove() {
-      if (this._controlContainer.parentNode) {
+      // Ensure we exit CSS mode if active when control is removed
+      if (this._isCssFullscreen) {
+         this.exitCssFullscreen();
+      }
+
+      if (this._controlContainer && this._controlContainer.parentNode) {
          this._controlContainer.parentNode.removeChild(this._controlContainer);
       }
-      // Remove listeners
-      document.removeEventListener('fullscreenchange', this._updateButtonState);
-      document.removeEventListener('webkitfullscreenchange', this._updateButtonState);
-      document.removeEventListener('mozfullscreenchange', this._updateButtonState);
-      document.removeEventListener('MSFullscreenChange', this._updateButtonState);
+      // Remove native listeners
+      document.removeEventListener('fullscreenchange', this._handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', this._handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', this._handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', this._handleFullscreenChange);
 
       this._map = undefined;
+      this._button = undefined;
+      this._controlContainer = undefined;
    }
 
-   // Arrow function to maintain 'this' context when called by event listener
-   _updateButtonState = () => {
-      const isFullscreen = !!(
-         document.fullscreenElement ||
-         document.webkitFullscreenElement || // Safari
-         document.mozFullScreenElement ||    // Firefox
-         document.msFullscreenElement       // IE/Edge
-      );
+   // --- CSS Fullscreen Methods ---
+   enterCssFullscreen() {
+      if (!this._container || this._isCssFullscreen) return;
+      console.log("Entering CSS Fullscreen Fallback");
+      this._container.classList.add('map-css-fullscreen');
+      document.body.classList.add('body-map-fullscreen');
+      this._isCssFullscreen = true;
+      this._updateButtonState(); // Update button icon
+      this._map.resize(); // Important: Tell Mapbox to resize to the new container dimensions
+   }
 
-      if (this._button) {
-         if (isFullscreen) {
-            this._button.classList.remove('mapboxgl-ctrl-fullscreen');
-            this._button.classList.add('mapboxgl-ctrl-shrink'); // Class for exit fullscreen icon
-            this._button.setAttribute('aria-label', 'Exit fullscreen');
-         } else {
-            this._button.classList.remove('mapboxgl-ctrl-shrink');
-            this._button.classList.add('mapboxgl-ctrl-fullscreen');
-            this._button.setAttribute('aria-label', 'Enter fullscreen');
-         }
+   exitCssFullscreen() {
+      if (!this._container || !this._isCssFullscreen) return;
+      console.log("Exiting CSS Fullscreen Fallback");
+      this._container.classList.remove('map-css-fullscreen');
+      document.body.classList.remove('body-map-fullscreen');
+      this._isCssFullscreen = false;
+      this._updateButtonState(); // Update button icon
+      this._map.resize(); // Important: Tell Mapbox to resize back
+   }
+   // --- End CSS Fullscreen Methods ---
+
+
+   // Combined handler for native fullscreen changes and updating button state
+   _handleFullscreenChange = () => {
+      // If a native fullscreen change occurs, ensure our CSS state is off
+      if (this.isNativeFullscreenActive() && this._isCssFullscreen) {
+         this.exitCssFullscreen(); // Should ideally not happen, but safety check
+      }
+      this._updateButtonState();
+   };
+
+   // Update button based on EITHER native OR CSS fullscreen state
+   _updateButtonState = () => {
+      if (!this._button) return;
+
+      const isNative = this.isNativeFullscreenActive();
+      const isActive = isNative || this._isCssFullscreen; // Active if either mode is on
+
+      if (isActive) {
+         this._button.classList.remove('mapboxgl-ctrl-fullscreen');
+         this._button.classList.add('mapboxgl-ctrl-shrink');
+         this._button.setAttribute('aria-label', 'Exit fullscreen');
+      } else {
+         this._button.classList.remove('mapboxgl-ctrl-shrink');
+         this._button.classList.add('mapboxgl-ctrl-fullscreen');
+         this._button.setAttribute('aria-label', 'Enter fullscreen');
       }
    };
 
+   // Helper to check native fullscreen status consistently
+   isNativeFullscreenActive() {
+      const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      // Check if native fullscreen is active AND applied to our map container
+      return !!fullscreenElement && fullscreenElement === this._container;
+   }
 
-   toggleFullscreen() {
-      const targetElement = this._container; // Use the map's container
-
-      if (!targetElement) return;
-
-      const isFullscreen = !!(
-         document.fullscreenElement ||
-         document.webkitFullscreenElement ||
-         document.mozFullScreenElement ||
-         document.msFullscreenElement
-      );
-
-      if (isFullscreen) {
-         // Exit fullscreen
-         if (document.exitFullscreen) {
-            document.exitFullscreen().catch(err => console.error("Error exiting fullscreen:", err));
-         } else if (document.webkitExitFullscreen) { /* Safari */
-            document.webkitExitFullscreen();
-         } else if (document.mozCancelFullScreen) { /* Firefox */
-            document.mozCancelFullScreen();
-         } else if (document.msExitFullscreen) { /* IE/Edge */
-            document.msExitFullscreen();
-         }
-      } else {
-         // Check for support before attempting to enter fullscreen
-         // Note: Even if enabled, iOS Safari might still refuse for non-video elements
-         const isSupported =
-            document.fullscreenEnabled ||
-            document.webkitFullscreenEnabled ||
-            document.mozFullScreenEnabled ||
-            document.msFullscreenEnabled;
-
-         if (!isSupported) {
-            // Optional: Alert the user or simply do nothing
-            console.warn("Fullscreen API not supported or not enabled in this browser/context.");
-            alert("Fullscreen mode is not supported on this device or browser.");
-            return;
-         }
-
-         // Enter fullscreen
-         if (targetElement.requestFullscreen) {
-            targetElement.requestFullscreen().catch(err => {
-               console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-               // Often fails on iOS for elements other than <video>
-               alert("Could not enter fullscreen mode. This feature might not be fully supported on your device.");
-            });
-         } else if (targetElement.webkitRequestFullscreen) { /* Safari */
-            targetElement.webkitRequestFullscreen();
-         } else if (targetElement.mozRequestFullScreen) { /* Firefox */
-            targetElement.mozRequestFullScreen();
-         } else if (targetElement.msRequestFullscreen) { /* IE/Edge */
-            targetElement.msRequestFullscreen();
-         }
+   // Main toggle logic
+   async toggleFullscreen() {
+      if (!this._container) {
+         console.error("Map container element not found.");
+         return;
       }
+
+      // --- Check if exiting ---
+      if (this.isNativeFullscreenActive()) {
+         // Exit native fullscreen
+         console.log("Exiting Native Fullscreen");
+         if (document.exitFullscreen) await document.exitFullscreen().catch(e => console.error("Exit FS Error:", e));
+         else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+         else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+         else if (document.msExitFullscreen) document.msExitFullscreen();
+         // _updateButtonState will be called by the 'fullscreenchange' event listener
+         return;
+      }
+
+      if (this._isCssFullscreen) {
+         // Exit CSS fullscreen
+         this.exitCssFullscreen();
+         return;
+      }
+
+      // --- Attempt to enter ---
+      const targetElement = this._container;
+      const isCapabilitySupported = document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
+      this.enterCssFullscreen();
+      // if (isCapabilitySupported) {
+      //    console.log("Attempting Native Fullscreen");
+      //    try {
+      //       if (targetElement.requestFullscreen) await targetElement.requestFullscreen();
+      //       else if (targetElement.webkitRequestFullscreen) targetElement.webkitRequestFullscreen(); // Note: Safari might need options or specific context
+      //       else if (targetElement.mozRequestFullScreen) targetElement.mozRequestFullScreen();
+      //       else if (targetElement.msRequestFullscreen) targetElement.msRequestFullscreen();
+      //       else throw new Error("No known requestFullscreen method found despite capability check.");
+
+      //       // Success! Native fullscreen initiated. State update handled by event listener.
+      //       console.log("Native Fullscreen request successful (or initiated).");
+
+      //    } catch (err) {
+      //       console.warn(`Native Fullscreen failed: ${err.message}. Falling back to CSS method.`);
+      //       // Native method failed OR was refused by browser (common on iOS)
+      //       this.enterCssFullscreen();
+      //    }
+      // } else {
+      //    // Native API not supported at all, go directly to CSS fallback
+      //    console.log("Native Fullscreen not supported. Using CSS fallback.");
+      //    this.enterCssFullscreen();
+      // }
    }
 }
 
 // Custom styles for map controls
 const customStyles = `
+
+/* Styles for the map container in CSS fullscreen mode */
+.map-css-fullscreen {
+  position: fixed !important; /* Override any relative/absolute positioning */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important; /* Full viewport width */
+  height: 100vh !important; /* Full viewport height */
+  z-index: 99999 !important; /* Drastically increased z-index to be above everything */
+  background-color: #ffffff; /* Ensure white background */
+}
+
+/* Style for the body when map is in CSS fullscreen to prevent scrolling */
+.body-map-fullscreen {
+  overflow: hidden !important; /* Prevent scrolling of underlying page content */
+}
+  
 .mapboxgl-ctrl-group {
   background-color: #ffffff;
   border-radius: 8px !important;
@@ -225,14 +280,14 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
       });
       mapRef.current.addControl(geolocate, 'top-right');
 
-       // --- Use the Custom Fullscreen Control ---
+      // --- Use the Custom Fullscreen Control ---
       // Check if mapContainerRef.current exists before creating control
       if (mapContainerRef.current) {
          const customFullscreen = new CustomFullscreenControl(mapContainerRef.current);
          mapRef.current.addControl(customFullscreen, 'top-right');
-     }
-     // --- End of Custom Fullscreen Control usage ---
-     
+      }
+      // --- End of Custom Fullscreen Control usage ---
+
 
       // Trigger geolocation on map load
       mapRef.current.on('load', () => {
