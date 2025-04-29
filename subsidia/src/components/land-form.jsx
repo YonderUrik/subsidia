@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { CalendarIcon, MapPin, Info, Upload, Check, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import dynamic from "next/dynamic"
@@ -19,16 +19,13 @@ import { cn } from "@/lib/utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
-import { fixLeafletIcon } from "@/lib/leaflet-utils"
 import { useForm } from "react-hook-form"
 import { SOIL_TYPES } from "@/lib/config"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command"
 import { toast } from "sonner"
 import axios from "axios"
 import { paths } from "@/lib/paths"
+import MapboxExample from "./map-components/mapbox"
 
 // Helper function to check if a value exists in SOIL_TYPES
 const isInSoilTypes = (value) => {
@@ -47,18 +44,6 @@ const formSchema = z.object({
    drawingMethod: z.string().optional()
 })
 
-// Import Leaflet components dynamically to avoid SSR issues
-const MapWithNoSSR = dynamic(() => import("./map-components/land-form-map"), {
-   ssr: false,
-   loading: () => (
-      <div className="h-[500px] w-full flex items-center justify-center bg-muted/20 rounded-lg border">
-         <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <MapPin className="h-8 w-8 animate-pulse" />
-            <p>Caricamento mappa...</p>
-         </div>
-      </div>
-   ),
-})
 
 export function LandForm() {
    const [isSubmitting, setIsSubmitting] = useState(false)
@@ -78,10 +63,26 @@ export function LandForm() {
       }
    })
 
-   // Fix Leaflet icon issue
+   const [lands, setLands] = useState([])
+
+   const getLands = useCallback(async () => {
+      try {
+         const response = await axios.get("/api/lands", {
+            params: {
+               year: form.watch("year"),
+            }
+         })
+         setLands(response.data)
+      } catch (error) {
+         toast.error(error.response.data.error || "Errore nel fetch dei campi")
+      }
+
+   }, [form.watch("year")])
+
    useEffect(() => {
-      fixLeafletIcon()
-   }, [])
+      getLands()
+   }, [getLands])
+
 
    async function onSubmit(values) {
       setIsSubmitting(true)
@@ -185,14 +186,12 @@ export function LandForm() {
                         control={form.control}
                         name="drawingMethod"
                         render={({ field }) => (
-                           <Tabs defaultValue="draw" onValueChange={field.onChange} className="mb-4">
-                              <TabsContent value="draw" className="relative mt-2 rounded-lg border">
-                                 <MapWithNoSSR
-                                    setArea={(value) => form.setValue("area", value)}
-                                    setCoordinates={(value) => form.setValue("coordinates", JSON.parse(JSON.stringify(value)))}
-                                    showSoilOverlay={form.watch("showSoilOverlay")}
-                                    showElevationOverlay={form.watch("showElevationOverlay")}
-                                 />
+                           <Tabs defaultValue="draw" onValueChange={field.onChange} className="mb-4 h-[600px]">
+                              <TabsContent value="draw" className="relative mt-2 rounded-lg border h-[600px]">
+                                 <MapboxExample lands={lands} newLand={true} setArea={(value) => {
+                                    form.setValue("area", value)
+                                    console.log("area set ARES", value)
+                                 }} setCoordinates={(value) => form.setValue("coordinates", JSON.parse(JSON.stringify(value)))} />
                               </TabsContent>
                            </Tabs>
                         )}

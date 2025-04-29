@@ -237,7 +237,7 @@ export default function LandsPage() {
                      </div>
                      <div className="flex flex-col flex-1">
                         <p className="text-xs text-slate-500 leading-none">Ettari totali</p>
-                        <p className="text-xl font-bold text-green-700">{stats.totalHectares} ha</p>
+                        <p className="text-xl font-bold text-green-700">{formatNumber(stats.totalHectares.toFixed(4), false)} ha</p>
                      </div>
                   </div>
                </CardContent>
