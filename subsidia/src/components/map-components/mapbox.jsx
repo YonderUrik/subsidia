@@ -7,6 +7,48 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 import { formatNumber } from '@/lib/utils';
 
+// Custom styles for map controls
+const customStyles = `
+.mapboxgl-ctrl-group {
+  background-color: #ffffff;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  overflow: hidden;
+}
+
+.mapboxgl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 4px !important;
+  transition: all 0.2s ease;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: #f0f0f0 !important;
+}
+
+.mapboxgl-ctrl-icon {
+  filter: none !important;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .mapboxgl-ctrl-top-right {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .mapboxgl-ctrl-group {
+    margin: 0 0 10px 0 !important;
+  }
+  
+  .mapboxgl-ctrl-group button {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+`;
+
 const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
    const mapContainerRef = useRef();
    const mapRef = useRef();
@@ -15,6 +57,11 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
    const measurementMarkersRef = useRef([]);
 
    useEffect(() => {
+      // Add custom styles to head
+      const styleElement = document.createElement('style');
+      styleElement.textContent = customStyles;
+      document.head.appendChild(styleElement);
+
       mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
       // Initialize map with default center
@@ -36,7 +83,11 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
             animate: false
          }
       });
-      mapRef.current.addControl(geolocate);
+      mapRef.current.addControl(geolocate, 'top-right');
+
+      // Add fullscreen control - positioned for better mobile visibility
+      const fullscreen = new mapboxgl.FullscreenControl();
+      mapRef.current.addControl(fullscreen, 'top-right');
 
       // Trigger geolocation on map load
       mapRef.current.on('load', () => {
@@ -108,13 +159,13 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
                      if (closedCoords.length >= 4) {
                         const polygon = turf.polygon([closedCoords]);
                         const center = turf.center(polygon);
-                        mapRef.current.setCenter(center.geometry.coordinates);
+                        mapRef.current.flyTo({ center: center.geometry.coordinates });
                      } else {
-                        mapRef.current.setCenter(lngLatCoords[0]);
+                        mapRef.current.flyTo({ center: lngLatCoords[0] });
                      }
                   } catch (error) {
                      console.error("Error calculating center:", error);
-                     mapRef.current.setCenter(lngLatCoords[0]);
+                     mapRef.current.flyTo({ center: lngLatCoords[0] });
                   }
                }
             }
@@ -248,20 +299,21 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
       function createLabelElement(text, className) {
          const el = document.createElement('div');
          el.className = className;
-         el.style.background = 'rgba(255, 255, 255, 0.8)';
-         el.style.padding = '1px 1px';
+         el.style.background = 'rgba(255, 255, 255, 0.9)';
+         el.style.padding = '3px 6px';
          el.style.borderRadius = '4px';
          el.style.fontSize = '12px';
          el.style.fontWeight = 'bold';
          el.style.textAlign = 'center';
          el.style.whiteSpace = 'pre-line';
          el.style.pointerEvents = 'none';
-         el.style.border = '1px solid rgba(0, 0, 0, 0.2)';
-         el.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.1)';
+         el.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+         el.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
 
          if (className === 'area-label') {
             el.style.color = '#009688';
             el.style.fontSize = '14px';
+            el.style.padding = '4px 8px';
          } else if (className === 'distance-label') {
             el.style.color = '#333';
             el.style.transform = 'translateY(-50%)';
@@ -274,35 +326,77 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
          return el;
       }
 
-      // Add fullscreen control
-      const fullscreen = new mapboxgl.FullscreenControl();
-      mapRef.current.addControl(fullscreen);
-
       // Only add drawing tools if newLand is true
       if (newLand) {
+         // Custom drawing tools with improved styling
          const draw = new MapboxDraw({
             displayControlsDefault: false,
             controls: {
                polygon: true,
                trash: true
             },
-            defaultMode: 'draw_polygon'
+            defaultMode: 'draw_polygon',
+            styles: [
+               // Style for points (vertices)
+               {
+                  'id': 'gl-draw-point',
+                  'type': 'circle',
+                  'filter': ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint']],
+                  'paint': {
+                     'circle-radius': 6,
+                     'circle-color': '#1e88e5'
+                  }
+               },
+               // Style for midpoints
+               {
+                  'id': 'gl-draw-point-midpoint',
+                  'type': 'circle',
+                  'filter': ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
+                  'paint': {
+                     'circle-radius': 4,
+                     'circle-color': '#90caf9'
+                  }
+               },
+               // Style for point stroke
+               {
+                  'id': 'gl-draw-point-stroke-active',
+                  'type': 'circle',
+                  'filter': ['all', ['==', '$type', 'Point'], ['==', 'active', 'true']],
+                  'paint': {
+                     'circle-radius': 7,
+                     'circle-color': '#fff'
+                  }
+               },
+               // Style for the polygon fill
+               {
+                  'id': 'gl-draw-polygon-fill',
+                  'type': 'fill',
+                  'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+                  'paint': {
+                     'fill-color': '#1e88e5',
+                     'fill-outline-color': '#1e88e5',
+                     'fill-opacity': 0.3
+                  }
+               },
+               // Style for the polygon outline
+               {
+                  'id': 'gl-draw-polygon-stroke',
+                  'type': 'line',
+                  'filter': ['all', ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+                  'layout': {
+                     'line-cap': 'round',
+                     'line-join': 'round'
+                  },
+                  'paint': {
+                     'line-color': '#1e88e5',
+                     'line-width': 2
+                  }
+               }
+            ]
          });
 
          drawRef.current = draw;
-         mapRef.current.addControl(draw);
-
-         // Create a custom control container for the undo button
-         const undoControlContainer = document.createElement('div');
-         undoControlContainer.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
-         undoControlContainer.style.backgroundColor = '#fff';
-         undoControlContainer.style.border = 'none';
-         undoControlContainer.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
-         undoControlContainer.style.borderRadius = '4px';
-         undoControlContainer.style.overflow = 'hidden';
-
-         // Add the custom control to the map
-         mapRef.current.getContainer().querySelector('.mapboxgl-ctrl-top-right').appendChild(undoControlContainer);
+         mapRef.current.addControl(draw, 'top-right');
 
          // Event listeners for drawing
          mapRef.current.on('draw.create', (e) => {
@@ -319,7 +413,7 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
             }
             updateArea(e);
          });
-         
+
          mapRef.current.on('draw.delete', updateArea);
          mapRef.current.on('draw.update', updateArea);
 
@@ -358,13 +452,6 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
             const area = turf.area(data);
             const roundedAreaValue = Math.round(area * 100) / 100;
             setRoundedArea(roundedAreaValue);
-            
-            // // Update coordinates for parent component
-            // if (data.features[0] && data.features[0].geometry.coordinates[0]) {
-            //    // Convert from [lng, lat] to [lat, lng] format
-            //    const coordinates = data.features[0].geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-            //    setCoordinates?.(coordinates);
-            // }
 
             // For each feature being drawn
             data.features.forEach(feature => {
@@ -437,22 +524,19 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
          if (!drawRef.current) return;
 
          const data = drawRef.current.getAll();
-         console.log("data", data);
          if (data.features.length > 0) {
             const area = turf.area(data);
-            console.log("area", area);
             const roundedAreaValue = Math.round(area * 100) / 100;
-            console.log("roundedAreaValue", roundedAreaValue);
             setRoundedArea(roundedAreaValue);
-            setArea?.(roundedAreaValue/10000);
-            
+            setArea?.(roundedAreaValue / 10000);
+
             // Update coordinates for parent component
             if (data.features[0] && data.features[0].geometry.coordinates[0]) {
                // Convert from [lng, lat] to [lat, lng] format
                const coordinates = data.features[0].geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
                setCoordinates?.(coordinates);
             }
-            
+
             updateDrawingMeasurements();
          } else {
             setRoundedArea(undefined);
@@ -465,6 +549,12 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
 
       // Cleanup function
       return () => {
+         // Remove custom styles
+         const styleElement = document.querySelector('style');
+         if (styleElement && styleElement.textContent === customStyles) {
+            styleElement.remove();
+         }
+
          if (mapRef.current) {
             // Clear all measurements
             clearMeasurements();
@@ -482,7 +572,7 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
 
    return (
       <>
-         <div ref={mapContainerRef} id="map" style={{ height: '100%' }}></div>
+         <div ref={mapContainerRef} id="map" style={{ height: '100%', width: '100%' }}></div>
       </>
    );
 };
