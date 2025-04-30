@@ -249,6 +249,7 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
    const mapRef = useRef();
    const drawRef = useRef();
    const [roundedArea, setRoundedArea] = useState();
+   const [isMapLoading, setIsMapLoading] = useState(true); // Add loading state
    const measurementMarkersRef = useRef([]);
 
    useEffect(() => {
@@ -267,12 +268,15 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
          zoom: 12
       });
 
+      // Show loading initially
+      setIsMapLoading(true);
+
       // Add locate control with animation disabled
       const geolocate = new mapboxgl.GeolocateControl({
          positionOptions: {
             enableHighAccuracy: true
          },
-         trackUserLocation: true,
+         trackUserLocation: false, // Only geolocate once, don't track continuously
          showUserHeading: true,
          fitBoundsOptions: {
             animate: false
@@ -289,12 +293,15 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
       // --- End of Custom Fullscreen Control usage ---
 
 
-      // Trigger geolocation on map load
+      // Trigger geolocation or fit bounds on map load
       mapRef.current.on('load', () => {
-         geolocate.trigger();
-
          // Add lands to the map if provided
          if (lands && lands.length > 0) {
+            // --- Data preparation for labels ---
+            const areaLabelFeatures = [];
+            const distanceLabelFeatures = [];
+            // --- End Data preparation ---
+
             // Create a feature collection of all lands to calculate the center
             const features = [];
             let allCoordinatesValid = true;
@@ -332,19 +339,22 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
                      [bbox[2], bbox[3]]  // Northeast coordinates
                   ], {
                      padding: 50, // Add some padding around the bounds
-                     maxZoom: 16  // Limit zoom level
+                     maxZoom: 16,  // Limit zoom level
+                     animate: false // Disable animation for initial load
                   });
                } catch (error) {
                   console.error("Error calculating center of all lands:", error);
-                  // Fall back to first land if there's an error
-                  centerOnFirstLand();
+                  // If no valid land features could be processed, geolocate as fallback
+                  console.warn("No valid land features found to fit bounds, attempting geolocation.");
+                  geolocate.trigger();
                }
             } else if (!allCoordinatesValid) {
-               // Fall back to first land if there were errors
-               centerOnFirstLand();
+               // If no valid land features could be processed, geolocate as fallback
+               console.warn("No valid land features found to fit bounds, attempting geolocation.");
+               geolocate.trigger();
             }
 
-            // Fallback function to center on first land
+            // Fallback function to center on first land (only if bbox fails)
             function centerOnFirstLand() {
                const firstLand = lands[0];
                if (firstLand.coordinates && firstLand.coordinates.length > 0) {
@@ -370,7 +380,7 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
                }
             }
 
-            // Add each land as a polygon
+            // Add each land as a polygon and prepare label data
             lands.forEach(land => {
                if (land.coordinates && land.coordinates.length >= 3) {
                   // Convert coordinates to GeoJSON format (swap lat/lng)
@@ -382,30 +392,34 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
                      closedCoords.push(closedCoords[0]);
                   }
 
-                  // Create a polygon feature
-                  mapRef.current.addSource(`land-${land.id}`, {
-                     type: 'geojson',
-                     data: {
-                        type: 'Feature',
-                        geometry: {
-                           type: 'Polygon',
-                           coordinates: [closedCoords]
-                        },
-                        properties: {
-                           id: land.id,
-                           name: land.name,
-                           area: land.area,
-                           soilType: land.soilType,
-                           lastHarvest: land.lastHarvest
-                        }
+                  const landId = `land-${land.id}`;
+                  const polygonFeature = {
+                     type: 'Feature',
+                     geometry: {
+                        type: 'Polygon',
+                        coordinates: [closedCoords]
+                     },
+                     properties: {
+                        id: land.id,
+                        name: land.name,
+                        area: land.area,
+                        soilType: land.soilType,
+                        lastHarvest: land.lastHarvest
                      }
+                  };
+
+
+                  // Create a polygon feature
+                  mapRef.current.addSource(landId, {
+                     type: 'geojson',
+                     data: polygonFeature
                   });
 
                   // Add a fill layer with grey color if newLand is true
                   mapRef.current.addLayer({
                      id: `land-fill-${land.id}`,
                      type: 'fill',
-                     source: `land-${land.id}`,
+                     source: landId, // Use the landId source
                      paint: {
                         'fill-color': newLand ? '#D3D3D3' : (land.color || '#009688'),
                         'fill-opacity': newLand ? 0.8 : 0.4
@@ -416,7 +430,7 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
                   mapRef.current.addLayer({
                      id: `land-line-${land.id}`,
                      type: 'line',
-                     source: `land-${land.id}`,
+                     source: landId, // Use the landId source
                      paint: {
                         'line-color': newLand ? '#888888' : (land.color || '#009688'),
                         'line-width': 2
@@ -448,51 +462,123 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
                      mapRef.current.getCanvas().style.cursor = '';
                   });
 
-                  // Only add labels if newLand is false
+                  // Only prepare labels if newLand is false
                   if (!newLand) {
-                     // Calculate center of the polygon for area label
                      try {
                         const polygon = turf.polygon([closedCoords]);
                         const center = turf.center(polygon);
 
-                        // Add area label in the center
-                        new mapboxgl.Marker({
-                           element: createLabelElement(`${formatNumber(land.area.toFixed(4), false)} ha`, 'area-label')
-                        })
-                           .setLngLat(center.geometry.coordinates)
-                           .addTo(mapRef.current);
+                        // Prepare area label feature
+                        areaLabelFeatures.push({
+                           type: 'Feature',
+                           geometry: center.geometry, // Use the calculated center point
+                           properties: {
+                              labelText: `${formatNumber(land.area.toFixed(4), false)} ha`
+                           }
+                        });
 
-                        // Calculate and add distance measurements for each side
+                        // Prepare distance label features for each side
                         for (let i = 0; i < closedCoords.length - 1; i++) {
                            const start = closedCoords[i];
                            const end = closedCoords[i + 1];
 
-                           // Calculate midpoint for label placement
                            const midpoint = [
                               (start[0] + end[0]) / 2,
                               (start[1] + end[1]) / 2
                            ];
 
-                           // Calculate distance in meters
                            const from = turf.point(start);
                            const to = turf.point(end);
-                           const distance = turf.distance(from, to) * 1000; // Convert to meters
+                           const distance = turf.distance(from, to) * 1000; // meters
                            const roundedDistance = Math.round(distance * 10) / 10;
 
-                           // Add distance label
-                           new mapboxgl.Marker({
-                              element: createLabelElement(`${formatNumber(roundedDistance, false)} m`, 'distance-label')
-                           })
-                              .setLngLat(midpoint)
-                              .addTo(mapRef.current);
+                           distanceLabelFeatures.push({
+                              type: 'Feature',
+                              geometry: {
+                                 type: 'Point',
+                                 coordinates: midpoint
+                              },
+                              properties: {
+                                 labelText: `${formatNumber(roundedDistance, false)} m`
+                              }
+                           });
                         }
                      } catch (error) {
-                        console.error("Error adding measurements:", error);
+                        console.error("Error preparing label features:", error);
                      }
                   }
                }
             });
+
+            // --- Add Label Layers ---
+            if (!newLand && (areaLabelFeatures.length > 0 || distanceLabelFeatures.length > 0)) {
+               // Add source for Area Labels
+               mapRef.current.addSource('area-labels', {
+                  type: 'geojson',
+                  data: turf.featureCollection(areaLabelFeatures)
+               });
+
+               // Add source for Distance Labels
+               mapRef.current.addSource('distance-labels', {
+                  type: 'geojson',
+                  data: turf.featureCollection(distanceLabelFeatures)
+               });
+
+               // Add Area Label Layer
+               mapRef.current.addLayer({
+                  id: 'area-label-layer',
+                  type: 'symbol',
+                  source: 'area-labels',
+                  minzoom: 10, // Only show area labels when zoomed in reasonably
+                  layout: {
+                     'text-field': ['get', 'labelText'],
+                     'text-size': 14,
+                     'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                     'text-allow-overlap': false, // Prevent overlap
+                     'text-ignore-placement': false, // Prevent overlap
+                     'text-offset': [0, -0.5], // Adjust offset slightly if needed
+                     'text-anchor': 'center',
+                  },
+                  paint: {
+                     'text-color': '#009688', // Area label color
+                     'text-halo-color': 'rgba(255, 255, 255, 0.9)', // White halo for legibility
+                     'text-halo-width': 1,
+                     'text-halo-blur': 1
+                  }
+               });
+
+               // Add Distance Label Layer
+               mapRef.current.addLayer({
+                  id: 'distance-label-layer',
+                  type: 'symbol',
+                  source: 'distance-labels',
+                  minzoom: 15, // Only show distance labels when zoomed in quite a bit
+                  layout: {
+                     'text-field': ['get', 'labelText'],
+                     'text-size': 12,
+                     'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+                     'text-allow-overlap': false, // Prevent overlap
+                     'text-ignore-placement': false, // Prevent overlap
+                     'text-rotation-alignment': 'map', // Align text with map rotation
+                     'text-pitch-alignment': 'map' // Align text with map pitch
+                  },
+                  paint: {
+                     'text-color': '#333333', // Distance label color
+                     'text-halo-color': 'rgba(255, 255, 255, 0.9)', // White halo for legibility
+                     'text-halo-width': 1,
+                     'text-halo-blur': 1
+                  }
+               });
+            }
+            // --- End Add Label Layers ---
+         } else {
+            // No lands provided, trigger geolocation
+            console.log("No lands provided, triggering geolocation.");
+            geolocate.trigger();
          }
+
+         // Hide loading indicator
+         setIsMapLoading(false);
       });
 
       // Helper function to create label elements
@@ -772,7 +858,27 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
 
    return (
       <>
-         <div ref={mapContainerRef} id="map" style={{ height: '100%', width: '100%' }}></div>
+         <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+            {isMapLoading && (
+               <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10, // Ensure it's above the map container but below controls if needed
+                  fontSize: '1.2em',
+                  color: '#333'
+               }}>
+                  Caricamento mappa...
+               </div>
+            )}
+            <div ref={mapContainerRef} id="map" style={{ height: '100%', width: '100%' }}></div>
+         </div>
       </>
    );
 };
