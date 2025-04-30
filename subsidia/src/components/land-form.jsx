@@ -7,6 +7,7 @@ import dynamic from "next/dynamic"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useRouter } from "next/navigation"
+import { SketchPicker } from "react-color"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -41,7 +42,8 @@ const formSchema = z.object({
    soilType: z.string().min(1, "Please select a soil type"),
    notes: z.string().optional(),
    year: z.number().min(2020, "Year must be greater than 2020"),
-   drawingMethod: z.string().optional()
+   drawingMethod: z.string().optional(),
+   color: z.string().min(1, "Color is required")
 })
 
 
@@ -59,7 +61,8 @@ export function LandForm() {
          soilType: "",
          notes: "",
          year: new Date().getFullYear(),
-         drawingMethod: "draw"
+         drawingMethod: "draw",
+         color: "#4CAF50"
       }
    })
 
@@ -333,6 +336,44 @@ export function LandForm() {
                         />
                      </div>
                   </div>
+
+                  <FormField
+                     control={form.control}
+                     name="color"
+                     render={({ field }) => (
+                        <FormItem className="space-y-2">
+                           <FormLabel className="text-base font-medium block">Colore del campo</FormLabel>
+                           <FormControl>
+                              <Popover>
+                                 <PopoverTrigger asChild>
+                                    <Button
+                                       variant="outline"
+                                       className="w-full justify-start text-left font-normal h-10"
+                                       style={{ backgroundColor: field.value }}
+                                    >
+                                       <div className="w-full flex items-center gap-2">
+                                          <div
+                                             className="h-4 w-4 rounded !bg-center !bg-cover transition-all"
+                                             style={{ background: field.value }}
+                                          ></div>
+                                          <div className="flex-1 truncate text-white mix-blend-difference">
+                                             {field.value}
+                                          </div>
+                                       </div>
+                                    </Button>
+                                 </PopoverTrigger>
+                                 <PopoverContent className="w-auto p-0" align="start">
+                                    <SketchPicker
+                                       color={field.value}
+                                       onChangeComplete={(color) => field.onChange(color.hex)}
+                                    />
+                                 </PopoverContent>
+                              </Popover>
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
 
                   <FormField
                      control={form.control}

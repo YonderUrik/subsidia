@@ -97,9 +97,15 @@ export function LandsList({ lands, refreshData }) {
                   lands.map((land) => (
                      <TableRow key={land.id}>
                         <TableCell className="font-medium">
-                           <Link href={`/lands/${land.id}`} className="hover:underline text-primary">
-                              {land.name}
-                           </Link>
+                           <div className="flex items-center gap-2">
+                              <span
+                                 className="h-3 w-3 rounded-sm inline-block"
+                                 style={{ backgroundColor: land.color || '#ccc' }}
+                              ></span>
+                              <Link href={paths.landIdEdit(land.id)} className="hover:underline text-primary">
+                                 {land.name}
+                              </Link>
+                           </div>
                         </TableCell>
                         <TableCell className="text-right">{formatNumber(land.area.toFixed(4), false)}</TableCell>
                         <TableCell>{land.soilType}</TableCell>

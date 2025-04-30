@@ -78,7 +78,7 @@ export async function POST(request) {
             userId: session.user.id,
             name: data.name,
             area: data.area,
-            color: randomColor,
+            color: data.color || randomColor,
             coordinates: data.coordinates,
             soilType: data.soilType,
             notes: data.notes,
