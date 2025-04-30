@@ -2,6 +2,8 @@
 
 Subsidia is a web application designed for farm management. It helps farmers track employees, workdays, salaries, land usage, harvests, and associated earnings. The application provides a dashboard overview and dedicated modules for detailed management.
 
+**Live Demo:** Access the deployed application at [https://subsidia.app](https://subsidia.app)
+
 ## Features
 
 *   **Dashboard:** Provides a quick overview of key statistics for employees (active workers, total workdays, total payroll) and harvests (cultivated area, total yield, total earnings).
@@ -10,6 +12,23 @@ Subsidia is a web application designed for farm management. It helps farmers tra
 *   **Land Management:** Visualize and manage farm plots (likely using map features).
 *   **Calendar/Scheduling:** Plan and track farm activities.
 *   **Authentication:** Secure login system for users.
+
+## Screenshots
+
+*(Add screenshots of the application here. Examples:)*
+
+**Dashboard:**
+![Dashboard](/placeholders/placeholder-dashboard.png)
+
+**Employee Management:**
+![Employee Management](/placeholders/placeholder-employee-single.png)
+![](/placeholders/placeholder-salaries.png)
+
+**Harvest Tracking:**
+![Harvest Tracking](/placeholders/placeholder-harvest.png)
+
+**Land Mapping:**
+![Land Mapping](/placeholders/placeholder-lands.png)
 
 ## Tech Stack
 
@@ -55,7 +74,7 @@ Subsidia is a web application designed for farm management. It helps farmers tra
 3.  **Set up environment variables:**
     *   Copy the example environment file: `cp .env.example .env`
     *   Edit the `.env` file and provide the necessary values, especially for:
-        *   `DATABASE_URL`: Your MONGODB connection string
+        *   `DATABASE_URL`: Your PostgreSQL connection string (e.g., `postgresql://user:password@host:port/database`)
         *   `NEXTAUTH_URL`: The base URL of your application (e.g., `http://localhost:3000` for development)
         *   `NEXTAUTH_SECRET`: A secret key for NextAuth.js (generate one using `openssl rand -base64 32`)
         *   Mapbox access token, Resend API key, etc.
