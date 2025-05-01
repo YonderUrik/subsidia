@@ -15,8 +15,6 @@ Subsidia is a web application designed for farm management. It helps farmers tra
 
 ## Screenshots
 
-*(Add screenshots of the application here. Examples:)*
-
 **Dashboard:**
 ![Dashboard](/placeholders/placeholder-dashboard.png)
 
@@ -43,7 +41,7 @@ Subsidia is a web application designed for farm management. It helps farmers tra
 *   **Forms:** [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/) for validation
 *   **API Client:** [Axios](https://axios-http.com/)
 *   **Email:** [React Email](https://react.email/) & [Resend](https://resend.com/)
-*   **Deployment:** Likely [Vercel](https://vercel.com/)
+*   **Deployment:** [Vercel](https://vercel.com/)
 
 ## Getting Started
 
@@ -51,7 +49,7 @@ Subsidia is a web application designed for farm management. It helps farmers tra
 
 *   Node.js (v18 or later recommended)
 *   npm, yarn, or bun
-*   A PostgreSQL database instance
+*   A MongoDB database instance
 
 ### Installation & Setup
 
@@ -74,7 +72,7 @@ Subsidia is a web application designed for farm management. It helps farmers tra
 3.  **Set up environment variables:**
     *   Copy the example environment file: `cp .env.example .env`
     *   Edit the `.env` file and provide the necessary values, especially for:
-        *   `DATABASE_URL`: Your PostgreSQL connection string (e.g., `postgresql://user:password@host:port/database`)
+        *   `DATABASE_URL`: Your Mongo DB connection string
         *   `NEXTAUTH_URL`: The base URL of your application (e.g., `http://localhost:3000` for development)
         *   `NEXTAUTH_SECRET`: A secret key for NextAuth.js (generate one using `openssl rand -base64 32`)
         *   Mapbox access token, Resend API key, etc.
