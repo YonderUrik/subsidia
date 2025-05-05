@@ -193,7 +193,6 @@ export function LandForm() {
                               <TabsContent value="draw" className="relative mt-2 rounded-lg border h-[600px]">
                                  <MapboxExample lands={lands} newLand={true} setArea={(value) => {
                                     form.setValue("area", value)
-                                    console.log("area set ARES", value)
                                  }} setCoordinates={(value) => form.setValue("coordinates", JSON.parse(JSON.stringify(value)))} />
                               </TabsContent>
                            </Tabs>

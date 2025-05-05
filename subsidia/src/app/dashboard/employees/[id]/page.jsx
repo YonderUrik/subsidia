@@ -25,6 +25,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner"
 import { formatNumber } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import dayjs from "dayjs"
+import { DatePicker } from "@/components/ui/date-picker"
 
 export default function EmployeeDetailsPage() {
    const params = useParams()
@@ -38,10 +40,12 @@ export default function EmployeeDetailsPage() {
    // Add pagination state
    const [historyPage, setHistoryPage] = useState(1)
    const [historyPageSize, setHistoryPageSize] = useState(10)
+   const [accontiPage, setAccontiPage] = useState(1)
+   const [accontiPageSize, setAccontiPageSize] = useState(10)
 
    const fetchEmployee = useCallback(async () => {
       try {
-         const response = await axios.get(`/api/employees?id=${id}&historyPage=${historyPage}&historyPageSize=${historyPageSize}`)
+         const response = await axios.get(`/api/employees?id=${id}&historyPage=${historyPage}&historyPageSize=${historyPageSize}&accontiPage=${accontiPage}&accontiPageSize=${accontiPageSize}`)
          setEmployee(response.data.data)
          setIsLoading(false)
       } catch (error) {
@@ -49,7 +53,7 @@ export default function EmployeeDetailsPage() {
          setError(error.response.data.message || error.response.data.error || "Errore nel caricamento dei dati dell'operaio")
          setIsLoading(false)
       }
-   }, [id, historyPage, historyPageSize])
+   }, [id, historyPage, historyPageSize, accontiPage, accontiPageSize])
 
    useEffect(() => {
       fetchEmployee()
@@ -82,7 +86,6 @@ export default function EmployeeDetailsPage() {
 
    const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false)
    const [isTogglingStatus, setIsTogglingStatus] = useState(false)
-   const [isStatusUpdated, setIsStatusUpdated] = useState(false)
    const [isAddingWorkEntry, setIsAddingWorkEntry] = useState(false)
 
    // Payment dialog states
@@ -91,6 +94,19 @@ export default function EmployeeDetailsPage() {
    const [isProcessingPayment, setIsProcessingPayment] = useState(false)
    const [selectedEntryId, setSelectedEntryId] = useState(null)
    const [paymentType, setPaymentType] = useState("acconto") // "acconto" or "full"
+   const [paymentNote, setPaymentNote] = useState("")
+
+   // New Acconto state
+   const [newAcconto, setNewAcconto] = useState({
+      date: dayjs().format(),
+      amount: 0,
+      notes: ""
+   })
+
+   // Acconto dialog state
+   const [isAccontoDialogOpen, setIsAccontoDialogOpen] = useState(false)
+   const [isAddingAcconto, setIsAddingAcconto] = useState(false)
+   const [accontoToEdit, setAccontoToEdit] = useState(null)
 
    const handleDelete = async () => {
       setIsDeleting(true)
@@ -128,7 +144,7 @@ export default function EmployeeDetailsPage() {
          if (response.data.success) {
             setIsTogglingStatus(false)
             setIsDisableDialogOpen(false)
-            setIsStatusUpdated(true)
+
 
             // Update local state with response data
             setEmployee(prev => ({
@@ -136,10 +152,9 @@ export default function EmployeeDetailsPage() {
                isActive: !prev.isActive
             }))
 
-            // Reset status message after delay
-            setTimeout(() => {
-               setIsStatusUpdated(false)
-            }, 3000)
+            toast.success("Stato aggiornato con successo")
+
+
          }
       } catch (error) {
          setIsTogglingStatus(false)
@@ -190,6 +205,7 @@ export default function EmployeeDetailsPage() {
    const openPaymentDialog = (entryId = null, type = "acconto") => {
       setSelectedEntryId(entryId)
       setPaymentType(type)
+      setPaymentNote("")
 
       if (type === "full") {
          if (entryId) {
@@ -214,27 +230,72 @@ export default function EmployeeDetailsPage() {
       setIsProcessingPayment(true)
 
       try {
-
          const response = await axios.patch('/api/salaries', {
             salaryId: selectedEntryId,
             employeeId: id,
             paymentAmount: paymentAmount,
+            notes: paymentNote
          })
 
          if (response.data.success) {
             // Refresh employee data
             fetchEmployee()
             setIsPaymentDialogOpen(false)
-            setIsStatusUpdated(true)
 
-            setTimeout(() => {
-               setIsStatusUpdated(false)
-            }, 3000)
+
+            // Show success message with acconto details
+            toast.success("Pagamento registrato con successo")
+
+
          }
       } catch (error) {
-         toast.error(error.response.data.message || error.response.data.error || "Errore durante il pagamento")
+         toast.error(error.response?.data?.error || "Errore durante il pagamento")
       } finally {
          setIsProcessingPayment(false)
+      }
+   }
+
+   // Function to handle saving an acconto
+   const handleSaveAcconto = async () => {
+      setIsAddingAcconto(true)
+
+      try {
+         if (accontoToEdit) {
+            // Update existing acconto
+            const response = await axios.patch('/api/acconti', {
+               id: accontoToEdit.id,
+               amount: newAcconto.amount,
+               date: dayjs(newAcconto.date).format(),
+               notes: newAcconto.notes
+            })
+
+            if (response.data.success) {
+               toast.success("Acconto aggiornato con successo")
+               fetchEmployee()
+               setIsAccontoDialogOpen(false)
+            }
+         }
+      } catch (error) {
+         toast.error(error.response?.data?.error || "Errore durante il salvataggio dell'acconto")
+      } finally {
+         setIsAddingAcconto(false)
+      }
+   }
+
+   // Function to handle deleting an acconto
+   const handleDeleteAcconto = async (accontoId) => {
+      if (!confirm("Sei sicuro di voler eliminare questo acconto?")) {
+         return
+      }
+
+      try {
+         await axios.delete('/api/acconti', {
+            data: { id: accontoId }
+         })
+         toast.success("Acconto eliminato con successo");
+         fetchEmployee()
+      } catch (error) {
+         toast.error(error.response?.data?.error || "Errore durante l'eliminazione dell'acconto")
       }
    }
 
@@ -344,9 +405,9 @@ export default function EmployeeDetailsPage() {
                      Modifica
                   </Button>
                </Link>
-               <Button 
-                  disabled={employee.isActive && employee.toPay > 0} 
-                  variant="destructive" 
+               <Button
+                  disabled={employee.isActive && employee.toPay > 0}
+                  variant="destructive"
                   onClick={() => setIsDeleteDialogOpen(true)}
                   className="flex-1 sm:flex-none"
                >
@@ -442,6 +503,7 @@ export default function EmployeeDetailsPage() {
          <Tabs defaultValue="work-history" className="mt-6">
             <TabsList className="w-full sm:w-auto">
                <TabsTrigger value="work-history" className="flex-1 sm:flex-none">Storico giornate</TabsTrigger>
+               <TabsTrigger value="acconti" className="flex-1 sm:flex-none">Acconti</TabsTrigger>
                <TabsTrigger value="add-entry" disabled={!employee.isActive} className="flex-1 sm:flex-none">Aggiungi giornata</TabsTrigger>
             </TabsList>
             {/* WORK HISTORY */}
@@ -515,7 +577,7 @@ export default function EmployeeDetailsPage() {
                            </TableBody>
                         </Table>
                      </div>
-                     
+
                      {/* Pagination controls */}
                      {employee.workHistoryPagination && (
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
@@ -538,10 +600,10 @@ export default function EmployeeDetailsPage() {
                                  </SelectContent>
                               </Select>
                            </div>
-                           
+
                            <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
                               <span className="text-sm text-slate-500 mr-2">
-                                 {employee.workHistoryPagination.totalItems > 0 
+                                 {employee.workHistoryPagination.totalItems > 0
                                     ? `${(historyPage - 1) * historyPageSize + 1}-${Math.min(historyPage * historyPageSize, employee.workHistoryPagination.totalItems)} di ${employee.workHistoryPagination.totalItems}`
                                     : "0 risultati"}
                               </span>
@@ -560,6 +622,130 @@ export default function EmployeeDetailsPage() {
                                     size="icon"
                                     onClick={() => setHistoryPage(prev => Math.min(prev + 1, employee.workHistoryPagination.totalPages))}
                                     disabled={historyPage === employee.workHistoryPagination.totalPages}
+                                    className="h-8 w-8"
+                                 >
+                                    <ChevronRight className="h-4 w-4" />
+                                 </Button>
+                              </div>
+                           </div>
+                        </div>
+                     )}
+                  </CardContent>
+               </Card>
+            </TabsContent>
+
+            {/* ACCONTI TAB */}
+            <TabsContent value="acconti" className="space-y-4">
+               <Card>
+                  <CardHeader className="pb-2">
+                     <div className="flex justify-between items-center">
+                        <div>
+                           <CardTitle>Storico acconti</CardTitle>
+                           <CardDescription>Record degli acconti versati all'operaio</CardDescription>
+                        </div>
+                     </div>
+                  </CardHeader>
+                  <CardContent>
+                     <div className="rounded-md border overflow-x-auto">
+                        <Table>
+                           <TableHeader>
+                              <TableRow>
+                                 <TableHead>Data</TableHead>
+                                 <TableHead>Importo</TableHead>
+                                 <TableHead>Note</TableHead>
+                                 <TableHead>Azioni</TableHead>
+                              </TableRow>
+                           </TableHeader>
+                           <TableBody>
+                              {employee.acconti?.length > 0 ? (
+                                 employee.acconti.map((acconto) => (
+                                    <TableRow key={acconto.id}>
+                                       <TableCell>{format(new Date(acconto.date), 'dd/MM/yyyy')}</TableCell>
+                                       <TableCell>{formatNumber(acconto.amount)}</TableCell>
+                                       <TableCell>{acconto.notes || ""}</TableCell>
+                                       <TableCell>
+                                          <div className="flex gap-1">
+                                             <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                   setAccontoToEdit(acconto)
+                                                   setNewAcconto({
+                                                      date: new Date(acconto.date).toISOString().split("T")[0],
+                                                      amount: acconto.amount,
+                                                      notes: acconto.notes || ""
+                                                   })
+                                                   setIsAccontoDialogOpen(true)
+                                                }}
+                                             >
+                                                <Edit className="h-3 w-3" />
+                                             </Button>
+                                             <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => handleDeleteAcconto(acconto.id)}
+                                             >
+                                                <Trash className="h-3 w-3" />
+                                             </Button>
+                                          </div>
+                                       </TableCell>
+                                    </TableRow>
+                                 ))
+                              ) : (
+                                 <TableRow>
+                                    <TableCell colSpan={4} className="text-center py-4 text-slate-500">
+                                       Nessun acconto registrato
+                                    </TableCell>
+                                 </TableRow>
+                              )}
+                           </TableBody>
+                        </Table>
+                     </div>
+
+                     {/* Pagination controls for acconti */}
+                     {employee.accontiPagination && employee.accontiPagination.totalItems > 0 && (
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
+                           <div className="flex items-center gap-2">
+                              <span className="text-sm text-slate-500">
+                                 Righe per pagina:
+                              </span>
+                              <Select value={accontiPageSize.toString()} onValueChange={(value) => {
+                                 setAccontiPageSize(Number(value))
+                                 setAccontiPage(1) // Reset to first page when changing page size
+                              }}>
+                                 <SelectTrigger className="h-8 w-[70px]">
+                                    <SelectValue placeholder="10" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectItem value="5">5</SelectItem>
+                                    <SelectItem value="10">10</SelectItem>
+                                    <SelectItem value="20">20</SelectItem>
+                                    <SelectItem value="50">50</SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </div>
+
+                           <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
+                              <span className="text-sm text-slate-500 mr-2">
+                                 {employee.accontiPagination.totalItems > 0
+                                    ? `${(accontiPage - 1) * accontiPageSize + 1}-${Math.min(accontiPage * accontiPageSize, employee.accontiPagination.totalItems)} di ${employee.accontiPagination.totalItems}`
+                                    : "0 risultati"}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                 <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setAccontiPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={accontiPage === 1}
+                                    className="h-8 w-8"
+                                 >
+                                    <ChevronLeft className="h-4 w-4" />
+                                 </Button>
+                                 <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setAccontiPage(prev => Math.min(prev + 1, employee.accontiPagination.totalPages))}
+                                    disabled={accontiPage === employee.accontiPagination.totalPages}
                                     className="h-8 w-8"
                                  >
                                     <ChevronRight className="h-4 w-4" />
@@ -729,15 +915,7 @@ export default function EmployeeDetailsPage() {
             isDeleting={isDeleting}
          />
 
-         {isStatusUpdated && (
-            <Alert className="fixed bottom-4 right-4 w-auto max-w-md bg-green-50 border-green-200 shadow-md">
-               <CheckCircle2 className="h-5 w-5 text-green-600" />
-               <AlertTitle className="text-green-800">Operazione completata!</AlertTitle>
-               <AlertDescription className="text-green-700">
-                  Lo stato dell'operaio è stato aggiornato a {employee.isActive ? "abilitato" : "disabilitato"}.
-               </AlertDescription>
-            </Alert>
-         )}
+
 
          <DeleteConfirmation
             isOpen={isDisableDialogOpen}
@@ -746,7 +924,7 @@ export default function EmployeeDetailsPage() {
             title={employee.isActive ? "Disabilita operaio" : "Abilita operaio"}
             description={
                !employee.isActive
-                     ? `Sei sicuro di voler abilitare ${employee.name}? Questo gli consentirà di essere assegnato a nuovi lavori e comparirà nelle liste degli operai attivi.`
+                  ? `Sei sicuro di voler abilitare ${employee.name}? Questo gli consentirà di essere assegnato a nuovi lavori e comparirà nelle liste degli operai attivi.`
                   : `Sei sicuro di voler disabilitare ${employee.name}? Questo gli impedirà di essere assegnato a nuovi lavori e non comparirà nelle liste degli operai attivi.`
             }
             isDeleting={isTogglingStatus}
@@ -796,6 +974,20 @@ export default function EmployeeDetailsPage() {
                         }
                      </p>
                   </div>
+
+                  <div className="flex flex-col gap-2">
+                     <Label htmlFor="paymentNote">Note (opzionale)</Label>
+                     <Input
+                        id="paymentNote"
+                        type="text"
+                        placeholder="Aggiungi una nota all'acconto"
+                        value={paymentNote}
+                        onChange={(e) => setPaymentNote(e.target.value)}
+                     />
+                     <p className="text-sm text-muted-foreground">
+                        Questa nota verrà salvata nel record dell'acconto
+                     </p>
+                  </div>
                </div>
 
                <DialogFooter>
@@ -815,7 +1007,81 @@ export default function EmployeeDetailsPage() {
             </DialogContent>
          </Dialog>
 
+         {/* ACCONTI DIALOG */}
+         <Dialog open={isAccontoDialogOpen} onOpenChange={setIsAccontoDialogOpen}>
+            <DialogContent>
+               <DialogHeader>
+                  <DialogTitle>{accontoToEdit ? "Modifica acconto" : "Aggiungi acconto"}</DialogTitle>
+               </DialogHeader>
+               <DialogDescription>
+                  {accontoToEdit
+                     ? "Modifica le informazioni dell'acconto"
+                     : "Inserisci i dettagli del nuovo acconto per l'operaio"}
+               </DialogDescription>
+
+               <div className="space-y-4 py-4">
+                  <div className="flex flex-col gap-2">
+                     <Label htmlFor="accontoDate">Data</Label>
+                     <DatePicker
+                        id="accontoDate"
+                        date={newAcconto.date ? dayjs(newAcconto.date).toDate() : undefined}
+                        setDate={(date) => {
+                           setNewAcconto({
+                              ...newAcconto,
+                              date: date ? dayjs(date).format() : ''
+                           })
+                        }}
+                     />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                     <Label htmlFor="accontoAmount">Importo (€)</Label>
+                     <Input
+                        id="accontoAmount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={newAcconto.amount}
+                        onChange={(e) => setNewAcconto({
+                           ...newAcconto,
+                           amount: parseFloat(e.target.value) || 0
+                        })}
+                     />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                     <Label htmlFor="accontoNotes">Note (opzionale)</Label>
+                     <Input
+                        id="accontoNotes"
+                        value={newAcconto.notes}
+                        onChange={(e) => setNewAcconto({
+                           ...newAcconto,
+                           notes: e.target.value
+                        })}
+                        placeholder="Aggiungi note..."
+                     />
+                  </div>
+               </div>
+
+               <DialogFooter>
+                  <Button
+                     variant="default"
+                     onClick={handleSaveAcconto}
+                     disabled={isAddingAcconto || newAcconto.amount <= 0}
+                  >
+                     {isAddingAcconto ? (
+                        <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                     ) : (
+                        <CreditCard className="h-3 w-3 mr-2" />
+                     )}
+                     {accontoToEdit ? "Salva modifiche" : "Aggiungi acconto"}
+                  </Button>
+               </DialogFooter>
+            </DialogContent>
+         </Dialog>
 
       </div>
    )
 }
+
+

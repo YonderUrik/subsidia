@@ -166,7 +166,6 @@ export default function HarvestStatsPage() {
                url += `&variety=${encodeURIComponent(variety)}`;
             }
             
-            console.log("Fetching data with URL:", url);
             const response = await axios.get(url);
             setStats(response.data);
 

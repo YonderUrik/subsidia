@@ -470,14 +470,34 @@ export async function PATCH(request) {
          remainingAmount -= amountToPayForThis;
       }
 
+      // Create new acconto record with the payment
+      const accontoOperation = prisma.acconto.create({
+         data: {
+            employeeId,
+            userId: session.user.id,
+            amount: paymentAmount,
+            date: new Date(),
+            notes: body.notes || (salaryId ? `Pagamento per giornata del ${new Date(sortedSalaries[0].workedDay).toLocaleDateString('it-IT')}` : "Pagamento multiplo")
+         }
+      });
+      
+      // Add the acconto creation operation to the transaction
+      updateOperations.push(accontoOperation);
+
       // Execute all updates in a single transaction
-      await prisma.$transaction(updateOperations, {
+      const results = await prisma.$transaction(updateOperations, {
          timeout: 10000 // Increase timeout to 10 seconds
       });
+      
+      // The last result will be the created acconto
+      const createdAcconto = results[results.length - 1];
 
       return NextResponse.json({
          message: "Pagamento processato con successo",
-         success: true
+         success: true,
+         data: {
+            acconto: createdAcconto
+         }
       });
 
    } catch (error) {

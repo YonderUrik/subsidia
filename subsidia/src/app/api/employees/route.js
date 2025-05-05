@@ -30,12 +30,17 @@ export async function GET(request) {
       const pageSize = parseInt(searchParams.get("pageSize")) || 20;
       const historyPage = parseInt(searchParams.get("historyPage")) || 1;
       const historyPageSize = parseInt(searchParams.get("historyPageSize")) || 10;
+      const accontiPage = parseInt(searchParams.get("accontiPage")) || 1;
+      const accontiPageSize = parseInt(searchParams.get("accontiPageSize")) || 10;
 
       if (id) {
          // If ID is provided, fetch single employee
          const employee = await prisma.employee.findUnique({
             where: { id, userId: session.user.id },
-            include: { salaries: true }
+            include: { 
+               salaries: true,
+               acconti: true
+            }
          });
 
          if (!employee) {
@@ -100,13 +105,36 @@ export async function GET(request) {
          const startIndex = (historyPage - 1) * historyPageSize;
          const workHistory = sortedWorkHistory.slice(startIndex, startIndex + historyPageSize);
 
-         const { salaries, ...employeeData } = employee;
+         // Handle acconti with pagination
+         const sortedAcconti = employee.acconti
+            .map(acconto => ({
+               id: acconto.id,
+               date: acconto.date,
+               amount: acconto.amount,
+               notes: acconto.notes
+            }))
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+         // Calculate total pages for acconti
+         const totalAccontiItems = sortedAcconti.length;
+         const totalAccontiPages = Math.ceil(totalAccontiItems / accontiPageSize);
+         
+         // Apply pagination to acconti
+         const accontiStartIndex = (accontiPage - 1) * accontiPageSize;
+         const acconti = sortedAcconti.slice(accontiStartIndex, accontiStartIndex + accontiPageSize);
+         
+         // Calculate total amount of acconti
+         const totalAcconti = employee.acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
+
+         const { salaries, acconti: accontiRaw, ...employeeData } = employee;
          return NextResponse.json({
             success: true,
             data: { 
                ...employeeData, 
                ...salaryStats, 
                workHistory,
+               acconti,
+               totalAcconti,
                lastWorkedDay: lastWorkedDay ? lastWorkedDay.toISOString() : null,
                lastWorkType,
                workHistoryPagination: {
@@ -114,6 +142,12 @@ export async function GET(request) {
                   totalPages,
                   totalItems,
                   pageSize: historyPageSize
+               },
+               accontiPagination: {
+                  currentPage: accontiPage,
+                  totalPages: totalAccontiPages,
+                  totalItems: totalAccontiItems,
+                  pageSize: accontiPageSize
                }
             }
          });
@@ -130,7 +164,8 @@ export async function GET(request) {
             ...(isActive === "true" && { isActive: true })
          },
          include: {
-            salaries: true
+            salaries: true,
+            acconti: true
          },
          orderBy: {
             name: "asc"
@@ -159,10 +194,15 @@ export async function GET(request) {
          }, { fullDays: 0, halfDays: 0, toPay: 0, totalExtras: 0 });
 
          // Remove salaries array and add stats
-         const { salaries, ...employeeData } = employee;
+         const { salaries, acconti, ...employeeData } = employee;
+         
+         // Calculate total amount of acconti
+         const totalAcconti = acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
+         
          return {
             ...employeeData,
-            ...salaryStats
+            ...salaryStats,
+            totalAcconti
          };
       });
 

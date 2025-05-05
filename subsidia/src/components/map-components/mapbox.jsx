@@ -62,7 +62,6 @@ class CustomFullscreenControl {
    // --- CSS Fullscreen Methods ---
    enterCssFullscreen() {
       if (!this._container || this._isCssFullscreen) return;
-      console.log("Entering CSS Fullscreen Fallback");
       this._container.classList.add('map-css-fullscreen');
       document.body.classList.add('body-map-fullscreen');
       this._isCssFullscreen = true;
@@ -72,7 +71,6 @@ class CustomFullscreenControl {
 
    exitCssFullscreen() {
       if (!this._container || !this._isCssFullscreen) return;
-      console.log("Exiting CSS Fullscreen Fallback");
       this._container.classList.remove('map-css-fullscreen');
       document.body.classList.remove('body-map-fullscreen');
       this._isCssFullscreen = false;
@@ -126,7 +124,6 @@ class CustomFullscreenControl {
       // --- Check if exiting ---
       if (this.isNativeFullscreenActive()) {
          // Exit native fullscreen
-         console.log("Exiting Native Fullscreen");
          if (document.exitFullscreen) await document.exitFullscreen().catch(e => console.error("Exit FS Error:", e));
          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
          else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
@@ -573,7 +570,6 @@ const MapboxExample = ({ lands, newLand = true, setArea, setCoordinates }) => {
             // --- End Add Label Layers ---
          } else {
             // No lands provided, trigger geolocation
-            console.log("No lands provided, triggering geolocation.");
             geolocate.trigger();
          }
 
