@@ -75,41 +75,41 @@ export default function DashboardPage() {
 
       <div className="flex flex-col px-6 space-y-6">
          {/* Main Modules */}
-         <h2 className="text-xl font-semibold tracking-tight mt-6 text-slate-900">Moduli</h2>
+         <h2 className="text-xl font-semibold tracking-tight mt-6 text-foreground">Moduli</h2>
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* Gestione Paghe */}
             <Card className="hover:shadow-md transition-shadow">
                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                     <Users className="h-5 w-5 text-blue-600" />
+                     <Users className="h-5 w-5 text-primary" />
                      Gestione Paghe
                   </CardTitle>
                </CardHeader>
                <CardContent>
                   <div className="space-y-2">
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Operai attivi</span>
+                        <span className="text-muted-foreground">Operai attivi</span>
                         {employeesStatsLoading ? (
-                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                           <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                         ) : (
                            <span className="font-medium ">{employeesStats.activeEmployees}</span>
                         )}
                      </div>
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Giornate totali</span>
+                        <span className="text-muted-foreground">Giornate totali</span>
                         {employeesStatsLoading ? (
-                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                           <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                         ) : (
                            <span className="font-medium">{employeesStats.totalSalaries}</span>
                         )}
                      </div>
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Totale da pagare</span>
+                        <span className="text-muted-foreground">Totale da pagare</span>
                         {employeesStatsLoading ? (
-                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                           <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                         ) : (
-                           <span className="font-semibold text-lg text-rose-600">{formatNumber(employeesStats.totalToPay)}</span>
+                           <span className="font-semibold text-lg text-red-600 dark:text-red-400">{formatNumber(employeesStats.totalToPay)}</span>
                         )}
                      </div>
                   </div>
@@ -128,34 +128,34 @@ export default function DashboardPage() {
             <Card className="hover:shadow-md transition-shadow">
                <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                     <Sprout className="h-5 w-5 text-blue-600" />
+                     <Sprout className="h-5 w-5 text-primary" />
                      Gestione Raccolti {currentYear}
                   </CardTitle>
                </CardHeader>
                <CardContent>
                   <div className="space-y-2">
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Terreni coltivati</span>
+                        <span className="text-muted-foreground">Terreni coltivati</span>
                         {harvestStatsLoading ? (
-                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                           <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                         ) : (
                            <span className="font-medium ">{formatNumber(harvestStats.cultivatedArea, false)} Ha</span>
                         )}
                      </div>
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Tot. Raccolto</span>
+                        <span className="text-muted-foreground">Tot. Raccolto</span>
                         {harvestStatsLoading ? (
-                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                           <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                         ) : (
                            <span className="font-medium ">{formatNumber(harvestStats.totalHarvested, false)} Kg</span>
                         )}
                      </div>
                      <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Tot. Guadagnato</span>
+                        <span className="text-muted-foreground">Tot. Guadagnato</span>
                         {harvestStatsLoading ? (
-                           <div className="h-4 w-8 animate-pulse rounded bg-slate-200" />
+                           <div className="h-4 w-8 animate-pulse rounded bg-muted" />
                         ) : (
-                           <span className="font-semibold text-lg text-green-600 ">{formatNumber(harvestStats.totalEarned)}</span>
+                           <span className="font-semibold text-lg text-green-600 dark:text-green-400">{formatNumber(harvestStats.totalEarned)}</span>
                         )}
                      </div>
                   </div>

@@ -183,42 +183,42 @@ export default function RegisterPage() {
                      </div>
                      <div className="mt-2 space-y-3">
                         <div className="space-y-1">
-                           <p className={`text-sm text-${strengthColor}-500`}>{strengthText}</p>
+                           <p className={`text-sm ${strengthColor === 'green' ? 'text-green-600 dark:text-green-400' : strengthColor === 'yellow' ? 'text-yellow-600 dark:text-yellow-400' : strengthColor === 'orange' ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400'}`}>{strengthText}</p>
                         </div>
 
                         <div className="space-y-1 text-sm">
                            <div className="flex items-center gap-2">
                               {passwordCriteria.length ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno 8 caratteri</span>
                            </div>
 
                            <div className="flex items-center gap-2">
                               {passwordCriteria.lowercase ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno una lettera minuscola</span>
                            </div>
 
                            <div className="flex items-center gap-2">
                               {passwordCriteria.uppercase ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno una lettera maiuscola</span>
                            </div>
 
                            <div className="flex items-center gap-2">
                               {passwordCriteria.special ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno un numero o carattere speciale</span>
                            </div>

@@ -83,8 +83,8 @@ export default function EmployeesPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-6">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
-        <p className="mt-4 text-slate-600">Caricamento operai...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="mt-4 text-muted-foreground">Caricamento operai...</p>
       </div>
     )
   }
@@ -92,11 +92,11 @@ export default function EmployeesPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-4 sm:p-6">
-        <div className="flex items-center gap-2 text-red-500">
+        <div className="flex items-center gap-2 text-destructive">
           <AlertCircle className="h-6 w-6" />
           <h3 className="text-lg font-semibold">Errore di caricamento</h3>
         </div>
-        <p className="mt-2 text-slate-600">{error}</p>
+        <p className="mt-2 text-muted-foreground">{error}</p>
         <Button 
           className="mt-4"
           onClick={() => {
@@ -115,7 +115,7 @@ export default function EmployeesPage() {
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Operai</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Operai</h1>
         </div>
         <Link href={paths.addEmployee}>
           <Button className="w-full sm:w-auto">
@@ -126,11 +126,11 @@ export default function EmployeesPage() {
       </div>
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input type="search" placeholder="Cerca operaio..." className="pl-8 w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
-      <div className="rounded-md border shadow-sm bg-white overflow-x-auto">
+      <div className="rounded-md border shadow-sm bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -156,11 +156,11 @@ export default function EmployeesPage() {
                   <TableCell>{formatNumber(employee.toPay)}</TableCell>
                   <TableCell>
                     {employee.isActive ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 whitespace-nowrap">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 whitespace-nowrap">
                         Attivo
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 whitespace-nowrap">
+                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 whitespace-nowrap">
                         Disabilitato
                       </Badge>
                     )}
@@ -177,7 +177,7 @@ export default function EmployeesPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-4 text-slate-500">
+                <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
                   Nessun operaio trovato. Aggiungi il tuo primo operaio!
                 </TableCell>
               </TableRow>
@@ -188,7 +188,7 @@ export default function EmployeesPage() {
         {employees.length > 0 && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-muted-foreground">
                 Righe per pagina:
               </span>
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>

@@ -12,6 +12,37 @@ export async function GET(request) {
       }
 
       const { searchParams } = new URL(request.url)
+      const harvestId = searchParams.get("id")
+      
+      // If id is provided, return single harvest
+      if (harvestId) {
+         const harvest = await prisma.harvest.findFirst({
+            where: {
+               id: harvestId,
+               userId: session.user.id
+            },
+            include: {
+               land: {
+                  select: {
+                     name: true,
+                     soilType: true,
+                     area: true
+                  }
+               }
+            }
+         })
+
+         if (!harvest) {
+            return NextResponse.json(
+               { error: "Raccolto non trovato" },
+               { status: 404 }
+            )
+         }
+
+         return NextResponse.json(harvest)
+      }
+
+      // Otherwise, return list of harvests
       const landId = searchParams.get("landId")
       const landName = searchParams.get("landName")
       const from = searchParams.get("from") 
@@ -181,34 +212,32 @@ export async function GET(request) {
 
       const soilTypes = soilTypesResult.map(s => s.soilType).filter(Boolean)
 
-      // Calculate totals with ALL active filters
-      // Apply the same filters used for the main query
-      const paidHarvests = await prisma.harvest.aggregate({
-         where: {
-            ...whereClause,
-            isPaid: true,
-         },
-         _sum: {
+      // Calculate totals with ALL active filters - more accurate calculation using paidAmount
+      const allFilteredHarvests = await prisma.harvest.findMany({
+         where: whereClause,
+         select: {
             total: true,
-            quantity: true
+            paidAmount: true,
+            quantity: true,
+            isPaid: true
          }
       })
 
-      const unpaidHarvests = await prisma.harvest.aggregate({
-         where: {
-            ...whereClause,
-            isPaid: false,
-         },
-         _sum: {
-            total: true,
-            quantity: true
-         }
-      })
+      let totalPaid = 0
+      let totalToPay = 0
+      let totalQuantity = 0
 
-      // Calculate total quantity for the filtered period
-      const totalQuantity = (paidHarvests._sum.quantity || 0) + (unpaidHarvests._sum.quantity || 0)
-      const totalPaid = paidHarvests._sum.total || 0
-      const totalToPay = unpaidHarvests._sum.total || 0
+      allFilteredHarvests.forEach(harvest => {
+         totalQuantity += harvest.quantity || 0
+         
+         // Use paidAmount if available, otherwise use total if isPaid is true
+         const actualPaidAmount = harvest.paidAmount || (harvest.isPaid ? harvest.total : 0)
+         totalPaid += actualPaidAmount || 0
+         
+         // Calculate remaining amount to pay
+         const remainingToPay = (harvest.total || 0) - (actualPaidAmount || 0)
+         totalToPay += Math.max(0, remainingToPay)
+      })
       
       // Calculate total pages
       const totalPages = Math.ceil(totalCount / pageSize)
@@ -291,6 +320,95 @@ export async function POST(request) {
       console.error("Errore nella creazione del raccolto:", error)
       return NextResponse.json(
          { error: "Errore nella creazione del raccolto" },
+         { status: 500 }
+      )
+   }
+}
+
+// PUT /api/harvests
+export async function PUT(request) {
+   try {
+      const session = await getServerSession(authOptions)
+      if (!session) {
+         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+
+      const data = await request.json()
+
+      // Validate required fields
+      const requiredFields = ["id", "landId", "quantity", "price", "client"]
+      for (const field of requiredFields) {
+         if (!data[field]) {
+            return NextResponse.json(
+               { error: `Campo mancante: ${field}` },
+               { status: 400 }
+            )
+         }
+      }
+
+      // Check if harvest exists and belongs to user
+      const existingHarvest = await prisma.harvest.findFirst({
+         where: {
+            id: data.id,
+            userId: session.user.id
+         }
+      })
+
+      if (!existingHarvest) {
+         return NextResponse.json(
+            { error: "Raccolto non trovato" },
+            { status: 404 }
+         )
+      }
+
+      // Calculate total
+      const total = parseFloat(data.quantity) * parseFloat(data.price)
+
+      // Update the harvest record
+      const updatedHarvest = await prisma.harvest.update({
+         where: {
+            id: data.id
+         },
+         data: {
+            landId: data.landId,
+            quantity: parseFloat(data.quantity),
+            price: parseFloat(data.price),
+            total,
+            isPaid: data.isPaid || false,
+            paidAmount: data.paidAmount ? parseFloat(data.paidAmount) : 0,
+            client: data.client,
+            notes: data.notes || "",
+            harvestDay: data.harvestDay ? new Date(data.harvestDay) : existingHarvest.harvestDay,
+            updatedAt: new Date()
+         },
+         include: {
+            land: {
+               select: {
+                  name: true,
+                  soilType: true,
+                  area: true
+               }
+            }
+         }
+      })
+
+      // Update the land's lastHarvest date if the harvest date changed
+      if (data.harvestDay && data.harvestDay !== existingHarvest.harvestDay?.toISOString()) {
+         await prisma.land.update({
+            where: {
+               id: data.landId
+            },
+            data: {
+               lastHarvest: new Date(data.harvestDay)
+            }
+         })
+      }
+
+      return NextResponse.json(updatedHarvest)
+   } catch (error) {
+      console.error("Errore nell'aggiornamento del raccolto:", error)
+      return NextResponse.json(
+         { error: "Errore nell'aggiornamento del raccolto" },
          { status: 500 }
       )
    }

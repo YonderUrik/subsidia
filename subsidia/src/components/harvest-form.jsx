@@ -36,7 +36,7 @@ const formSchema = z.object({
    harvestDay: z.date()
 })
 
-export function HarvestForm() {
+export function HarvestForm({ harvestId = null, mode = 'create' }) {
    const [isSubmitting, setIsSubmitting] = useState(false)
    const [showSuccess, setShowSuccess] = useState(false)
    const [lands, setLands] = useState([])
@@ -45,6 +45,8 @@ export function HarvestForm() {
    const [clientsLoading, setClientsLoading] = useState(true)
    const [openClientSelect, setOpenClientSelect] = useState(false)
    const [harvestDate, setHarvestDate] = useState(new Date())
+   const [isEditMode] = useState(mode === 'edit')
+   const [loadingHarvest, setLoadingHarvest] = useState(isEditMode)
    const router = useRouter()
 
    const form = useForm({
@@ -78,14 +80,14 @@ export function HarvestForm() {
 
    // Calculate payment status data
    const paymentData = useMemo(() => {
-      if (!isPaidValue) return { status: "nonPagato", statusClass: "text-red-500" }
+      if (!isPaidValue) return { status: "nonPagato", statusClass: "text-destructive" }
       
       if (paidAmount >= totalEarnings) {
-         return { status: "Pagato completamente", statusClass: "text-green-600" }
+         return { status: "Pagato completamente", statusClass: "text-green-600 dark:text-green-400" }
       } else if (paidAmount > 0) {
-         return { status: "Pagato parzialmente", statusClass: "text-amber-500" }
+         return { status: "Pagato parzialmente", statusClass: "text-amber-600 dark:text-amber-400" }
       } else {
-         return { status: "Marcato come pagato", statusClass: "text-amber-500" }
+         return { status: "Marcato come pagato", statusClass: "text-amber-600 dark:text-amber-400" }
       }
    }, [isPaidValue, paidAmount, totalEarnings])
 
@@ -136,6 +138,42 @@ export function HarvestForm() {
       fetchClients()
    }, [])
 
+   // Fetch harvest data when in edit mode
+   useEffect(() => {
+      const fetchHarvestData = async () => {
+         if (!isEditMode || !harvestId) return
+         
+         try {
+            setLoadingHarvest(true)
+            const response = await axios.get(`/api/harvests?id=${harvestId}`)
+            const harvest = response.data
+            
+            // Populate form with existing data
+            form.reset({
+               landId: harvest.landId,
+               quantity: harvest.quantity,
+               price: harvest.price,
+               isPaid: harvest.isPaid,
+               paidAmount: harvest.paidAmount || 0,
+               client: harvest.client,
+               notes: harvest.notes || "",
+               harvestDay: harvest.harvestDay ? new Date(harvest.harvestDay) : new Date()
+            })
+            
+            // Set harvest date
+            setHarvestDate(harvest.harvestDay ? new Date(harvest.harvestDay) : new Date())
+         } catch (error) {
+            console.error("Error fetching harvest:", error)
+            toast.error("Errore nel caricamento del raccolto")
+            router.push(paths.harvestsList)
+         } finally {
+            setLoadingHarvest(false)
+         }
+      }
+
+      fetchHarvestData()
+   }, [harvestId, isEditMode, form, router])
+
    async function onSubmit(values) {
       setIsSubmitting(true)
       try {
@@ -146,11 +184,19 @@ export function HarvestForm() {
             paidAmount: values.paidAmount ? parseFloat(values.paidAmount) : null
          }
          
-         await axios.post("/api/harvests", processedValues)
-         toast.success("Raccolto aggiunto con successo")
+         if (isEditMode && harvestId) {
+            // Update existing harvest
+            await axios.put("/api/harvests", { ...processedValues, id: harvestId })
+            toast.success("Raccolto aggiornato con successo")
+         } else {
+            // Create new harvest
+            await axios.post("/api/harvests", processedValues)
+            toast.success("Raccolto aggiunto con successo")
+         }
+         
          setShowSuccess(true)
       } catch (error) {
-         toast.error(error.response?.data?.error || "Errore nell'aggiunta del raccolto")
+         toast.error(error.response?.data?.error || (isEditMode ? "Errore nell'aggiornamento del raccolto" : "Errore nell'aggiunta del raccolto"))
       } finally {
          setIsSubmitting(false)
       }
@@ -160,29 +206,46 @@ export function HarvestForm() {
       return (
          <>
             <CardHeader className="text-center">
-               <CardTitle className="text-2xl font-semibold">Raccolto aggiunto con successo!</CardTitle>
+               <CardTitle className="text-2xl font-semibold">
+                  {isEditMode ? "Raccolto aggiornato con successo!" : "Raccolto aggiunto con successo!"}
+               </CardTitle>
                <p className="text-muted-foreground">Cosa vorresti fare ora?</p>
             </CardHeader>
             <CardContent className="flex justify-center gap-4 pt-2 pb-6">
-               <Button onClick={() => {
-                  setShowSuccess(false)
-                  form.reset({
-                     landId: "",
-                     quantity: "",
-                     price: "",
-                     isPaid: false,
-                     paidAmount: 0,
-                     client: "",
-                     notes: "",
-                     harvestDay: new Date()
-                  })
-                  setHarvestDate(new Date())
-               }} variant="outline">
-                  Aggiungi un altro raccolto
-               </Button>
+               {!isEditMode && (
+                  <Button onClick={() => {
+                     setShowSuccess(false)
+                     form.reset({
+                        landId: "",
+                        quantity: "",
+                        price: "",
+                        isPaid: false,
+                        paidAmount: 0,
+                        client: "",
+                        notes: "",
+                        harvestDay: new Date()
+                     })
+                     setHarvestDate(new Date())
+                  }} variant="outline">
+                     Aggiungi un altro raccolto
+                  </Button>
+               )}
                <Button onClick={() => router.push(paths.harvestsList)}>
                   Vai alla lista dei raccolti
                </Button>
+            </CardContent>
+         </>
+      )
+   }
+
+   if (loadingHarvest) {
+      return (
+         <>
+            <CardHeader className="text-center">
+               <CardTitle className="text-2xl font-semibold">Caricamento raccolto...</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center py-8">
+               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </CardContent>
          </>
       )
@@ -209,10 +272,12 @@ export function HarvestForm() {
                               </SelectTrigger>
                            </FormControl>
                            <SelectContent>
-                              {lands.map(land => (
-                                 <SelectItem key={land.id} value={land.id}>
-                                    {land.name} - {land.soilType}
-                                 </SelectItem>
+                              {[...lands]
+                                 .sort((a, b) => a.name.localeCompare(b.name))
+                                 .map(land => (
+                                    <SelectItem key={land.id} value={land.id}>
+                                       {land.name} - {land.soilType}
+                                    </SelectItem>
                               ))}
                            </SelectContent>
                         </Select>
@@ -297,7 +362,7 @@ export function HarvestForm() {
                {/* Totale Guadagno Calcolato */}
                <div className="rounded-lg border p-4 bg-muted/20">
                   <div className="flex items-center gap-2 mb-2">
-                     <Calculator className="h-5 w-5 text-blue-600" />
+                     <Calculator className="h-5 w-5 text-primary" />
                      <h3 className="font-medium">Calcolo Guadagno</h3>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-sm">
@@ -311,7 +376,7 @@ export function HarvestForm() {
                      </div>
                      <div>
                         <span className="text-muted-foreground">Totale:</span>
-                        <p className="font-semibold text-lg text-green-600">{formatNumber(totalEarnings)}</p>
+                        <p className="font-semibold text-lg text-green-600 dark:text-green-400">{formatNumber(totalEarnings)}</p>
                      </div>
                   </div>
                </div>
@@ -392,7 +457,7 @@ export function HarvestForm() {
                {/* Payment Section */}
                <div className="rounded-lg border p-4 space-y-4">
                   <div className="flex items-center gap-2 mb-2">
-                     <Euro className="h-5 w-5 text-blue-600" />
+                     <Euro className="h-5 w-5 text-primary" />
                      <h3 className="font-medium">Stato Pagamento</h3>
                   </div>
                   
@@ -452,7 +517,7 @@ export function HarvestForm() {
                               </Button>
                            </div>
                            {isPaidValue && paidAmount > 0 && paidAmount < totalEarnings && (
-                              <p className="text-sm text-amber-500">
+                              <p className="text-sm text-amber-600 dark:text-amber-400">
                                  Mancano {formatNumber(totalEarnings - paidAmount)} al pagamento completo
                               </p>
                            )}
@@ -481,16 +546,16 @@ export function HarvestForm() {
                />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting || loadingHarvest}>
                {isSubmitting ? (
                   <>
                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                     Salvataggio...
+                     {isEditMode ? "Aggiornamento..." : "Salvataggio..."}
                   </>
                ) : (
                   <>
                      <Check className="mr-2 h-4 w-4" />
-                     Salva raccolto
+                     {isEditMode ? "Aggiorna raccolto" : "Salva raccolto"}
                   </>
                )}
             </Button>

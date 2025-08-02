@@ -5,6 +5,7 @@ import { config } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata = {
   title: config.appName,
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441" crossOrigin="anonymous"></script>
       <body>
         <Analytics />
+        <SpeedInsights />
         <Suspense fallback={
           <div className="flex min-h-screen items-center justify-center">
             <div className="flex flex-col items-center gap-4">

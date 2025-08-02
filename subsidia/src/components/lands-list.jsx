@@ -112,9 +112,9 @@ export function LandsList({ lands, refreshData }) {
                         <TableCell>{land.lastHarvest ? format(land.lastHarvest, "dd/MM/yyyy") : "N/A"}</TableCell>
                         <TableCell>
                            {land.isActive ? (
-                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Attivo</Badge>
+                              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30">Attivo</Badge>
                            ) : (
-                              <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Disattivo</Badge>
+                              <Badge className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30">Disattivo</Badge>
                            )}
                         </TableCell>
                         <TableCell className="text-right">

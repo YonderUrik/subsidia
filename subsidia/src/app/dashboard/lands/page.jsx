@@ -229,43 +229,43 @@ export default function LandsPage() {
 
          {/* Stats cards */}
          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 shadow-sm p-0">
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 shadow-sm p-0">
                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                     <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <Layout className="h-5 w-5 text-green-700" />
+                     <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                        <Layout className="h-5 w-5 text-green-700 dark:text-green-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Ettari totali</p>
-                        <p className="text-xl font-bold text-green-700">{formatNumber(stats.totalHectares.toFixed(4), false)} ha</p>
+                        <p className="text-xs text-muted-foreground leading-none">Ettari totali</p>
+                        <p className="text-xl font-bold text-green-700 dark:text-green-400">{formatNumber(stats.totalHectares.toFixed(4), false)} ha</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 shadow-sm p-0">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 shadow-sm p-0">
                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                     <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Layers className="h-5 w-5 text-blue-700" />
+                     <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                        <Layers className="h-5 w-5 text-blue-700 dark:text-blue-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Numero terreni</p>
-                        <p className="text-xl font-bold text-blue-700">{stats.landCount}</p>
+                        <p className="text-xs text-muted-foreground leading-none">Numero terreni</p>
+                        <p className="text-xl font-bold text-blue-700 dark:text-blue-400">{stats.landCount}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 shadow-sm p-0">
+            <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 shadow-sm p-0">
                <CardContent className="p-3">
                   <div className="flex items-center gap-3">
-                     <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                        <Leaf className="h-5 w-5 text-amber-700" />
+                     <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                        <Leaf className="h-5 w-5 text-amber-700 dark:text-amber-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Nr. di Colture</p>
-                        <p className="text-xl font-bold text-amber-700">{Object.keys(stats.hectaresBySoilType).length}</p>
+                        <p className="text-xs text-muted-foreground leading-none">Nr. di Colture</p>
+                        <p className="text-xl font-bold text-amber-700 dark:text-amber-400">{Object.keys(stats.hectaresBySoilType).length}</p>
                      </div>
                   </div>
                </CardContent>

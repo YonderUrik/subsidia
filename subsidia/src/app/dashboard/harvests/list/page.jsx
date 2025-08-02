@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CalendarIcon, ChevronLeft, ChevronRight, Plus, Search, Trash2, Tag, Filter, Weight } from "lucide-react"
+import { CalendarIcon, ChevronLeft, ChevronRight, Plus, Search, Trash2, Tag, Filter, Weight, Pencil } from "lucide-react"
 import { CreditCard, Clock, Euro } from "lucide-react"
 import { format, parseISO } from "date-fns"
 import Link from "next/link"
@@ -608,6 +608,7 @@ export default function HarvestsListPage() {
                               <TableHead>Prezzo</TableHead>
                               <TableHead>Stato</TableHead>
                               <TableHead className="text-right">Totale</TableHead>
+                              <TableHead className="text-right">Pagato</TableHead>
                               <TableHead>Note</TableHead>
                               <TableHead className="w-[70px]"></TableHead>
                            </TableRow>
@@ -615,7 +616,7 @@ export default function HarvestsListPage() {
                         <TableBody>
                            {isLoading ? (
                               <TableRow>
-                                 <TableCell colSpan={10} className="h-24 text-center">
+                                 <TableCell colSpan={11} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
                                        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-slate-900"></div>
                                        <p className="mt-2 text-sm text-slate-500">Caricamento raccolti...</p>
@@ -624,7 +625,7 @@ export default function HarvestsListPage() {
                               </TableRow>
                            ) : error ? (
                               <TableRow>
-                                 <TableCell colSpan={10} className="h-24 text-center">
+                                 <TableCell colSpan={11} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
                                        <p className="text-red-500">{error}</p>
                                     </div>
@@ -632,7 +633,7 @@ export default function HarvestsListPage() {
                               </TableRow>
                            ) : harvests.length === 0 ? (
                               <TableRow>
-                                 <TableCell colSpan={10} className="h-24 text-center">
+                                 <TableCell colSpan={11} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
                                        <p className="text-slate-500">Nessun raccolto trovato</p>
                                     </div>
@@ -667,23 +668,43 @@ export default function HarvestsListPage() {
                                     <TableCell>{formatNumber(harvest.quantity, false)} Kg</TableCell>
                                     <TableCell>{formatNumber(harvest.price)} /Kg</TableCell>
                                     <TableCell>
-                                       <Badge variant={harvest.isPaid ? "success" : "outline"} className={harvest.isPaid ? "bg-green-100 text-green-800 hover:bg-green-100" : "bg-amber-50 text-amber-700 hover:bg-amber-100"}>
-                                          {harvest.isPaid ? "Pagato" : "Da pagare"}
-                                       </Badge>
+                                       {harvest.paidAmount >= harvest.total ? (
+                                          <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400">
+                                             Pagato
+                                          </Badge>
+                                       ) : harvest.paidAmount > 0 ? (
+                                          <Badge className="bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400">
+                                             Parziale
+                                          </Badge>
+                                       ) : (
+                                          <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400">
+                                             Non pagato
+                                          </Badge>
+                                       )}
                                     </TableCell>
                                     <TableCell className="text-right font-medium">
                                        {formatNumber(harvest.total)}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">
+                                       {harvest.paidAmount > 0 ? (
+                                          <div className="flex flex-col items-end">
+                                             <span>{formatNumber(harvest.paidAmount)}</span>
+                                             {harvest.paidAmount < harvest.total && (
+                                                <span className="text-xs text-amber-600 dark:text-amber-400">
+                                                   Parziale
+                                                </span>
+                                             )}
+                                          </div>
+                                       ) : "-"}
                                     </TableCell>
                                     <TableCell className="max-w-[200px] truncate">
                                        {harvest.notes}
                                     </TableCell>
                                     <TableCell>
                                        <div className="flex items-center justify-end space-x-1">
-                                          <Link href={`/dashboard/harvests/edit/${harvest.id}`}>
+                                          <Link href={paths.harvestEdit(harvest.id)}>
                                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                </svg>
+                                                <Pencil className="h-4 w-4" />
                                              </Button>
                                           </Link>
                                           <Button

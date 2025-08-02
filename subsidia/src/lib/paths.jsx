@@ -25,6 +25,7 @@ export const paths = {
    harvestsList: "/dashboard/harvests/list",
    harvestsStats: "/dashboard/harvests/stats",
    new_harvest: "/dashboard/harvests/new",
+   harvestEdit: (id) => `/dashboard/harvests/edit/${id}`,
    // Lands
    lands: "/dashboard/lands",
    new_land: "/dashboard/lands/new",

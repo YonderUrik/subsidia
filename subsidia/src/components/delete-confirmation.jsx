@@ -25,9 +25,9 @@ export function DeleteConfirmation({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-slate-900">
+          <DialogTitle className="flex items-center gap-2 text-foreground">
             <AlertTriangle
-              className={`h-5 w-5 ${confirmButtonVariant === "destructive" ? "text-red-600" : "text-amber-500"}`}
+              className={`h-5 w-5 ${confirmButtonVariant === "destructive" ? "text-red-600 dark:text-red-400" : "text-amber-600 dark:text-amber-400"}`}
             />
             {title}
           </DialogTitle>

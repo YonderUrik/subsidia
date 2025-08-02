@@ -190,36 +190,36 @@ export default function ResetPasswordPage() {
                         <div className="space-y-1 text-sm">
                            <div className="flex items-center gap-2">
                               {passwordCriteria.length ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno 8 caratteri</span>
                            </div>
 
                            <div className="flex items-center gap-2">
                               {passwordCriteria.lowercase ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno una lettera minuscola</span>
                            </div>
 
                            <div className="flex items-center gap-2">
                               {passwordCriteria.uppercase ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno una lettera maiuscola</span>
                            </div>
 
                            <div className="flex items-center gap-2">
                               {passwordCriteria.special ? (
-                                 <Check className="h-4 w-4 text-green-500" />
+                                 <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
                               ) : (
-                                 <X className="h-4 w-4 text-red-500" />
+                                 <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                               )}
                               <span>Almeno un numero o carattere speciale</span>
                            </div>
