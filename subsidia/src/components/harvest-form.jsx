@@ -29,6 +29,7 @@ const formSchema = z.object({
    landId: z.string().min(1, "Seleziona un terreno"),
    quantity: z.number().min(0.01, "Quantità deve essere maggiore di 0"),
    price: z.number().min(0.01, "Prezzo deve essere maggiore di 0"),
+   discount: z.number().min(0, "Sconto deve essere >= 0").max(100, "Sconto deve essere <= 100").default(0),
    isPaid: z.boolean().default(false),
    paidAmount: z.number().nullable().optional(),
    client: z.string().min(1, "Seleziona un cliente"),
@@ -55,6 +56,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
          landId: "",
          quantity: "",
          price: "",
+         discount: 4,
          isPaid: false,
          paidAmount: 0,
          client: "",
@@ -72,11 +74,18 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
    const paidAmount = form.watch("paidAmount") || 0
    const quantity = form.watch("quantity") || 0
    const price = form.watch("price") || 0
+   const discount = form.watch("discount") || 0
 
-   // Calculate total earnings
+   // Calculate total earnings with discount
    const totalEarnings = useMemo(() => {
-      return quantity * price
-   }, [quantity, price])
+      const subtotal = quantity * price
+      const discountAmount = (subtotal * discount) / 100
+      return subtotal - discountAmount
+   }, [quantity, price, discount])
+   
+   // Calculate subtotal and discount amount for display
+   const subtotal = useMemo(() => quantity * price, [quantity, price])
+   const discountAmount = useMemo(() => (subtotal * discount) / 100, [subtotal, discount])
 
    // Calculate payment status data
    const paymentData = useMemo(() => {
@@ -153,6 +162,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                landId: harvest.landId,
                quantity: harvest.quantity,
                price: harvest.price,
+               discount: harvest.discount || 0,
                isPaid: harvest.isPaid,
                paidAmount: harvest.paidAmount || 0,
                client: harvest.client,
@@ -181,6 +191,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
             ...values,
             quantity: parseFloat(values.quantity),
             price: parseFloat(values.price),
+            discount: parseFloat(values.discount) || 0,
             paidAmount: values.paidAmount ? parseFloat(values.paidAmount) : null
          }
          
@@ -219,6 +230,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                         landId: "",
                         quantity: "",
                         price: "",
+                        discount: 0,
                         isPaid: false,
                         paidAmount: 0,
                         client: "",
@@ -305,7 +317,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                   )}
                />
 
-               <div className="grid gap-6 md:grid-cols-2">
+               <div className="grid gap-6 md:grid-cols-3">
                   <FormField
                      control={form.control}
                      name="quantity"
@@ -357,6 +369,33 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                         </FormItem>
                      )}
                   />
+
+                  <FormField
+                     control={form.control}
+                     name="discount"
+                     render={({ field }) => (
+                        <FormItem className="space-y-2">
+                           <FormLabel className="text-base font-medium block">Sconto (%)</FormLabel>
+                           <FormControl>
+                              <Input
+                                 type="number"
+                                 min="0"
+                                 max="100"
+                                 step="0.1"
+                                 className="h-10"
+                                 placeholder="0.0"
+                                 {...field}
+                                 value={field.value}
+                                 onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(value === "" ? 0 : parseFloat(value));
+                                 }}
+                              />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
                </div>
 
                {/* Totale Guadagno Calcolato */}
@@ -365,7 +404,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                      <Calculator className="h-5 w-5 text-primary" />
                      <h3 className="font-medium">Calcolo Guadagno</h3>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                      <div>
                         <span className="text-muted-foreground">Quantità:</span>
                         <p className="font-medium">{formatNumber(quantity, false)} Kg</p>
@@ -375,7 +414,19 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                         <p className="font-medium">{formatNumber(price)} /Kg</p>
                      </div>
                      <div>
-                        <span className="text-muted-foreground">Totale:</span>
+                        <span className="text-muted-foreground">Subtotale:</span>
+                        <p className="font-medium">{formatNumber(subtotal)}</p>
+                     </div>
+                     <div>
+                        <span className="text-muted-foreground">Sconto ({discount}%):</span>
+                        <p className="font-medium text-red-600 dark:text-red-400">
+                           {discount > 0 ? `-${formatNumber(discountAmount)}` : '€0.00'}
+                        </p>
+                     </div>
+                  </div>
+                  <div className="border-t pt-2 mt-2">
+                     <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground font-medium">Totale finale:</span>
                         <p className="font-semibold text-lg text-green-600 dark:text-green-400">{formatNumber(totalEarnings)}</p>
                      </div>
                   </div>

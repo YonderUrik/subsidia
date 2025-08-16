@@ -87,6 +87,7 @@ model Harvest {
   land      Land     @relation(fields: [landId], references: [id], onDelete: Cascade)
   quantity  Float
   price     Float
+  discount  Float    @default(0) // Discount percentage (0-100)
   total     Float
   isPaid    Boolean  @default(false)
   paidAmount Float?

@@ -28,6 +28,7 @@ export async function GET(request) {
                select: {
                   quantity: true,
                   price: true,
+                  discount: true,
                   total: true,
                   paidAmount: true,
                }
@@ -41,7 +42,7 @@ export async function GET(request) {
          totalHarvested: lands.reduce((sum, land) =>
             sum + land.harvests.reduce((harvestSum, harvest) => harvestSum + harvest.quantity, 0), 0),
          totalEarned: lands.reduce((sum, land) =>
-            sum + land.harvests.reduce((harvestSum, harvest) => harvestSum + (harvest.quantity * harvest.price), 0), 0)
+            sum + land.harvests.reduce((harvestSum, harvest) => harvestSum + harvest.total, 0), 0)
       };
 
       return NextResponse.json(stats);

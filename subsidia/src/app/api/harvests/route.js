@@ -286,8 +286,11 @@ export async function POST(request) {
          }
       }
 
-      // Calculate total
-      const total = parseFloat(data.quantity) * parseFloat(data.price)
+      // Calculate total with discount
+      const subtotal = parseFloat(data.quantity) * parseFloat(data.price)
+      const discount = parseFloat(data.discount) || 0
+      const discountAmount = (subtotal * discount) / 100
+      const total = subtotal - discountAmount
 
       // Create the harvest record
       const harvest = await prisma.harvest.create({
@@ -296,6 +299,7 @@ export async function POST(request) {
             landId: data.landId,
             quantity: parseFloat(data.quantity),
             price: parseFloat(data.price),
+            discount: discount,
             total,
             isPaid: data.isPaid || false,
             paidAmount: data.paidAmount ? parseFloat(data.paidAmount) : 0,
@@ -361,8 +365,11 @@ export async function PUT(request) {
          )
       }
 
-      // Calculate total
-      const total = parseFloat(data.quantity) * parseFloat(data.price)
+      // Calculate total with discount
+      const subtotal = parseFloat(data.quantity) * parseFloat(data.price)
+      const discount = parseFloat(data.discount) || 0
+      const discountAmount = (subtotal * discount) / 100
+      const total = subtotal - discountAmount
 
       // Update the harvest record
       const updatedHarvest = await prisma.harvest.update({
@@ -373,6 +380,7 @@ export async function PUT(request) {
             landId: data.landId,
             quantity: parseFloat(data.quantity),
             price: parseFloat(data.price),
+            discount: discount,
             total,
             isPaid: data.isPaid || false,
             paidAmount: data.paidAmount ? parseFloat(data.paidAmount) : 0,

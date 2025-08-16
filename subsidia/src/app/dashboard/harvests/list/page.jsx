@@ -606,6 +606,7 @@ export default function HarvestsListPage() {
                               <TableHead>Data</TableHead>
                               <TableHead>Quantità</TableHead>
                               <TableHead>Prezzo</TableHead>
+                              <TableHead>Sconto</TableHead>
                               <TableHead>Stato</TableHead>
                               <TableHead className="text-right">Totale</TableHead>
                               <TableHead className="text-right">Pagato</TableHead>
@@ -616,7 +617,7 @@ export default function HarvestsListPage() {
                         <TableBody>
                            {isLoading ? (
                               <TableRow>
-                                 <TableCell colSpan={11} className="h-24 text-center">
+                                 <TableCell colSpan={12} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
                                        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-slate-900"></div>
                                        <p className="mt-2 text-sm text-slate-500">Caricamento raccolti...</p>
@@ -625,7 +626,7 @@ export default function HarvestsListPage() {
                               </TableRow>
                            ) : error ? (
                               <TableRow>
-                                 <TableCell colSpan={11} className="h-24 text-center">
+                                 <TableCell colSpan={12} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
                                        <p className="text-red-500">{error}</p>
                                     </div>
@@ -633,7 +634,7 @@ export default function HarvestsListPage() {
                               </TableRow>
                            ) : harvests.length === 0 ? (
                               <TableRow>
-                                 <TableCell colSpan={11} className="h-24 text-center">
+                                 <TableCell colSpan={12} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
                                        <p className="text-slate-500">Nessun raccolto trovato</p>
                                     </div>
@@ -668,7 +669,16 @@ export default function HarvestsListPage() {
                                     <TableCell>{formatNumber(harvest.quantity, false)} Kg</TableCell>
                                     <TableCell>{formatNumber(harvest.price)} /Kg</TableCell>
                                     <TableCell>
-                                       {harvest.paidAmount >= harvest.total ? (
+                                       {harvest.discount && harvest.discount > 0 ? (
+                                          <span className="text-red-600 dark:text-red-400 font-medium">
+                                             {harvest.discount}%
+                                          </span>
+                                       ) : (
+                                          <span className="text-slate-400">-</span>
+                                       )}
+                                    </TableCell>
+                                    <TableCell>
+                                       {harvest.isPaid || harvest.paidAmount >= harvest.total ? (
                                           <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400">
                                              Pagato
                                           </Badge>
