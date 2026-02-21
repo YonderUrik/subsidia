@@ -283,7 +283,6 @@ export async function POST(request) {
          salaryAmount,
          extras = 0,
          payedAmount = 0,
-         isPaid = false,
          notes,
       } = body;
 
@@ -324,9 +323,29 @@ export async function POST(request) {
          const result = await prisma.$transaction(async (tx) => {
             const createdSalaries = [];
 
+            // Compute available advance credit per employee (Σacconti - Σsalaries > 0)
+            const creditMap = {};
+            for (const empId of employeeIds) {
+               const [empSalaries, empAcconti] = await Promise.all([
+                  tx.salary.findMany({ where: { employeeId: empId, userId: session.user.id }, select: { total: true } }),
+                  tx.acconto.findMany({ where: { employeeId: empId, userId: session.user.id }, select: { amount: true } })
+               ]);
+               const earned = empSalaries.reduce((sum, s) => sum + s.total, 0);
+               const paid = empAcconti.reduce((sum, a) => sum + a.amount, 0);
+               creditMap[empId] = Math.max(0, paid - earned);
+            }
+
             for (const entry of entries) {
                const total = parseFloat(entry.salaryAmount) + parseFloat(entry.extras || 0);
-               
+
+               // Apply available credit to this salary
+               const availableCredit = creditMap[entry.employeeId] || 0;
+               const creditToApply = Math.min(availableCredit, total);
+               creditMap[entry.employeeId] = availableCredit - creditToApply;
+
+               const finalPayedAmount = parseFloat(entry.payedAmount || 0) + creditToApply;
+               const finalIsPaid = finalPayedAmount >= total;
+
                const salary = await tx.salary.create({
                   data: {
                      employeeId: entry.employeeId,
@@ -336,8 +355,8 @@ export async function POST(request) {
                      salaryAmount: parseFloat(entry.salaryAmount),
                      extras: parseFloat(entry.extras || 0),
                      total,
-                     payedAmount: parseFloat(entry.payedAmount || 0),
-                     isPaid: entry.isPaid || false,
+                     payedAmount: finalPayedAmount,
+                     isPaid: finalIsPaid,
                      notes: entry.notes,
                   },
                });
@@ -382,6 +401,19 @@ export async function POST(request) {
          // Calculate total
          const total = parseFloat(salaryAmount) + parseFloat(extras || 0);
 
+         // Compute available advance credit for this employee (Σacconti - Σsalaries > 0)
+         const [existingSalaries, existingAcconti] = await Promise.all([
+            prisma.salary.findMany({ where: { employeeId, userId: session.user.id }, select: { total: true } }),
+            prisma.acconto.findMany({ where: { employeeId, userId: session.user.id }, select: { amount: true } })
+         ]);
+         const totalEarned = existingSalaries.reduce((sum, s) => sum + s.total, 0);
+         const totalPaid = existingAcconti.reduce((sum, a) => sum + a.amount, 0);
+         const availableCredit = Math.max(0, totalPaid - totalEarned);
+         const creditToApply = Math.min(availableCredit, total);
+
+         const finalPayedAmount = parseFloat(payedAmount) + creditToApply;
+         const finalIsPaid = finalPayedAmount >= total;
+
          // Create the salary record
          const salary = await prisma.salary.create({
             data: {
@@ -392,8 +424,8 @@ export async function POST(request) {
                salaryAmount: parseFloat(salaryAmount),
                extras: parseFloat(extras),
                total,
-               payedAmount: parseFloat(payedAmount),
-               isPaid,
+               payedAmount: finalPayedAmount,
+               isPaid: finalIsPaid,
                notes,
             },
          });
@@ -435,14 +467,9 @@ export async function PATCH(request) {
          }
       });
 
-      if (salaries.length === 0) {
+      // If a specific salary was requested but not found, return 404
+      if (salaryId && salaries.length === 0) {
          return NextResponse.json({ error: 'Nessuna giornata di lavoro trovata' }, { status: 404 });
-      }
-
-      const totalToPay = salaries.reduce((acc, salary) => acc + (salary.total - salary.payedAmount), 0);
-
-      if (paymentAmount > totalToPay) {
-         return NextResponse.json({ error: 'Importo da pagare maggiore del totale da pagare' }, { status: 400 });
       }
 
       // Sort salaries by workedDay ascending (oldest first)

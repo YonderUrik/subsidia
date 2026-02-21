@@ -446,15 +446,18 @@ export default function EmployeeDetailsPage() {
                      </div>
                   </div>
                   <div className="pt-2 border-t">
-                     <p className="text-slate-500 text-sm">Totale da pagare</p>
-                     <p className="text-xl font-bold text-red-600">{formatNumber(employee.toPay)}</p>
+                     <p className="text-slate-500 text-sm">
+                        {employee.toPay < 0 ? "Credito anticipo" : "Totale da pagare"}
+                     </p>
+                     <p className={`text-xl font-bold ${employee.toPay > 0 ? "text-red-600" : employee.toPay < 0 ? "text-blue-600" : "text-green-600"}`}>
+                        {employee.toPay < 0 ? `- ${formatNumber(Math.abs(employee.toPay))}` : formatNumber(employee.toPay)}
+                     </p>
                   </div>
                   <div className="flex gap-2 pt-2">
                      <Button
                         variant="outline"
                         className="flex-1 text-sm h-8"
                         onClick={() => openPaymentDialog(null, "acconto")}
-                        disabled={employee.toPay <= 0}
                      >
                         <DollarSign className="mr-1 h-3 w-3" />
                         Acconto
@@ -958,19 +961,21 @@ export default function EmployeeDetailsPage() {
                               const entry = employee.workHistory.find(entry => entry.id === selectedEntryId)
                               return entry ? entry.total - entry.payedAmount : 0
                            })()
-                           : employee.toPay
+                           : paymentType === "full" ? employee.toPay : undefined
                         }
                         step="0.01"
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
                      />
                      <p className="text-sm text-muted-foreground">
-                        Importo massimo: {selectedEntryId
+                        {selectedEntryId
                            ? (() => {
                               const entry = employee.workHistory.find(entry => entry.id === selectedEntryId)
-                              return entry ? `${formatNumber(entry.total - entry.payedAmount)}` : formatNumber(0)
+                              return `Importo massimo: ${entry ? formatNumber(entry.total - entry.payedAmount) : formatNumber(0)}`
                            })()
-                           : `${formatNumber(employee.toPay)}`
+                           : paymentType === "full"
+                              ? `Importo massimo: ${formatNumber(employee.toPay)}`
+                              : "Puoi inserire un importo superiore al saldo dovuto"
                         }
                      </p>
                   </div>

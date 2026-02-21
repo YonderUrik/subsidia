@@ -153,7 +153,9 @@ export default function EmployeesPage() {
                   <TableCell>{employee.fullDays}</TableCell>
                   <TableCell>{formatNumber(employee.halfDayRate)}</TableCell>
                   <TableCell>{employee.halfDays}</TableCell>
-                  <TableCell>{formatNumber(employee.toPay)}</TableCell>
+                  <TableCell className={employee.toPay < 0 ? "text-blue-600 font-medium" : employee.toPay > 0 ? "text-red-600" : ""}>
+                    {employee.toPay < 0 ? `- ${formatNumber(Math.abs(employee.toPay))}` : formatNumber(employee.toPay)}
+                  </TableCell>
                   <TableCell>
                     {employee.isActive ? (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 whitespace-nowrap">

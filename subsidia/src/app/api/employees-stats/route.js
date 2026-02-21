@@ -28,6 +28,12 @@ export async function GET() {
       }
     });
 
+    // Get all acconti to compute true net balance
+    const acconti = await prisma.acconto.findMany({
+      where: { userId: session.user.id },
+      select: { amount: true }
+    });
+
     // Calculate totals
     const totalSalaries = salaries.reduce((acc, salary) => {
       if (salary.workType === 'fullDay') {
@@ -37,8 +43,11 @@ export async function GET() {
       }
       return acc;
     }, 0);
-    
-    const totalToPay = salaries.reduce((acc, salary) => acc + (salary.total - salary.payedAmount), 0);
+
+    // True net balance: sum of all earned salaries minus sum of all acconti paid
+    const totalEarned = salaries.reduce((acc, salary) => acc + salary.total, 0);
+    const totalAcconti = acconti.reduce((acc, a) => acc + a.amount, 0);
+    const totalToPay = totalEarned - totalAcconti;
 
     return NextResponse.json({
       activeEmployees,

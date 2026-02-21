@@ -57,16 +57,14 @@ export async function GET(request) {
             } else if (salary.workType === 'halfDay') {
                acc.halfDays++;
             }
-            if (!salary.isPaid) {
-               if (salary.payedAmount > 0) {
-                  acc.toPay += (salary.total - salary.payedAmount)
-               } else {
-                  acc.toPay += salary.total;
-               }
-            }
+            acc.toPay += salary.total;
             acc.totalExtras += salary.extras;
             return acc;
          }, { fullDays: 0, halfDays: 0, toPay: 0, totalExtras: 0 });
+
+         // Subtract all acconti to get true net balance (can be negative = overpaid)
+         const totalAccontiSingle = employee.acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
+         salaryStats.toPay -= totalAccontiSingle;
 
          // Find the most recent worked day
          let lastWorkedDay = null;
@@ -182,23 +180,18 @@ export async function GET(request) {
             } else if (salary.workType === 'halfDay') {
                acc.halfDays++;
             }
-            if (!salary.isPaid) {
-               if (salary.payedAmount > 0) {
-                  acc.toPay += (salary.total - salary.payedAmount)
-               } else {
-                  acc.toPay += salary.total;
-               }
-            }
+            acc.toPay += salary.total;
             acc.totalExtras += salary.extras;
             return acc;
          }, { fullDays: 0, halfDays: 0, toPay: 0, totalExtras: 0 });
 
          // Remove salaries array and add stats
          const { salaries, acconti, ...employeeData } = employee;
-         
-         // Calculate total amount of acconti
+
+         // Subtract all acconti to get true net balance (can be negative = overpaid)
          const totalAcconti = acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
-         
+         salaryStats.toPay -= totalAcconti;
+
          return {
             ...employeeData,
             ...salaryStats,
