@@ -26,12 +26,32 @@ export async function GET(request) {
       const search = searchParams.get("search") || "";
       const isActive = searchParams.get("isActive");
       const id = searchParams.get("id");
+      const year = searchParams.get("year");
       const page = parseInt(searchParams.get("page")) || 1;
       const pageSize = parseInt(searchParams.get("pageSize")) || 20;
       const historyPage = parseInt(searchParams.get("historyPage")) || 1;
       const historyPageSize = parseInt(searchParams.get("historyPageSize")) || 10;
       const accontiPage = parseInt(searchParams.get("accontiPage")) || 1;
       const accontiPageSize = parseInt(searchParams.get("accontiPageSize")) || 10;
+
+      // Build date filters for salary/acconti when a specific year is selected
+      let salaryDateFilter = {};
+      let accontiDateFilter = {};
+      if (year && year !== 'all') {
+         const yearNum = parseInt(year);
+         salaryDateFilter = {
+            workedDay: {
+               gte: new Date(`${yearNum}-01-01`),
+               lt: new Date(`${yearNum + 1}-01-01`)
+            }
+         };
+         accontiDateFilter = {
+            date: {
+               gte: new Date(`${yearNum}-01-01`),
+               lt: new Date(`${yearNum + 1}-01-01`)
+            }
+         };
+      }
 
       if (id) {
          // If ID is provided, fetch single employee
@@ -152,25 +172,36 @@ export async function GET(request) {
       }
 
       // Query employees with search filter and salary aggregations
-      const employees = await prisma.employee.findMany({
-         where: {
-            userId: session.user.id,
-            name: {
-               contains: search,
-               mode: "insensitive"
+      const employeeWhere = {
+         userId: session.user.id,
+         name: {
+            contains: search,
+            mode: "insensitive"
+         },
+         ...(isActive === "true" && { isActive: true })
+      };
+
+      const [employees, totalCount, allSalaryDates] = await Promise.all([
+         prisma.employee.findMany({
+            where: employeeWhere,
+            include: {
+               salaries: { where: salaryDateFilter },
+               acconti: { where: accontiDateFilter }
             },
-            ...(isActive === "true" && { isActive: true })
-         },
-         include: {
-            salaries: true,
-            acconti: true
-         },
-         orderBy: {
-            name: "asc"
-         },
-         skip: (page - 1) * pageSize,
-         take: pageSize
-      });
+            orderBy: { name: "asc" },
+            skip: (page - 1) * pageSize,
+            take: pageSize
+         }),
+         prisma.employee.count({ where: employeeWhere }),
+         prisma.salary.findMany({
+            where: { userId: session.user.id },
+            select: { workedDay: true }
+         })
+      ]);
+
+      // Extract available years from all salary records
+      const yearsSet = new Set(allSalaryDates.map(s => new Date(s.workedDay).getFullYear()));
+      const years = Array.from(yearsSet).sort((a, b) => b - a);
 
       // Calculate salary stats for each employee
       const employeesWithStats = employees.map(employee => {
@@ -188,7 +219,7 @@ export async function GET(request) {
          // Remove salaries array and add stats
          const { salaries, acconti, ...employeeData } = employee;
 
-         // Subtract all acconti to get true net balance (can be negative = overpaid)
+         // Subtract acconti (year-filtered if applicable) to get net balance
          const totalAcconti = acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
          salaryStats.toPay -= totalAcconti;
 
@@ -199,21 +230,10 @@ export async function GET(request) {
          };
       });
 
-      // Get total count for pagination
-      const totalCount = await prisma.employee.count({
-         where: {
-            userId: session.user.id,
-            name: {
-               contains: search,
-               mode: "insensitive"
-            },
-            ...(isActive === "true" && { isActive: true })
-         }
-      });
-
       return NextResponse.json({
          success: true,
          data: employeesWithStats,
+         years,
          pagination: {
             totalItems: totalCount,
             totalPages: Math.ceil(totalCount / pageSize),

@@ -50,7 +50,7 @@ const months = [
 
 export default function SalaryPage() {
    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth().toString())
-   const [periodType, setPeriodType] = useState("month") // month, year, all
+   const [periodType, setPeriodType] = useState("year") // month, year, all
    const [year, setYear] = useState(new Date().getFullYear())
    const [searchTerm, setSearchTerm] = useState("")
    const [notesKeyword, setNotesKeyword] = useState("")
@@ -339,6 +339,15 @@ export default function SalaryPage() {
       setNotesKeyword("");
    }
 
+   const availableYears = useMemo(() => {
+      const currentYear = new Date().getFullYear()
+      const yearsList = years.map(y => String(y))
+      if (!yearsList.includes(String(currentYear))) {
+         return [String(currentYear), ...yearsList]
+      }
+      return yearsList
+   }, [years])
+
    const toggleFilter = (filter) => {
       if (activeFilter === filter) {
          // If clicking the currently active filter, clear it
@@ -441,36 +450,45 @@ export default function SalaryPage() {
             <Card className="sm:col-span-2 p-0 lg:col-span-4 bg-white shadow-sm">
                <CardContent className="py-3 px-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center flex-wrap gap-2">
-                     <Select value={periodType} onValueChange={setPeriodType}>
-                        <SelectTrigger className="h-9 w-full sm:w-auto min-w-[150px]">
-                           <SelectValue placeholder="Tipo periodo" />
+                     <Select
+                        value={periodType === "all" ? "all" : String(year)}
+                        onValueChange={(val) => {
+                           if (val === "all") {
+                              setPeriodType("all")
+                           } else {
+                              setYear(val)
+                              if (periodType === "all") setPeriodType("year")
+                           }
+                        }}
+                     >
+                        <SelectTrigger className="h-9 w-full sm:w-auto min-w-[160px]">
+                           <SelectValue placeholder="Anno" />
                         </SelectTrigger>
                         <SelectContent>
-                           <SelectItem value="month">Mese specifico</SelectItem>
-                           <SelectItem value="year">Anno intero</SelectItem>
-                           {/* <SelectItem value="all">Tutti i periodi</SelectItem> */}
+                           <SelectItem value="all">Tutti i periodi</SelectItem>
+                           {availableYears.map((y) => (
+                              <SelectItem key={y} value={y}>{y}</SelectItem>
+                           ))}
                         </SelectContent>
                      </Select>
 
                      {periodType !== "all" && (
-                        <Select value={year} onValueChange={setYear}>
-                           <SelectTrigger className="h-9 w-full sm:w-auto min-w-[120px]">
-                              <SelectValue placeholder="Anno" />
-                           </SelectTrigger>
-                           <SelectContent>
-                              {years.map((y) => (
-                                 <SelectItem key={y} value={y}>{y}</SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                     )}
-
-                     {periodType === "month" && (
-                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                           <SelectTrigger className="h-9 w-full sm:w-auto min-w-[150px]">
+                        <Select
+                           value={periodType === "month" ? selectedMonth : "year"}
+                           onValueChange={(val) => {
+                              if (val === "year") {
+                                 setPeriodType("year")
+                              } else {
+                                 setPeriodType("month")
+                                 setSelectedMonth(val)
+                              }
+                           }}
+                        >
+                           <SelectTrigger className="h-9 w-full sm:w-auto min-w-[160px]">
                               <SelectValue placeholder="Mese" />
                            </SelectTrigger>
                            <SelectContent>
+                              <SelectItem value="year">Tutto l&apos;anno</SelectItem>
                               {months.map((month, index) => (
                                  <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
                               ))}

@@ -14,7 +14,11 @@ import { formatNumber } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function EmployeesPage() {
+  const currentYear = new Date().getFullYear()
+
   const [search, setSearch] = useState("")
+  const [selectedYear, setSelectedYear] = useState(String(currentYear))
+  const [availableYears, setAvailableYears] = useState([String(currentYear)])
   const [employees, setEmployees] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
@@ -24,19 +28,24 @@ export default function EmployeesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchEmployees = async (searchTerm, page = 1, size = pageSize) => {
+  const fetchEmployees = async (searchTerm, page = 1, size = pageSize, year = selectedYear) => {
     try {
       const response = await axios.get('/api/employees', {
         params: {
           search: searchTerm,
           page,
-          pageSize: size
+          pageSize: size,
+          year
         }
       })
       if (response.data.success) {
         setEmployees([...response.data.data].sort((a, b) => a.name.localeCompare(b.name)))
         setTotalPages(response.data.pagination.totalPages)
         setTotalItems(response.data.pagination.totalItems)
+        if (response.data.years && response.data.years.length > 0) {
+          const merged = Array.from(new Set([...response.data.years.map(String), String(currentYear)]))
+          setAvailableYears(merged.sort((a, b) => b - a))
+        }
       } else {
         setError('Failed to fetch employees')
       }
@@ -49,23 +58,23 @@ export default function EmployeesPage() {
   }
 
   const debouncedFetch = useMemo(
-    () => debounce((searchTerm, page, size) => fetchEmployees(searchTerm, page, size), 500),
-    []
+    () => debounce((searchTerm, page, size, year) => fetchEmployees(searchTerm, page, size, year), 500),
+    [] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   useEffect(() => {
-    setCurrentPage(1) // Reset to first page on new search
-    debouncedFetch(search, 1, pageSize)
+    setCurrentPage(1)
+    debouncedFetch(search, 1, pageSize, selectedYear)
     return () => {
       debouncedFetch.cancel()
     }
-  }, [search, pageSize, debouncedFetch])
+  }, [search, pageSize, selectedYear, debouncedFetch])
 
   useEffect(() => {
     if (currentPage > 1 || pageSize !== 10) {
-      fetchEmployees(search, currentPage, pageSize)
+      fetchEmployees(search, currentPage, pageSize, selectedYear)
     }
-  }, [currentPage])
+  }, [currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1))
@@ -124,11 +133,22 @@ export default function EmployeesPage() {
           </Button>
         </Link>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input type="search" placeholder="Cerca operaio..." className="pl-8 w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="h-9 w-auto min-w-[160px]">
+            <SelectValue placeholder="Anno" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tutti i periodi</SelectItem>
+            {availableYears.map((y) => (
+              <SelectItem key={y} value={y}>{y}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="rounded-md border shadow-sm bg-card overflow-x-auto">
         <Table>
