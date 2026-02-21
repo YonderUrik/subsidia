@@ -180,7 +180,6 @@ export default function SalaryPage() {
          setTotalPayed(response.data.totalPayed)
          setTotalToPay(response.data.totalToPay)
          setYears(response.data.years)
-         setYear(response.data.years[0])
          setTotalCount(response.data.totalCount)
          setTotalPages(response.data.totalPages)
          
@@ -198,6 +197,13 @@ export default function SalaryPage() {
          setIsLoading(false)
       }
    }, [periodType, year, selectedMonth, groupBy, currentPage, pageSize, notesKeyword, activeFilter])
+
+   // Initialize year from API data only when years list first loads and current year isn't in it
+   useEffect(() => {
+      if (years.length > 0 && !years.includes(year) && !years.includes(String(year))) {
+         setYear(years[0])
+      }
+   }, [years])
 
    // Get notes keywords separately
    useEffect(() => {
