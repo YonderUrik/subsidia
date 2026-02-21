@@ -14,19 +14,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const year = searchParams.get('year') // "all" or a year number string
 
-    // Build date filter
-    let dateFilter = {}
-    if (year && year !== 'all') {
-      const yearNum = parseInt(year)
-      dateFilter = {
-        workedDay: {
-          gte: new Date(`${yearNum}-01-01`),
-          lt: new Date(`${yearNum + 1}-01-01`)
-        }
-      }
-    }
-
-    // Get number of active employees (not filtered by year)
+    // Get number of active employees (never year-filtered)
     const activeEmployees = await prisma.employee.count({
       where: {
         userId: session.user.id,
@@ -34,50 +22,35 @@ export async function GET(request) {
       }
     });
 
-    // Get salaries data (filtered by year if provided)
-    const salaries = await prisma.salary.findMany({
-      where: {
-        userId: session.user.id,
-        ...dateFilter
-      },
-      include: {
-        employee: true
-      }
-    });
-
-    // Get available years from all salary records
-    const allSalaryDates = await prisma.salary.findMany({
+    // Fetch all salary records — filter in JS so we can reuse for both display and balance
+    const allSalaries = await prisma.salary.findMany({
       where: { userId: session.user.id },
-      select: { workedDay: true }
+      include: { employee: true }
     });
-    const yearsSet = new Set(allSalaryDates.map(s => new Date(s.workedDay).getFullYear()))
-    const years = Array.from(yearsSet).sort((a, b) => b - a)
 
-    // Get acconti (filtered by year if provided)
-    let accontiFilter = { userId: session.user.id }
-    if (year && year !== 'all') {
-      const yearNum = parseInt(year)
-      accontiFilter.date = {
-        gte: new Date(`${yearNum}-01-01`),
-        lt: new Date(`${yearNum + 1}-01-01`)
-      }
-    }
+    // Get all acconti (never year-filtered — they are a running balance)
     const acconti = await prisma.acconto.findMany({
-      where: accontiFilter,
+      where: { userId: session.user.id },
       select: { amount: true }
     });
 
-    // Calculate totals
-    const totalSalaries = salaries.reduce((acc, salary) => {
-      if (salary.workType === 'fullDay') {
-        return acc + 1;
-      } else if (salary.workType === 'halfDay') {
-        return acc + 0.5;
-      }
+    // Extract available years
+    const yearsSet = new Set(allSalaries.map(s => new Date(s.workedDay).getFullYear()))
+    const years = Array.from(yearsSet).sort((a, b) => b - a)
+
+    // Year-filtered salaries for the day count display only
+    const displaySalaries = (year && year !== 'all')
+      ? allSalaries.filter(s => new Date(s.workedDay).getFullYear() === parseInt(year))
+      : allSalaries;
+
+    const totalSalaries = displaySalaries.reduce((acc, salary) => {
+      if (salary.workType === 'fullDay') return acc + 1;
+      if (salary.workType === 'halfDay') return acc + 0.5;
       return acc;
     }, 0);
 
-    const totalEarned = salaries.reduce((acc, salary) => acc + salary.total, 0);
+    // Balance is always global: ALL earned - ALL acconti
+    const totalEarned = allSalaries.reduce((acc, salary) => acc + salary.total, 0);
     const totalAcconti = acconti.reduce((acc, a) => acc + a.amount, 0);
     const totalToPay = totalEarned - totalAcconti;
 

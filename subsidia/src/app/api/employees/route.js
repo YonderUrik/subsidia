@@ -34,25 +34,6 @@ export async function GET(request) {
       const accontiPage = parseInt(searchParams.get("accontiPage")) || 1;
       const accontiPageSize = parseInt(searchParams.get("accontiPageSize")) || 10;
 
-      // Build date filters for salary/acconti when a specific year is selected
-      let salaryDateFilter = {};
-      let accontiDateFilter = {};
-      if (year && year !== 'all') {
-         const yearNum = parseInt(year);
-         salaryDateFilter = {
-            workedDay: {
-               gte: new Date(`${yearNum}-01-01`),
-               lt: new Date(`${yearNum + 1}-01-01`)
-            }
-         };
-         accontiDateFilter = {
-            date: {
-               gte: new Date(`${yearNum}-01-01`),
-               lt: new Date(`${yearNum + 1}-01-01`)
-            }
-         };
-      }
-
       if (id) {
          // If ID is provided, fetch single employee
          const employee = await prisma.employee.findUnique({
@@ -181,51 +162,53 @@ export async function GET(request) {
          ...(isActive === "true" && { isActive: true })
       };
 
-      const [employees, totalCount, allSalaryDates] = await Promise.all([
+      const [employees, totalCount] = await Promise.all([
          prisma.employee.findMany({
             where: employeeWhere,
             include: {
-               salaries: { where: salaryDateFilter },
-               acconti: { where: accontiDateFilter }
+               salaries: true, // all salaries — filter in JS to reuse for both counts and balance
+               acconti: true
             },
             orderBy: { name: "asc" },
             skip: (page - 1) * pageSize,
             take: pageSize
          }),
-         prisma.employee.count({ where: employeeWhere }),
-         prisma.salary.findMany({
-            where: { userId: session.user.id },
-            select: { workedDay: true }
-         })
+         prisma.employee.count({ where: employeeWhere })
       ]);
 
-      // Extract available years from all salary records
-      const yearsSet = new Set(allSalaryDates.map(s => new Date(s.workedDay).getFullYear()));
+      // Extract available years from all salary records across fetched employees
+      const yearsSet = new Set(
+         employees.flatMap(e => e.salaries.map(s => new Date(s.workedDay).getFullYear()))
+      );
       const years = Array.from(yearsSet).sort((a, b) => b - a);
+
+      const yearNum = (year && year !== 'all') ? parseInt(year) : null;
 
       // Calculate salary stats for each employee
       const employeesWithStats = employees.map(employee => {
-         const salaryStats = employee.salaries.reduce((acc, salary) => {
-            if (salary.workType === 'fullDay') {
-               acc.fullDays++;
-            } else if (salary.workType === 'halfDay') {
-               acc.halfDays++;
-            }
-            acc.toPay += salary.total;
-            acc.totalExtras += salary.extras;
-            return acc;
-         }, { fullDays: 0, halfDays: 0, toPay: 0, totalExtras: 0 });
-
-         // Remove salaries array and add stats
          const { salaries, acconti, ...employeeData } = employee;
 
-         // Subtract acconti (year-filtered if applicable) to get net balance
-         const totalAcconti = acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
-         salaryStats.toPay -= totalAcconti;
+         // Year-filtered salaries for display counts only
+         const displaySalaries = yearNum
+            ? salaries.filter(s => new Date(s.workedDay).getFullYear() === yearNum)
+            : salaries;
+
+         const salaryStats = displaySalaries.reduce((acc, salary) => {
+            if (salary.workType === 'fullDay') acc.fullDays++;
+            else if (salary.workType === 'halfDay') acc.halfDays++;
+            acc.totalExtras += salary.extras;
+            return acc;
+         }, { fullDays: 0, halfDays: 0, totalExtras: 0 });
+
+         // toPay = ALL earned (all time) - ALL acconti (all time) = global balance
+         const totalEarned = salaries.reduce((sum, s) => sum + s.total, 0);
+         const totalAcconti = acconti.reduce((sum, a) => sum + a.amount, 0);
+         const toPay = totalEarned - totalAcconti;
 
          return {
             ...employeeData,
             ...salaryStats,
+            toPay,
             totalAcconti
          };
       });
