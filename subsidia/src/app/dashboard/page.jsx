@@ -66,9 +66,10 @@ export default function DashboardPage() {
    
 
    useEffect(() => {
+      if (status !== "authenticated") return
       getEmployeesStats()
       getHarvestStats()
-   }, [getEmployeesStats, getHarvestStats])
+   }, [getEmployeesStats, getHarvestStats, status])
 
 
    return (
