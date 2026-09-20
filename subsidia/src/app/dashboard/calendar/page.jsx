@@ -222,7 +222,7 @@ export default function CalendarPage() {
       <div className="p-2 sm:p-6 space-y-4 sm:space-y-6">
          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Calendario</h1>
+               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Calendario</h1>
             </div>
             <div className="flex flex-wrap gap-2">
                <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === "month" ? "list" : "month")}>
@@ -286,7 +286,7 @@ export default function CalendarPage() {
                               <PopoverContent className="w-[240px] p-0">
                                  <div className="p-2">
                                     <div className="relative mb-2">
-                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                                        <Input
                                           type="search"
                                           placeholder="Cerca parole chiave..."
@@ -298,7 +298,7 @@ export default function CalendarPage() {
                                     {notesKeyword && (
                                        <Button 
                                           variant="ghost" 
-                                          className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                          className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                           onClick={clearNotesFilter}
                                        >
                                           Cancella filtro
@@ -311,7 +311,7 @@ export default function CalendarPage() {
                                                 <Badge 
                                                    key={keyword} 
                                                    variant="secondary" 
-                                                   className="cursor-pointer hover:bg-slate-200"
+                                                   className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
                                                    onClick={() => handleNotesKeywordSelect(keyword)}
                                                 >
                                                    {keyword}
@@ -319,7 +319,7 @@ export default function CalendarPage() {
                                              ))}
                                           </div>
                                        ) : (
-                                          <div className="p-2 text-center text-slate-500 text-sm">Nessuna parola chiave trovata</div>
+                                          <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessuna parola chiave trovata</div>
                                        )}
                                     </div>
                                  </div>
@@ -331,20 +331,20 @@ export default function CalendarPage() {
                   <CardContent>
                      {isLoading ? (
                         <div className="flex justify-center items-center h-64">
-                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900 dark:border-slate-100"></div>
                         </div>
                      ) : viewMode === "month" ? (
                         <>
-                           <div className="grid grid-cols-7 gap-px bg-slate-200 text-center">
+                           <div className="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-800 text-center">
                               {["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"].map((day) => (
-                                 <div key={day} className="p-2 font-medium bg-white">
+                                 <div key={day} className="p-2 font-medium bg-white dark:bg-slate-900">
                                     {day}
                                  </div>
                               ))}
                            </div>
-                           <div className="grid grid-cols-7 gap-px bg-slate-200">
+                           <div className="grid grid-cols-7 gap-px bg-slate-200 dark:bg-slate-800">
                               {calendarDays.map((day, i) => {
-                                 if (!day) return <div key={`empty-${i}`} className="bg-white p-1 sm:p-2 min-h-16 sm:min-h-24" />
+                                 if (!day) return <div key={`empty-${i}`} className="bg-white dark:bg-slate-900 p-1 sm:p-2 min-h-16 sm:min-h-24" />
 
                                  const dateStr = format(day, "yyyy-MM-dd")
                                  const dayEntries = entriesByDate[dateStr] || []
@@ -355,9 +355,9 @@ export default function CalendarPage() {
                                  return (
                                     <div
                                        key={dateStr}
-                                       className={`bg-white p-1 sm:p-2 min-h-16 sm:min-h-24 overflow-hidden transition-colors ${!isCurrentMonth ? "text-slate-400" : ""
-                                          } ${isCurrentDay ? "border-2 border-blue-500" : ""} ${isSelected ? "bg-blue-50" : ""
-                                          } hover:bg-slate-50 cursor-pointer relative`}
+                                       className={`bg-white dark:bg-slate-900 p-1 sm:p-2 min-h-16 sm:min-h-24 overflow-hidden transition-colors ${!isCurrentMonth ? "text-slate-400 dark:text-slate-600" : ""
+                                          } ${isCurrentDay ? "border-2 border-blue-500" : ""} ${isSelected ? "bg-blue-50 dark:bg-blue-950/40" : ""
+                                          } hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer relative`}
                                        onClick={() => handleDayClick(day)}
                                     >
                                        <div className="font-medium">{format(day, "d")}</div>
@@ -370,17 +370,17 @@ export default function CalendarPage() {
                                           {dayEntries.slice(0, 2).map((entry) => (
                                              <div
                                                 key={entry.id}
-                                                className={`text-xs truncate rounded px-1 py-0.5 ${entry.workType === "fullDay" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                                                className={`text-xs truncate rounded px-1 py-0.5 ${entry.workType === "fullDay" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
                                                    } ${entry.isPaid ? "border-l-2 border-green-500" : "border-l-2 border-red-500"}`}
                                              >
                                                 {entry.employee.name}
                                                 {entry.notes && (
-                                                   <span className="ml-1 text-slate-500">📝</span>
+                                                   <span className="ml-1 text-slate-500 dark:text-slate-400">📝</span>
                                                 )}
                                              </div>
                                           ))}
                                           {dayEntries.length > 2 && (
-                                             <div className="text-xs text-slate-500">+{dayEntries.length - 2} altro</div>
+                                             <div className="text-xs text-slate-500 dark:text-slate-400">+{dayEntries.length - 2} altro</div>
                                           )}
                                        </div>
                                     </div>
@@ -410,18 +410,18 @@ export default function CalendarPage() {
                                                    <div className="flex items-center justify-between">
                                                       <span className="font-medium">{entry.employee.name}</span>
                                                       <Badge variant="outline" className={entry.isPaid ?
-                                                         "bg-green-50 text-green-700 border-green-200 whitespace-nowrap" :
-                                                         "bg-red-50 text-red-700 border-red-200 whitespace-nowrap"
+                                                         "bg-green-50 text-green-700 border-green-200 whitespace-nowrap dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" :
+                                                         "bg-red-50 text-red-700 border-red-200 whitespace-nowrap dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
                                                       }>
                                                          {entry.isPaid ? "Pagato" : "Non pagato"}
                                                       </Badge>
                                                    </div>
-                                                   <div className="text-sm text-slate-600">
+                                                   <div className="text-sm text-slate-600 dark:text-slate-400">
                                                       {entry.workType === "fullDay" ? "Giornata intera" : "Mezza giornata"} - €{entry.total}
                                                    </div>
                                                    {entry.notes && (
-                                                      <div className="text-sm text-slate-600 mt-1">
-                                                         <span className="text-slate-500">Note:</span> {entry.notes}
+                                                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                                         <span className="text-slate-500 dark:text-slate-400">Note:</span> {entry.notes}
                                                       </div>
                                                    )}
                                                 </div>
@@ -431,7 +431,7 @@ export default function CalendarPage() {
                                     </div>
                                  ))
                            ) : (
-                              <div className="text-center py-8 text-slate-500">
+                              <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                                  Nessuna giornata per questo mese
                               </div>
                            )}
@@ -459,34 +459,34 @@ export default function CalendarPage() {
                                     <div className="flex items-center justify-between">
                                        <div className="font-medium">{entry.employee.name}</div>
                                        <Badge variant="outline" className={entry.isPaid ?
-                                          "bg-green-50 text-green-700 border-green-200 whitespace-nowrap" :
-                                          "bg-red-50 text-red-700 border-red-200 whitespace-nowrap"
+                                          "bg-green-50 text-green-700 border-green-200 whitespace-nowrap dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" :
+                                          "bg-red-50 text-red-700 border-red-200 whitespace-nowrap dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
                                        }>
                                           {entry.isPaid ? "Pagato" : "Non pagato"}
                                        </Badge>
                                     </div>
                                     <div className="text-sm">
-                                       <span className="text-slate-500">Tipo:</span>{" "}
+                                       <span className="text-slate-500 dark:text-slate-400">Tipo:</span>{" "}
                                        <span className="capitalize">{entry.workType === "fullDay" ? "Giornata intera" : "Mezza giornata"}</span>
                                     </div>
                                     <div className="text-sm">
-                                       <span className="text-slate-500">Totale:</span> €{entry.total}
+                                       <span className="text-slate-500 dark:text-slate-400">Totale:</span> €{entry.total}
                                     </div>
                                     {entry.extras > 0 && (
                                        <div className="text-sm">
-                                          <span className="text-slate-500">Extra:</span> €{entry.extras}
+                                          <span className="text-slate-500 dark:text-slate-400">Extra:</span> €{entry.extras}
                                        </div>
                                     )}
                                     {entry.notes && (
                                        <div className="text-sm">
-                                          <span className="text-slate-500">Note:</span> {entry.notes}
+                                          <span className="text-slate-500 dark:text-slate-400">Note:</span> {entry.notes}
                                        </div>
                                     )}
                                  </div>
                               ))}
                            </div>
                         ) : (
-                           <div className="text-center py-4 text-slate-500">Nessuna giornata per questo giorno</div>
+                           <div className="text-center py-4 text-slate-500 dark:text-slate-400">Nessuna giornata per questo giorno</div>
                         )}
                      </CardContent>
                   </Card>
@@ -499,11 +499,11 @@ export default function CalendarPage() {
                   <CardContent>
                      <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                           <div className="w-4 h-4 rounded bg-green-100"></div>
+                           <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900/40"></div>
                            <span className="text-sm">Giornata intera</span>
                         </div>
                         <div className="flex items-center gap-2">
-                           <div className="w-4 h-4 rounded bg-yellow-100"></div>
+                           <div className="w-4 h-4 rounded bg-yellow-100 dark:bg-yellow-900/40"></div>
                            <span className="text-sm">Mezza giornata</span>
                         </div>
                         <div className="flex items-center gap-2">

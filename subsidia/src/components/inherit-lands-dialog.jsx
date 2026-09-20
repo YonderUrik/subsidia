@@ -166,7 +166,7 @@ export function InheritLandsDialog({ targetYear, existingLandNames, onInherited,
                               <p className="text-xs text-muted-foreground">{land.soilType} · {land.area} ha</p>
                            </div>
                            {alreadyExists && (
-                              <Badge variant="outline" className="text-xs text-amber-700 border-amber-200 bg-amber-50">
+                              <Badge variant="outline" className="text-xs text-amber-700 border-amber-200 bg-amber-50 dark:text-amber-400 dark:border-amber-800 dark:bg-amber-950/20">
                                  già esistente in {targetYear}
                               </Badge>
                            )}

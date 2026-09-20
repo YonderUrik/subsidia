@@ -302,9 +302,9 @@ export default function EmployeeDetailsPage() {
    if (isLoading) {
       return (
          <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
-            <p className="mt-4 text-lg font-medium text-slate-600">Caricamento dati operai...</p>
-            <p className="text-sm text-slate-500">Attendere mentre recuperiamo i dati</p>
+            <Loader2 className="h-8 w-8 animate-spin text-slate-600 dark:text-slate-400" />
+            <p className="mt-4 text-lg font-medium text-slate-600 dark:text-slate-400">Caricamento dati operai...</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Attendere mentre recuperiamo i dati</p>
          </div>
       )
    }
@@ -318,13 +318,13 @@ export default function EmployeeDetailsPage() {
                      <ArrowLeft className="h-4 w-4" />
                   </Button>
                </Link>
-               <h1 className="text-2xl font-bold tracking-tight text-slate-900">Errore</h1>
+               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Errore</h1>
             </div>
 
-            <Alert className="mt-4 bg-red-50 border-red-200">
-               <AlertTriangle className="h-5 w-5 text-red-600" />
-               <AlertTitle className="text-red-800">Si è verificato un errore</AlertTitle>
-               <AlertDescription className="text-red-700">
+            <Alert className="mt-4 bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800">
+               <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+               <AlertTitle className="text-red-800 dark:text-red-300">Si è verificato un errore</AlertTitle>
+               <AlertDescription className="text-red-700 dark:text-red-400">
                   {error}
                </AlertDescription>
             </Alert>
@@ -335,7 +335,7 @@ export default function EmployeeDetailsPage() {
    if (!employee) {
       return (
          <div className="p-4">
-            <h1 className="text-2xl font-bold text-slate-900">Operaio non trovato</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Operaio non trovato</h1>
             <Link href={paths.employees}>
                <Button className="mt-4">
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -355,13 +355,13 @@ export default function EmployeeDetailsPage() {
                      <ArrowLeft className="h-4 w-4" />
                   </Button>
                </Link>
-               <h1 className="text-2xl font-bold tracking-tight text-slate-900">Operaio eliminato</h1>
+               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Operaio eliminato</h1>
             </div>
 
-            <Alert className="mt-4 bg-green-50 border-green-200">
-               <CheckCircle2 className="h-5 w-5 text-green-600" />
-               <AlertTitle className="text-green-800">Operazione completata!</AlertTitle>
-               <AlertDescription className="text-green-700">
+            <Alert className="mt-4 bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800">
+               <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+               <AlertTitle className="text-green-800 dark:text-green-300">Operazione completata!</AlertTitle>
+               <AlertDescription className="text-green-700 dark:text-green-400">
                   {employee.name} è stato rimosso dal sistema.
                </AlertDescription>
             </Alert>
@@ -380,9 +380,9 @@ export default function EmployeeDetailsPage() {
                   </Button>
                </Link>
                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{employee.name}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{employee.name}</h1>
                   {!employee.isActive && (
-                     <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 mt-1">
+                     <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800 mt-1">
                         Disabilitato
                      </Badge>
                   )}
@@ -419,41 +419,41 @@ export default function EmployeeDetailsPage() {
 
          {/* STATS */}
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card className="bg-white/50 backdrop-blur-sm">
+            <Card className="bg-white/50 backdrop-blur-sm dark:bg-slate-900/50">
                <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Informazioni Operaio</CardTitle>
                </CardHeader>
                <CardContent>
                   <div className="text-sm">
-                     <p className="text-slate-500">ID: <span className="text-slate-900">{employee.id}</span></p>
+                     <p className="text-slate-500 dark:text-slate-400">ID: <span className="text-slate-900 dark:text-slate-100">{employee.id}</span></p>
                   </div>
                </CardContent>
             </Card>
 
-            <Card className="bg-white/50 backdrop-blur-sm">
+            <Card className="bg-white/50 backdrop-blur-sm dark:bg-slate-900/50">
                <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Informazioni salario</CardTitle>
                </CardHeader>
                <CardContent className="space-y-2">
                   <div className="grid grid-cols-2 gap-2 text-sm">
                      <div>
-                        <p className="text-slate-500">Giornaliero</p>
+                        <p className="text-slate-500 dark:text-slate-400">Giornaliero</p>
                         <p className="font-semibold">{formatNumber(employee.dailyRate)}</p>
                      </div>
                      <div>
-                        <p className="text-slate-500">Mezza giornata</p>
+                        <p className="text-slate-500 dark:text-slate-400">Mezza giornata</p>
                         <p className="font-semibold">{formatNumber(employee.halfDayRate)}</p>
                      </div>
                   </div>
                   <div className="pt-2 border-t">
-                     <p className="text-slate-500 text-sm">
+                     <p className="text-slate-500 dark:text-slate-400 text-sm">
                         {employee.toPay < 0 ? "Credito anticipo" : "Totale da pagare"}
                      </p>
-                     <p className={`text-xl font-bold ${employee.toPay > 0 ? "text-red-600" : employee.toPay < 0 ? "text-blue-600" : "text-green-600"}`}>
+                     <p className={`text-xl font-bold ${employee.toPay > 0 ? "text-red-600 dark:text-red-400" : employee.toPay < 0 ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400"}`}>
                         {employee.toPay < 0 ? `- ${formatNumber(Math.abs(employee.toPay))}` : formatNumber(employee.toPay)}
                      </p>
                      {employee.unallocatedCredit > 0 && (
-                        <p className="text-xs text-amber-600 mt-1">
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                            Di cui {formatNumber(employee.unallocatedCredit)} già versati ma non assegnati a una giornata specifica
                         </p>
                      )}
@@ -469,7 +469,7 @@ export default function EmployeeDetailsPage() {
                      </Button>
                      <Button
                         variant="default"
-                        className="flex-1 text-sm h-8 bg-green-600 hover:bg-green-700"
+                        className="flex-1 text-sm h-8 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
                         onClick={() => openPaymentDialog(null, "full")}
                         disabled={employee.toPay <= 0}
                      >
@@ -480,24 +480,24 @@ export default function EmployeeDetailsPage() {
                </CardContent>
             </Card>
 
-            <Card className="bg-white/50 backdrop-blur-sm sm:col-span-2 lg:col-span-1">
+            <Card className="bg-white/50 backdrop-blur-sm dark:bg-slate-900/50 sm:col-span-2 lg:col-span-1">
                <CardHeader className="pb-2">
                   <CardTitle className="text-lg">Resoconto lavoro</CardTitle>
                </CardHeader>
                <CardContent className="space-y-2 text-sm">
                   <div>
-                     <p className="text-slate-500">Giorni lavorati</p>
+                     <p className="text-slate-500 dark:text-slate-400">Giorni lavorati</p>
                      <p className="font-semibold">
                         {employee.fullDays} giorni interi,{" "}
                         {employee.halfDays} mezze giornate
                      </p>
                   </div>
                   <div>
-                     <p className="text-slate-500">Totale extra</p>
+                     <p className="text-slate-500 dark:text-slate-400">Totale extra</p>
                      <p className="font-semibold">{formatNumber(employee.totalExtras)}</p>
                   </div>
                   <div>
-                     <p className="text-slate-500">Ultimo lavoro</p>
+                     <p className="text-slate-500 dark:text-slate-400">Ultimo lavoro</p>
                      <p className="font-semibold">
                         {employee.lastWorkedDay
                            ? `${format(new Date(employee.lastWorkedDay), 'dd/MM/yyyy')} (${employee.lastWorkType === 'fullDay' ? 'Giornata intera' : 'Mezza giornata'})`
@@ -548,9 +548,9 @@ export default function EmployeeDetailsPage() {
                                        <TableCell>{formatNumber(entry.total)}</TableCell>
                                        <TableCell>
                                           <Badge variant={entry.isPaid ? "default" : "outline"} className={cn(
-                                             entry.isPaid && "bg-green-100 text-green-700 border-green-200",
-                                             !entry.isPaid && entry.payedAmount > 0 && "bg-orange-100 text-orange-700 border-orange-200",
-                                             !entry.isPaid && entry.payedAmount === 0 && "bg-red-100 text-red-700 border-red-200"
+                                             entry.isPaid && "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+                                             !entry.isPaid && entry.payedAmount > 0 && "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
+                                             !entry.isPaid && entry.payedAmount === 0 && "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800"
                                           )}>
                                              {entry.isPaid ? "Pagato" : entry.payedAmount > 0 ? `Parziale (${formatNumber(entry.payedAmount)})` : "Non pagato"}
                                           </Badge>
@@ -570,7 +570,7 @@ export default function EmployeeDetailsPage() {
                                                 <Button
                                                    variant="default"
                                                    size="sm"
-                                                   className="bg-green-600 hover:bg-green-700"
+                                                   className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
                                                    onClick={() => openPaymentDialog(entry.id, "full")}
                                                    disabled={remainingAmount <= 0}
                                                 >
@@ -590,7 +590,7 @@ export default function EmployeeDetailsPage() {
                      {employee.workHistoryPagination && (
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-500">
+                              <span className="text-sm text-slate-500 dark:text-slate-400">
                                  Righe per pagina:
                               </span>
                               <Select value={historyPageSize.toString()} onValueChange={(value) => {
@@ -610,7 +610,7 @@ export default function EmployeeDetailsPage() {
                            </div>
 
                            <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
-                              <span className="text-sm text-slate-500 mr-2">
+                              <span className="text-sm text-slate-500 dark:text-slate-400 mr-2">
                                  {employee.workHistoryPagination.totalItems > 0
                                     ? `${(historyPage - 1) * historyPageSize + 1}-${Math.min(historyPage * historyPageSize, employee.workHistoryPagination.totalItems)} di ${employee.workHistoryPagination.totalItems}`
                                     : "0 risultati"}
@@ -701,7 +701,7 @@ export default function EmployeeDetailsPage() {
                                  ))
                               ) : (
                                  <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-4 text-slate-500">
+                                    <TableCell colSpan={4} className="text-center py-4 text-slate-500 dark:text-slate-400">
                                        Nessun acconto registrato
                                     </TableCell>
                                  </TableRow>
@@ -714,7 +714,7 @@ export default function EmployeeDetailsPage() {
                      {employee.accontiPagination && employee.accontiPagination.totalItems > 0 && (
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-500">
+                              <span className="text-sm text-slate-500 dark:text-slate-400">
                                  Righe per pagina:
                               </span>
                               <Select value={accontiPageSize.toString()} onValueChange={(value) => {
@@ -734,7 +734,7 @@ export default function EmployeeDetailsPage() {
                            </div>
 
                            <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
-                              <span className="text-sm text-slate-500 mr-2">
+                              <span className="text-sm text-slate-500 dark:text-slate-400 mr-2">
                                  {employee.accontiPagination.totalItems > 0
                                     ? `${(accontiPage - 1) * accontiPageSize + 1}-${Math.min(accontiPage * accontiPageSize, employee.accontiPagination.totalItems)} di ${employee.accontiPagination.totalItems}`
                                     : "0 risultati"}
@@ -854,7 +854,7 @@ export default function EmployeeDetailsPage() {
                                  id="total"
                                  value={newWorkEntry.total}
                                  disabled
-                                 className="bg-slate-50"
+                                 className="bg-slate-50 dark:bg-slate-800"
                               />
                            </div>
 
@@ -865,7 +865,7 @@ export default function EmployeeDetailsPage() {
                                  id="payedAmount"
                                  value={newWorkEntry.payedAmount}
                                  onChange={(e) => setNewWorkEntry({ ...newWorkEntry, payedAmount: Number(e.target.value) })}
-                                 className="bg-slate-50"
+                                 className="bg-slate-50 dark:bg-slate-800"
                               />
                            </div>
 
@@ -891,7 +891,7 @@ export default function EmployeeDetailsPage() {
                                  payedAmount: checked ? newWorkEntry.total : 0
                               })}
                            />
-                           <Label htmlFor="isPaid" className="font-normal text-sm text-slate-600">
+                           <Label htmlFor="isPaid" className="font-normal text-sm text-slate-600 dark:text-slate-400">
                               Segna come pagato
                            </Label>
                         </div>

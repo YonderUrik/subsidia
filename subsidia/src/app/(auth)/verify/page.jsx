@@ -210,7 +210,7 @@ export default function VerificationPage() {
                                  className={`h-14 w-14 text-center text-xl font-semibold transition-all duration-200
                                     ${activeIndex === index ? "ring-2 ring-primary ring-offset-1" : ""}
                                     ${digit ? "border-primary/50 bg-primary/5 text-primary" : ""}
-                                    ${isVerified ? "border-green-500 bg-green-50 text-green-600" : ""}
+                                    ${isVerified ? "border-green-500 bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400" : ""}
                                  `}
                                  value={digit}
                                  onChange={(e) => handleInputChange(index, e.target.value)}
@@ -241,13 +241,13 @@ export default function VerificationPage() {
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="flex flex-col items-center justify-center gap-2 rounded-lg bg-green-50 p-4 text-green-600 shadow-sm"
+                              className="flex flex-col items-center justify-center gap-2 rounded-lg bg-green-50 dark:bg-green-950/30 p-4 text-green-600 dark:text-green-400 shadow-sm"
                            >
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 shadow-inner">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40 shadow-inner">
                                  <ShieldCheck className="h-6 w-6" />
                               </div>
                               <p className="font-medium">Account verificato con successo!</p>
-                              <p className="text-sm text-green-600/80">Verrai reindirizzato al login</p>
+                              <p className="text-sm text-green-600/80 dark:text-green-400/80">Verrai reindirizzato al login</p>
                            </motion.div>
                         ) : (
                            <motion.div
@@ -287,7 +287,7 @@ export default function VerificationPage() {
                      <Button
                         type="submit"
                         className={`w-full transition-all duration-300 shadow hover:shadow-md
-                        ${isVerified ? "bg-green-500 hover:bg-green-600" : ""}`}
+                        ${isVerified ? "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-500" : ""}`}
                         disabled={code.join("").length !== 6 || isLoading || isVerified}
                      >
                         {isLoading ? (

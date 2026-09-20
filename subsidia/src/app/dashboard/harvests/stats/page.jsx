@@ -520,7 +520,7 @@ export default function HarvestStatsPage() {
                            {landId && (
                               <Button
                                  variant="ghost"
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearLandFilter}
                               >
                                  Rimuovi filtro terreno
@@ -542,7 +542,7 @@ export default function HarvestStatsPage() {
                                     ))}
                                  </div>
                               ) : (
-                                 <div className="p-2 text-center text-slate-500 text-sm">Nessun terreno trovato</div>
+                                 <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessun terreno trovato</div>
                               )}
                            </div>
                         </div>
@@ -568,7 +568,7 @@ export default function HarvestStatsPage() {
                            {soilType && (
                               <Button
                                  variant="ghost"
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearSoilTypeFilter}
                               >
                                  Rimuovi filtro tipo di terreno
@@ -581,7 +581,7 @@ export default function HarvestStatsPage() {
                                        <Badge
                                           key={type}
                                           variant={soilType === type ? "default" : "secondary"}
-                                          className="cursor-pointer hover:bg-slate-200"
+                                          className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
                                           onClick={() => handleSoilTypeChange(type)}
                                        >
                                           {type}
@@ -589,7 +589,7 @@ export default function HarvestStatsPage() {
                                     ))}
                                  </div>
                               ) : (
-                                 <div className="p-2 text-center text-slate-500 text-sm">Nessun tipo di terreno trovato</div>
+                                 <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessun tipo di terreno trovato</div>
                               )}
                            </div>
                         </div>
@@ -615,7 +615,7 @@ export default function HarvestStatsPage() {
                            {variety && (
                               <Button
                                  variant="ghost"
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearVarietyFilter}
                               >
                                  Rimuovi filtro varietà
@@ -628,7 +628,7 @@ export default function HarvestStatsPage() {
                                        <Badge
                                           key={type}
                                           variant={variety === type ? "default" : "secondary"}
-                                          className="cursor-pointer hover:bg-slate-200"
+                                          className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
                                           onClick={() => handleVarietyChange(type)}
                                        >
                                           {type}
@@ -636,7 +636,7 @@ export default function HarvestStatsPage() {
                                     ))}
                                  </div>
                               ) : (
-                                 <div className="p-2 text-center text-slate-500 text-sm">Nessuna varietà trovata</div>
+                                 <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessuna varietà trovata</div>
                               )}
                            </div>
                         </div>
@@ -968,13 +968,13 @@ export default function HarvestStatsPage() {
                               <div className="grid grid-cols-2 gap-2 text-center">
                                  <div>
                                     <p className="text-xs sm:text-sm text-muted-foreground">Importo Ricevuto</p>
-                                    <p className="text-base sm:text-xl font-bold text-green-500">
+                                    <p className="text-base sm:text-xl font-bold text-green-500 dark:text-green-400">
                                        {formatNumber(stats.paidVsUnpaid.paidAmount)}
                                     </p>
                                  </div>
                                  <div>
                                     <p className="text-xs sm:text-sm text-muted-foreground">Importo da Ricevere</p>
-                                    <p className="text-base sm:text-xl font-bold text-red-500">
+                                    <p className="text-base sm:text-xl font-bold text-red-500 dark:text-red-400">
                                        {formatNumber(stats.paidVsUnpaid.unpaidAmount)}
                                     </p>
                                  </div>

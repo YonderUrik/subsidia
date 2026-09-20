@@ -308,7 +308,7 @@ export default function HarvestsListPage() {
          {/* HEADER */}
          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Raccolti</h1>
+               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Raccolti</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                <Link href={paths.new_harvest} className="w-full sm:w-auto">
@@ -323,46 +323,46 @@ export default function HarvestsListPage() {
          {/* SUMMARY CARDS */}
          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <Card 
-               className={`bg-gradient-to-br p-1 from-blue-50 to-blue-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'paid' ? 'ring-2 ring-blue-400' : ''}`}
+               className={`bg-gradient-to-br p-1 from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'paid' ? 'ring-2 ring-blue-400' : ''}`}
                onClick={() => toggleFilter('paid')}
             >
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <CreditCard className="h-4 w-4 text-blue-700" />
+                     <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                        <CreditCard className="h-4 w-4 text-blue-700 dark:text-blue-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Pagato nel periodo</p>
-                        <p className="text-lg font-bold text-blue-700 leading-tight">{formatNumber(totalPaid)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Pagato nel periodo</p>
+                        <p className="text-lg font-bold text-blue-700 dark:text-blue-400 leading-tight">{formatNumber(totalPaid)}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
-            <Card 
-               className={`bg-gradient-to-br p-1 from-amber-50 to-amber-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'unpaid' ? 'ring-2 ring-amber-400' : ''}`}
+            <Card
+               className={`bg-gradient-to-br p-1 from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'unpaid' ? 'ring-2 ring-amber-400' : ''}`}
                onClick={() => toggleFilter('unpaid')}
             >
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
-                        <Clock className="h-4 w-4 text-amber-700" />
+                     <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-amber-700 dark:text-amber-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Da pagare (totale)</p>
-                        <p className="text-lg font-bold text-amber-700 leading-tight">{formatNumber(totalToPay)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Da pagare (totale)</p>
+                        <p className="text-lg font-bold text-amber-700 dark:text-amber-400 leading-tight">{formatNumber(totalToPay)}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
-            <Card className="bg-gradient-to-br p-1 from-green-50 to-green-100 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br p-1 from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 shadow-sm hover:shadow-md transition-shadow">
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                        <Weight className="h-4 w-4 text-green-700" />
+                     <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                        <Weight className="h-4 w-4 text-green-700 dark:text-green-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Quantità totale</p>
-                        <p className="text-lg font-bold text-green-700 leading-tight">{formatNumber(totalQuantity, false)} Kg</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Quantità totale</p>
+                        <p className="text-lg font-bold text-green-700 dark:text-green-400 leading-tight">{formatNumber(totalQuantity, false)} Kg</p>
                      </div>
                   </div>
                </CardContent>
@@ -370,7 +370,7 @@ export default function HarvestsListPage() {
          </div>
 
          {/* FILTER CARD */}
-         <Card className="p-0 bg-white shadow-sm">
+         <Card className="p-0 bg-white dark:bg-slate-900 shadow-sm">
             <CardContent className="py-3 px-4">
                <div className="flex flex-col sm:flex-row items-start sm:items-center flex-wrap gap-2">
                   <Select value={year.toString()} onValueChange={setYear}>
@@ -396,7 +396,7 @@ export default function HarvestsListPage() {
                         variant="outline" 
                         size="sm" 
                         onClick={() => setDateFilter(null)} 
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30 dark:border-red-800"
                      >
                         Rimuovi filtro data
                      </Button>
@@ -408,7 +408,7 @@ export default function HarvestsListPage() {
          <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
                <div className="relative flex-1 w-full">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                   <Input
                      type="search"
                      placeholder="Cerca cliente..."
@@ -481,7 +481,7 @@ export default function HarvestsListPage() {
                      <PopoverContent className="w-[240px] p-0">
                         <div className="p-2">
                            <div className="relative mb-2">
-                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                               <Input
                                  type="search"
                                  placeholder="Cerca nelle note..."
@@ -493,7 +493,7 @@ export default function HarvestsListPage() {
                            {notesKeyword && (
                               <Button 
                                  variant="ghost" 
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearNotesFilter}
                               >
                                  Cancella filtro
@@ -510,61 +510,61 @@ export default function HarvestsListPage() {
                {activeFilter && (
                   <Badge 
                      variant="outline" 
-                     className="bg-blue-50 border-blue-200 text-blue-700 px-3 py-1 flex items-center gap-1"
+                     className="bg-blue-50 border-blue-200 text-blue-700 px-3 py-1 flex items-center gap-1 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-400"
                      onClick={() => setActiveFilter(null)}
                   >
                      {activeFilter === 'paid' ? 'Solo pagati' : 'Solo da pagare'}
-                     <button className="ml-1 text-blue-700 hover:text-blue-900">×</button>
+                     <button className="ml-1 text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">×</button>
                   </Badge>
                )}
                {dateFilter && (
-                  <Badge 
-                     variant="outline" 
-                     className="bg-green-50 border-green-200 text-green-700 px-3 py-1 flex items-center gap-1"
+                  <Badge
+                     variant="outline"
+                     className="bg-green-50 border-green-200 text-green-700 px-3 py-1 flex items-center gap-1 dark:bg-green-950/20 dark:border-green-800 dark:text-green-400"
                      onClick={() => setDateFilter(null)}
                   >
                      Data: {format(dateFilter, "dd/MM/yyyy")}
-                     <button className="ml-1 text-green-700 hover:text-green-900">×</button>
+                     <button className="ml-1 text-green-700 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">×</button>
                   </Badge>
                )}
                {clientFilter && clientFilter !== "all" && (
-                  <Badge 
-                     variant="outline" 
-                     className="bg-purple-50 border-purple-200 text-purple-700 px-3 py-1 flex items-center gap-1"
+                  <Badge
+                     variant="outline"
+                     className="bg-purple-50 border-purple-200 text-purple-700 px-3 py-1 flex items-center gap-1 dark:bg-purple-950/20 dark:border-purple-800 dark:text-purple-400"
                      onClick={() => setClientFilter("all")}
                   >
                      Cliente: {clientFilter}
-                     <button className="ml-1 text-purple-700 hover:text-purple-900">×</button>
+                     <button className="ml-1 text-purple-700 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300">×</button>
                   </Badge>
                )}
                {landFilter && landFilter !== "all" && (
-                  <Badge 
-                     variant="outline" 
-                     className="bg-amber-50 border-amber-200 text-amber-700 px-3 py-1 flex items-center gap-1"
+                  <Badge
+                     variant="outline"
+                     className="bg-amber-50 border-amber-200 text-amber-700 px-3 py-1 flex items-center gap-1 dark:bg-amber-950/20 dark:border-amber-800 dark:text-amber-400"
                      onClick={() => setLandFilter("all")}
                   >
                      Terreno: {landFilter}
-                     <button className="ml-1 text-amber-700 hover:text-amber-900">×</button>
+                     <button className="ml-1 text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300">×</button>
                   </Badge>
                )}
                {soilTypeFilter && soilTypeFilter !== "all" && (
-                  <Badge 
-                     variant="outline" 
-                     className="bg-slate-50 border-slate-200 text-slate-700 px-3 py-1 flex items-center gap-1"
+                  <Badge
+                     variant="outline"
+                     className="bg-slate-50 border-slate-200 text-slate-700 px-3 py-1 flex items-center gap-1 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300"
                      onClick={() => setSoilTypeFilter("all")}
                   >
                      Tipo terreno: {soilTypeFilter}
-                     <button className="ml-1 text-slate-700 hover:text-slate-900">×</button>
+                     <button className="ml-1 text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100">×</button>
                   </Badge>
                )}
                {notesKeyword && (
-                  <Badge 
-                     variant="outline" 
-                     className="bg-red-50 border-red-200 text-red-700 px-3 py-1 flex items-center gap-1"
+                  <Badge
+                     variant="outline"
+                     className="bg-red-50 border-red-200 text-red-700 px-3 py-1 flex items-center gap-1 dark:bg-red-950/20 dark:border-red-800 dark:text-red-400"
                      onClick={clearNotesFilter}
                   >
                      Note: {notesKeyword}
-                     <button className="ml-1 text-red-700 hover:text-red-900">×</button>
+                     <button className="ml-1 text-red-700 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">×</button>
                   </Badge>
                )}
             </div>
@@ -572,7 +572,7 @@ export default function HarvestsListPage() {
             {/* Bulk actions */}
             {selectedHarvests.length > 0 && (
                <div className="flex justify-between items-center">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                      {selectedHarvests.length} {selectedHarvests.length === 1 ? 'raccolto selezionato' : 'raccolti selezionati'}
                   </p>
                   <Button 
@@ -619,8 +619,8 @@ export default function HarvestsListPage() {
                               <TableRow>
                                  <TableCell colSpan={12} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
-                                       <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-slate-900"></div>
-                                       <p className="mt-2 text-sm text-slate-500">Caricamento raccolti...</p>
+                                       <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-slate-900 dark:border-slate-100"></div>
+                                       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Caricamento raccolti...</p>
                                     </div>
                                  </TableCell>
                               </TableRow>
@@ -628,7 +628,7 @@ export default function HarvestsListPage() {
                               <TableRow>
                                  <TableCell colSpan={12} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
-                                       <p className="text-red-500">{error}</p>
+                                       <p className="text-red-500 dark:text-red-400">{error}</p>
                                     </div>
                                  </TableCell>
                               </TableRow>
@@ -636,7 +636,7 @@ export default function HarvestsListPage() {
                               <TableRow>
                                  <TableCell colSpan={12} className="h-24 text-center">
                                     <div className="flex flex-col items-center justify-center">
-                                       <p className="text-slate-500">Nessun raccolto trovato</p>
+                                       <p className="text-slate-500 dark:text-slate-400">Nessun raccolto trovato</p>
                                     </div>
                                  </TableCell>
                               </TableRow>
@@ -656,7 +656,7 @@ export default function HarvestsListPage() {
                                     <TableCell className="whitespace-nowrap">
                                        {harvest.land?.name}
                                        {harvest.land?.soilType && (
-                                          <span className="ml-1 text-xs text-slate-500">
+                                          <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">
                                              ({harvest.land.soilType})
                                           </span>
                                        )}
@@ -674,7 +674,7 @@ export default function HarvestsListPage() {
                                              {harvest.discount}%
                                           </span>
                                        ) : (
-                                          <span className="text-slate-400">-</span>
+                                          <span className="text-slate-400 dark:text-slate-500">-</span>
                                        )}
                                     </TableCell>
                                     <TableCell>
@@ -720,7 +720,7 @@ export default function HarvestsListPage() {
                                           <Button
                                              variant="ghost"
                                              size="icon"
-                                             className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                             className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                              onClick={() => handleDeleteClick(harvest)}
                                           >
                                              <Trash2 className="h-4 w-4" />
@@ -738,13 +738,13 @@ export default function HarvestsListPage() {
 
             {/* Pagination */}
             {totalPages > 1 ? (
-               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2 bg-gray-50 px-4 rounded-md border">
+               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2 bg-gray-50 dark:bg-slate-800 px-4 rounded-md border">
                   <div className="flex items-center space-x-2">
-                     <p className="text-sm font-medium text-slate-600">
+                     <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
                         Mostrando {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)} di {totalCount} raccolti
                      </p>
                      <div className="flex items-center space-x-1">
-                        <span className="text-sm text-slate-600">Righe:</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Righe:</span>
                         <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                            <SelectTrigger className="h-8 w-[70px]">
                               <SelectValue placeholder="10" />
@@ -758,7 +758,7 @@ export default function HarvestsListPage() {
                      </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                     <span className="text-sm text-slate-600 hidden sm:inline">Pagina {currentPage} di {totalPages}</span>
+                     <span className="text-sm text-slate-600 dark:text-slate-400 hidden sm:inline">Pagina {currentPage} di {totalPages}</span>
                      <Button
                         variant="outline"
                         size="icon"
@@ -788,7 +788,7 @@ export default function HarvestsListPage() {
                                  variant={currentPage === pageNum ? "default" : "outline"}
                                  size="icon"
                                  onClick={() => handlePageChange(pageNum)}
-                                 className={`h-8 w-8 p-0 ${currentPage === pageNum ? "bg-blue-600" : ""}`}
+                                 className={`h-8 w-8 p-0 ${currentPage === pageNum ? "bg-blue-600 dark:bg-blue-700" : ""}`}
                               >
                                  {pageNum}
                               </Button>
@@ -807,7 +807,7 @@ export default function HarvestsListPage() {
                   </div>
                </div>
             ) : harvests.length > 0 && (
-               <div className="py-2 px-4 text-sm text-slate-600 bg-gray-50 rounded-md border">
+               <div className="py-2 px-4 text-sm text-slate-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800 rounded-md border">
                   Mostrando {harvests.length} {harvests.length === 1 ? 'raccolto' : 'raccolti'}
                </div>
             )}

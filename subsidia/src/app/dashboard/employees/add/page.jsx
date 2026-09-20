@@ -73,7 +73,7 @@ export default function AddEmployeePage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Aggiungi Operaio</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Aggiungi Operaio</h1>
       </div>
 
       {error && (
@@ -86,10 +86,10 @@ export default function AddEmployeePage() {
 
       {isSuccess ? (
         <div className="space-y-6">
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <AlertTitle className="text-green-800">Successo!</AlertTitle>
-            <AlertDescription className="text-green-700">
+          <Alert className="bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800">
+            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <AlertTitle className="text-green-800 dark:text-green-300">Successo!</AlertTitle>
+            <AlertDescription className="text-green-700 dark:text-green-400">
               {addedEmployeeName} è stato aggiunto al sistema.
             </AlertDescription>
           </Alert>

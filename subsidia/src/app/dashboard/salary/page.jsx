@@ -363,7 +363,7 @@ export default function SalaryPage() {
          {/* ACTIONS */}
          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Giornate</h1>
+               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Giornate</h1>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                <Link href={paths.calendar} className="w-full sm:w-auto">
@@ -384,70 +384,70 @@ export default function SalaryPage() {
          {/* TOTALS */}
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <Card 
-               className={`bg-gradient-to-br p-1 from-blue-50 to-blue-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'paid' ? 'ring-2 ring-blue-400' : ''}`}
+               className={`bg-gradient-to-br p-1 from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'paid' ? 'ring-2 ring-blue-400' : ''}`}
                onClick={() => toggleFilter('paid')}
             >
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <CreditCard className="h-4 w-4 text-blue-700" />
+                     <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                        <CreditCard className="h-4 w-4 text-blue-700 dark:text-blue-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Pagato nel periodo</p>
-                        <p className="text-lg font-bold text-blue-700 leading-tight">{formatNumber(totalPayed)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Pagato nel periodo</p>
+                        <p className="text-lg font-bold text-blue-700 dark:text-blue-400 leading-tight">{formatNumber(totalPayed)}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
-            <Card 
-               className={`bg-gradient-to-br p-1 from-amber-50 to-amber-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'unpaid' ? 'ring-2 ring-amber-400' : ''}`}
+            <Card
+               className={`bg-gradient-to-br p-1 from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'unpaid' ? 'ring-2 ring-amber-400' : ''}`}
                onClick={() => toggleFilter('unpaid')}
             >
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
-                        <Clock className="h-4 w-4 text-amber-700" />
+                     <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                        <Clock className="h-4 w-4 text-amber-700 dark:text-amber-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Da pagare (totale)</p>
-                        <p className="text-lg font-bold text-amber-700 leading-tight">{formatNumber(totalToPay)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Da pagare (totale)</p>
+                        <p className="text-lg font-bold text-amber-700 dark:text-amber-400 leading-tight">{formatNumber(totalToPay)}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
-            <Card 
-               className={`bg-gradient-to-br p-1 from-green-50 to-green-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'fullDay' ? 'ring-2 ring-green-400' : ''}`}
+            <Card
+               className={`bg-gradient-to-br p-1 from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'fullDay' ? 'ring-2 ring-green-400' : ''}`}
                onClick={() => toggleFilter('fullDay')}
             >
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                        <Circle className="h-4 w-4 text-green-700" />
+                     <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                        <Circle className="h-4 w-4 text-green-700 dark:text-green-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Giornate intere</p>
-                        <p className="text-lg font-bold text-green-700 leading-tight">{fullDaysCount}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Giornate intere</p>
+                        <p className="text-lg font-bold text-green-700 dark:text-green-400 leading-tight">{fullDaysCount}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
-            <Card 
-               className={`bg-gradient-to-br p-1 from-purple-50 to-purple-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'halfDay' ? 'ring-2 ring-purple-400' : ''}`}
+            <Card
+               className={`bg-gradient-to-br p-1 from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${activeFilter === 'halfDay' ? 'ring-2 ring-purple-400' : ''}`}
                onClick={() => toggleFilter('halfDay')}
             >
                <CardContent className="p-2">
                   <div className="flex items-center gap-2">
-                     <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Square className="h-4 w-4 text-purple-700" />
+                     <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+                        <Square className="h-4 w-4 text-purple-700 dark:text-purple-400" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Mezze giornate</p>
-                        <p className="text-lg font-bold text-purple-700 leading-tight">{halfDaysCount}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-none">Mezze giornate</p>
+                        <p className="text-lg font-bold text-purple-700 dark:text-purple-400 leading-tight">{halfDaysCount}</p>
                      </div>
                   </div>
                </CardContent>
             </Card>
-            <Card className="sm:col-span-2 p-0 lg:col-span-4 bg-white shadow-sm">
+            <Card className="sm:col-span-2 p-0 lg:col-span-4 bg-white dark:bg-slate-900 shadow-sm">
                <CardContent className="py-3 px-4">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center flex-wrap gap-2">
                      <Select
@@ -513,7 +513,7 @@ export default function SalaryPage() {
                   </Tabs>
                </div>
                <div className="relative flex-1 w-full">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                   <Input
                      type="search"
                      placeholder="Cerca operai..."
@@ -528,7 +528,7 @@ export default function SalaryPage() {
                         variant="outline" 
                         size="sm" 
                         onClick={() => setActiveFilter(null)} 
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30 dark:border-red-800"
                      >
                         Rimuovi filtro
                      </Button>
@@ -549,7 +549,7 @@ export default function SalaryPage() {
                      <PopoverContent className="w-[240px] p-0">
                         <div className="p-2">
                            <div className="relative mb-2">
-                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                               <Input
                                  type="search"
                                  placeholder="Cerca parole chiave..."
@@ -561,7 +561,7 @@ export default function SalaryPage() {
                            {notesKeyword && (
                               <Button 
                                  variant="ghost" 
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50" 
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearNotesFilter}
                               >
                                  Cancella filtro
@@ -574,7 +574,7 @@ export default function SalaryPage() {
                                        <Badge 
                                           key={keyword} 
                                           variant="secondary" 
-                                          className="cursor-pointer hover:bg-slate-200"
+                                          className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
                                           onClick={() => handleNotesKeywordSelect(keyword)}
                                        >
                                           {keyword}
@@ -582,7 +582,7 @@ export default function SalaryPage() {
                                     ))}
                                  </div>
                               ) : (
-                                 <div className="p-2 text-center text-slate-500 text-sm">Nessuna parola chiave trovata</div>
+                                 <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessuna parola chiave trovata</div>
                               )}
                            </div>
                         </div>
@@ -594,7 +594,7 @@ export default function SalaryPage() {
             {/* Bulk actions */}
             {groupBy === 'day' && selectedSalaries.length > 0 && (
                <div className="flex justify-between items-center">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                      {selectedSalaries.length} {selectedSalaries.length === 1 ? 'giornata selezionata' : 'giornate selezionate'}
                   </p>
                   <Button 
@@ -612,15 +612,15 @@ export default function SalaryPage() {
             <Card className="shadow-sm overflow-hidden">
                <CardContent className="p-0">
                   {isLoading ? (
-                     <div className="flex items-center justify-center p-8 text-slate-500">
+                     <div className="flex items-center justify-center p-8 text-slate-500 dark:text-slate-400">
                         Caricamento in corso...
                      </div>
                   ) : error ? (
-                     <div className="flex items-center justify-center p-8 text-red-500">
+                     <div className="flex items-center justify-center p-8 text-red-500 dark:text-red-400">
                         {error}
                      </div>
                   ) : salaries.length === 0 ? (
-                     <div className="flex items-center justify-center p-8 text-slate-500">
+                     <div className="flex items-center justify-center p-8 text-slate-500 dark:text-slate-400">
                         Nessuna giornata trovata per il periodo selezionato
                      </div>
                   ) : (
@@ -680,8 +680,8 @@ export default function SalaryPage() {
                                           <Badge
                                              variant="outline"
                                              className={salary.payedAmount >= salary.total ?
-                                                "bg-green-50 text-green-700 border-green-200" :
-                                                "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                                "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800" :
+                                                "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800"
                                              }
                                           >
                                              {salary.payedAmount >= salary.total ?
@@ -694,11 +694,11 @@ export default function SalaryPage() {
                                        {groupBy === 'day' && (
                                           <TableCell>
                                              {salary.notes ? (
-                                                <div className="max-w-[200px] truncate text-slate-600">
+                                                <div className="max-w-[200px] truncate text-slate-600 dark:text-slate-400">
                                                    {salary.notes}
                                                 </div>
                                              ) : (
-                                                <span className="text-slate-400">-</span>
+                                                <span className="text-slate-400 dark:text-slate-500">-</span>
                                              )}
                                           </TableCell>
                                        )}
@@ -706,7 +706,7 @@ export default function SalaryPage() {
                                           <Button
                                              variant="ghost"
                                              size="icon"
-                                             className="h-8 w-8 text-slate-500 hover:text-red-600"
+                                             className="h-8 w-8 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400"
                                              onClick={() => handleDeleteClick(salary)}
                                              title="Elimina giornata"
                                           >
@@ -722,7 +722,7 @@ export default function SalaryPage() {
                         {/* Pagination controls */}
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 py-4 border-t gap-3">
                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-slate-500">
+                              <span className="text-sm text-slate-500 dark:text-slate-400">
                                  Righe per pagina:
                               </span>
                               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
@@ -739,8 +739,8 @@ export default function SalaryPage() {
                            </div>
                            
                            <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
-                              <span className="text-sm text-slate-500 mr-2">
-                                 {totalCount > 0 
+                              <span className="text-sm text-slate-500 dark:text-slate-400 mr-2">
+                                 {totalCount > 0
                                     ? `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalCount)} di ${totalCount}`
                                     : "0 risultati"}
                               </span>
@@ -785,29 +785,29 @@ export default function SalaryPage() {
                </AlertDialogHeader>
                
                {!Array.isArray(salaryToDelete) && salaryToDelete && (
-                  <div className="mt-2 p-3 bg-slate-50 rounded-md">
+                  <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
                      <div className="mb-1"><strong>Operaio:</strong> {salaryToDelete.employee.name}</div>
                      <div className="mb-1"><strong>Data:</strong> {format(new Date(salaryToDelete.workedDay), "dd/MM/yyyy")}</div>
                      <div><strong>Importo:</strong> {formatNumber(salaryToDelete.total)}</div>
                   </div>
                )}
-               
+
                {Array.isArray(salaryToDelete) && salaryToDelete?.length > 0 && (
-                  <div className="mt-2 max-h-[200px] overflow-y-auto p-3 bg-slate-50 rounded-md">
+                  <div className="mt-2 max-h-[200px] overflow-y-auto p-3 bg-slate-50 dark:bg-slate-800 rounded-md">
                      <p className="mb-2 font-medium">Riepilogo delle giornate da eliminare:</p>
                      {salaryToDelete.slice(0, 5).map(salary => (
-                        <div key={salary.id} className="mb-2 pb-2 border-b border-slate-200">
+                        <div key={salary.id} className="mb-2 pb-2 border-b border-slate-200 dark:border-slate-700">
                            <div><strong>Operaio:</strong> {salary.employee.name}</div>
                            <div><strong>Data:</strong> {format(new Date(salary.workedDay), "dd/MM/yyyy")}</div>
                         </div>
                      ))}
                      {salaryToDelete.length > 5 && (
-                        <p className="text-slate-600 italic">e altre {salaryToDelete.length - 5} giornate...</p>
+                        <p className="text-slate-600 dark:text-slate-400 italic">e altre {salaryToDelete.length - 5} giornate...</p>
                      )}
                   </div>
                )}
-               
-               <div className="mt-2 text-red-600 text-sm">
+
+               <div className="mt-2 text-red-600 dark:text-red-400 text-sm">
                   Questa azione non può essere annullata.
                </div>
                

@@ -88,7 +88,7 @@ export default function EditEmployeePage() {
    if (!employee) {
       return (
          <div className="p-6">
-            <h1 className="text-2xl font-bold text-slate-900">operaio non trovato</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">operaio non trovato</h1>
             <Link href={paths.employees}>
                <Button className="mt-4">
                   <ArrowLeft className="mr-2 h-4 w-4" />
@@ -108,9 +108,9 @@ export default function EditEmployeePage() {
                </Button>
             </Link>
             <div>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Modifica operaio</h1>
+               <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Modifica operaio</h1>
                {!employee?.isActive && (
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 mt-1">
+                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950/20 dark:text-red-400 dark:border-red-800 mt-1">
                      Disabilitato
                   </Badge>
                )}
@@ -118,10 +118,10 @@ export default function EditEmployeePage() {
          </div>
 
          {isSuccess ? (
-            <Alert className="bg-green-50 border-green-200">
-               <CheckCircle2 className="h-5 w-5 text-green-600" />
-               <AlertTitle className="text-green-800">Operazione completata con successo!</AlertTitle>
-               <AlertDescription className="text-green-700">
+            <Alert className="bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800">
+               <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+               <AlertTitle className="text-green-800 dark:text-green-300">Operazione completata con successo!</AlertTitle>
+               <AlertDescription className="text-green-700 dark:text-green-400">
                   Le informazioni dell'operaio sono state aggiornate con successo.
                </AlertDescription>
             </Alert>

@@ -556,7 +556,7 @@ export default function SalaryStatsPage() {
                            {employeeId && (
                               <Button
                                  variant="ghost"
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearEmployeeFilter}
                               >
                                  Rimuovi filtro dipendente
@@ -577,7 +577,7 @@ export default function SalaryStatsPage() {
                                     ))}
                                  </div>
                               ) : (
-                                 <div className="p-2 text-center text-slate-500 text-sm">Nessun dipendente trovato</div>
+                                 <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessun dipendente trovato</div>
                               )}
                            </div>
                         </div>
@@ -601,7 +601,7 @@ export default function SalaryStatsPage() {
                      <PopoverContent className="w-[240px] p-0">
                         <div className="p-2">
                            <div className="relative mb-2">
-                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
                               <Input
                                  type="search"
                                  placeholder="Cerca parole chiave..."
@@ -613,7 +613,7 @@ export default function SalaryStatsPage() {
                            {notesKeyword && (
                               <Button
                                  variant="ghost"
-                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                 className="w-full justify-start mb-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
                                  onClick={clearNotesFilter}
                               >
                                  Cancella filtro
@@ -626,7 +626,7 @@ export default function SalaryStatsPage() {
                                        <Badge
                                           key={keyword}
                                           variant="secondary"
-                                          className="cursor-pointer hover:bg-slate-200"
+                                          className="cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
                                           onClick={() => handleNotesKeywordSelect(keyword)}
                                        >
                                           {keyword}
@@ -634,7 +634,7 @@ export default function SalaryStatsPage() {
                                     ))}
                                  </div>
                               ) : (
-                                 <div className="p-2 text-center text-slate-500 text-sm">Nessuna parola chiave trovata</div>
+                                 <div className="p-2 text-center text-slate-500 dark:text-slate-400 text-sm">Nessuna parola chiave trovata</div>
                               )}
                            </div>
                         </div>
@@ -886,13 +886,13 @@ export default function SalaryStatsPage() {
                               <div className="grid grid-cols-2 gap-2 text-center">
                                  <div>
                                     <p className="text-xs sm:text-sm text-muted-foreground">Importo Pagato</p>
-                                    <p className="text-base sm:text-xl font-bold text-green-500">
+                                    <p className="text-base sm:text-xl font-bold text-green-500 dark:text-green-400">
                                        {formatNumber(stats.paidVsUnpaid.paidAmount)}
                                     </p>
                                  </div>
                                  <div>
                                     <p className="text-xs sm:text-sm text-muted-foreground">Importo Non Pagato</p>
-                                    <p className="text-base sm:text-xl font-bold text-red-500">
+                                    <p className="text-base sm:text-xl font-bold text-red-500 dark:text-red-400">
                                        {formatNumber(stats.paidVsUnpaid.unpaidAmount)}
                                     </p>
                                  </div>
@@ -956,13 +956,13 @@ export default function SalaryStatsPage() {
                               <div className="grid grid-cols-2 gap-2 text-center">
                                  <div>
                                     <p className="text-xs sm:text-sm text-muted-foreground">Giornate Intere</p>
-                                    <p className="text-base sm:text-xl font-bold text-green-500">
+                                    <p className="text-base sm:text-xl font-bold text-green-500 dark:text-green-400">
                                        {stats.workTypes.fullDay}
                                     </p>
                                  </div>
                                  <div>
                                     <p className="text-xs sm:text-sm text-muted-foreground">Mezze Giornate</p>
-                                    <p className="text-base sm:text-xl font-bold text-orange-500">
+                                    <p className="text-base sm:text-xl font-bold text-orange-500 dark:text-orange-400">
                                        {stats.workTypes.halfDay}
                                     </p>
                                  </div>

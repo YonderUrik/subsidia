@@ -136,7 +136,7 @@ export default function BatchEntryPage() {
                </Button>
             </Link>
             <div>
-               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Aggiungi Giornate</h1>
+               <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Aggiungi Giornate</h1>
             </div>
          </div>
 
@@ -167,7 +167,7 @@ export default function BatchEntryPage() {
                            {employees.map((employee) => (
                               <TableRow 
                                  key={employee.id} 
-                                 className="cursor-pointer hover:bg-slate-50"
+                                 className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
                                  onClick={() => handleEmployeeToggle(employee.id)}
                               >
                                  <TableCell onClick={(e) => e.stopPropagation()}>
@@ -185,7 +185,7 @@ export default function BatchEntryPage() {
                      </Table>
                   </CardContent>
                   <CardFooter className="border-t px-6 py-4">
-                     <div className="text-sm text-slate-500">{selectedEmployees.length} operai selezionati</div>
+                     <div className="text-sm text-slate-500 dark:text-slate-400">{selectedEmployees.length} operai selezionati</div>
                   </CardFooter>
                </Card>
 
@@ -224,7 +224,7 @@ export default function BatchEntryPage() {
                               <PopoverTrigger asChild>
                                  <Button
                                     variant={"outline"}
-                                    className={cn("w-full justify-start text-left font-normal", !dateRange && "text-slate-500")}
+                                    className={cn("w-full justify-start text-left font-normal", !dateRange && "text-slate-500 dark:text-slate-400")}
                                  >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     {dateRange?.from ? (
@@ -262,7 +262,7 @@ export default function BatchEntryPage() {
                         <div className="space-y-2">
                            <Label>Tipo di Lavoro</Label>
                            <select
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 dark:placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                               value={workType}
                               onChange={(e) => setWorkType(e.target.value)}
                            >

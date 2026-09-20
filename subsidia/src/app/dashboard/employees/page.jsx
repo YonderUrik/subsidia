@@ -173,7 +173,7 @@ export default function EmployeesPage() {
                   <TableCell>{employee.fullDays}</TableCell>
                   <TableCell>{formatNumber(employee.halfDayRate)}</TableCell>
                   <TableCell>{employee.halfDays}</TableCell>
-                  <TableCell className={employee.toPay < 0 ? "text-blue-600 font-medium" : employee.toPay > 0 ? "text-red-600" : ""}>
+                  <TableCell className={employee.toPay < 0 ? "text-blue-600 dark:text-blue-400 font-medium" : employee.toPay > 0 ? "text-red-600 dark:text-red-400" : ""}>
                     {employee.toPay < 0 ? `- ${formatNumber(Math.abs(employee.toPay))}` : formatNumber(employee.toPay)}
                   </TableCell>
                   <TableCell>
@@ -227,7 +227,7 @@ export default function EmployeesPage() {
             </div>
             
             <div className="flex items-center gap-1 w-full sm:w-auto justify-between sm:justify-end">
-              <span className="text-sm text-slate-500 mr-2">
+              <span className="text-sm text-slate-500 dark:text-slate-400 mr-2">
                 {totalItems > 0 
                   ? `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalItems)} di ${totalItems}`
                   : "0 risultati"}
