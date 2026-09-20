@@ -212,7 +212,7 @@ export async function GET(request) {
 
       const soilTypes = soilTypesResult.map(s => s.soilType).filter(Boolean)
 
-      // Calculate totals with ALL active filters - more accurate calculation using paidAmount
+      // Totals for the currently selected period/filters (paid amount, quantity)
       const allFilteredHarvests = await prisma.harvest.findMany({
          where: whereClause,
          select: {
@@ -224,17 +224,40 @@ export async function GET(request) {
       })
 
       let totalPaid = 0
-      let totalToPay = 0
       let totalQuantity = 0
 
       allFilteredHarvests.forEach(harvest => {
          totalQuantity += harvest.quantity || 0
-         
+
          // Use paidAmount if available, otherwise use total if isPaid is true
          const actualPaidAmount = harvest.paidAmount || (harvest.isPaid ? harvest.total : 0)
          totalPaid += actualPaidAmount || 0
-         
-         // Calculate remaining amount to pay
+      })
+
+      // "Da pagare" must always be the client's real, all-time outstanding balance:
+      // unpaid harvests from previous periods still count even when viewing a later date range.
+      // Only client/land/soilType identity filters narrow it (never date range/isPaid/notesKeyword).
+      const globalToPayFilter = {
+         userId: session.user.id,
+         ...(landId && { landId }),
+         ...(landName && { land: { name: landName } }),
+         ...(search && { client: { contains: search, mode: 'insensitive' } }),
+         ...(client && { client }),
+         ...(soilType && { land: { ...(landName ? { name: landName } : {}), soilType } })
+      }
+
+      const allHarvestsForGlobalBalance = await prisma.harvest.findMany({
+         where: globalToPayFilter,
+         select: {
+            total: true,
+            paidAmount: true,
+            isPaid: true
+         }
+      })
+
+      let totalToPay = 0
+      allHarvestsForGlobalBalance.forEach(harvest => {
+         const actualPaidAmount = harvest.paidAmount || (harvest.isPaid ? harvest.total : 0)
          const remainingToPay = (harvest.total || 0) - (actualPaidAmount || 0)
          totalToPay += Math.max(0, remainingToPay)
       })

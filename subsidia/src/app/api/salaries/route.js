@@ -136,7 +136,7 @@ export async function GET(request) {
          baseQuery.take = pageSize;
       }
       
-      // Fetch all salaries data for totals calculation
+      // Fetch all salaries data for totals calculation (respects period/status/type filters)
       const allSalariesForTotals = await prisma.salary.findMany({
          where: baseFilter,
          select: {
@@ -146,10 +146,34 @@ export async function GET(request) {
             payedAmount: true
          }
       });
-      
-      // Calculate totals from ALL matching records
+
+      // "Totale pagato" reflects the currently selected period/filters
       const totalPayed = allSalariesForTotals.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
-      const totalToPay = allSalariesForTotals.reduce((sum, salary) => {
+
+      // "Da pagare" must always be the employee's real, all-time outstanding balance:
+      // unpaid days from previous years still count even when viewing a later year/period.
+      // Only the employee-name search narrows it (never date range/isPaid/workType/notesKeyword).
+      const globalToPayFilter = {
+         userId: session.user.id,
+         ...(search && {
+            employee: {
+               name: {
+                  contains: search,
+                  mode: "insensitive"
+               }
+            }
+         })
+      };
+
+      const allSalariesForGlobalBalance = await prisma.salary.findMany({
+         where: globalToPayFilter,
+         select: {
+            total: true,
+            payedAmount: true
+         }
+      });
+
+      const totalToPay = allSalariesForGlobalBalance.reduce((sum, salary) => {
          const difference = salary.total - (salary.payedAmount || 0);
          return sum + (difference > 0 ? difference : 0);
       }, 0);

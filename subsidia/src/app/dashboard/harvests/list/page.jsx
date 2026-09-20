@@ -332,7 +332,7 @@ export default function HarvestsListPage() {
                         <CreditCard className="h-4 w-4 text-blue-700" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Totale pagato</p>
+                        <p className="text-xs text-slate-500 leading-none">Pagato nel periodo</p>
                         <p className="text-lg font-bold text-blue-700 leading-tight">{formatNumber(totalPaid)}</p>
                      </div>
                   </div>
@@ -348,7 +348,7 @@ export default function HarvestsListPage() {
                         <Clock className="h-4 w-4 text-amber-700" />
                      </div>
                      <div className="flex flex-col flex-1">
-                        <p className="text-xs text-slate-500 leading-none">Da pagare</p>
+                        <p className="text-xs text-slate-500 leading-none">Da pagare (totale)</p>
                         <p className="text-lg font-bold text-amber-700 leading-tight">{formatNumber(totalToPay)}</p>
                      </div>
                   </div>
