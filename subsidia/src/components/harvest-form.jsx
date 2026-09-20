@@ -100,14 +100,14 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
       }
    }, [isPaidValue, paidAmount, totalEarnings])
 
-   // Fetch lands for the dropdown
+   // Fetch lands for the dropdown, scoped to the selected harvest year
+   const harvestYear = harvestDate.getFullYear()
    useEffect(() => {
       const fetchLands = async () => {
          try {
             setLoading(true)
-            const currentYear = new Date().getFullYear()
-            const response = await axios.get(`/api/lands?year=${currentYear}`)
-            
+            const response = await axios.get(`/api/lands?year=${harvestYear}`)
+
             // Get distinct name-soilType combinations
             const distinctLands = response.data.reduce((acc, land) => {
                const key = `${land.name}-${land.soilType}`
@@ -116,8 +116,14 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
                }
                return acc
             }, [])
-            
+
             setLands(distinctLands)
+
+            // Clear the selected land if it doesn't belong to the newly loaded year
+            const selectedLandId = form.getValues("landId")
+            if (selectedLandId && !distinctLands.some(l => l.id === selectedLandId)) {
+               form.setValue("landId", "")
+            }
          } catch (error) {
             console.error("Error fetching lands:", error)
             toast.error("Errore nel caricamento dei terreni")
@@ -127,7 +133,7 @@ export function HarvestForm({ harvestId = null, mode = 'create' }) {
       }
 
       fetchLands()
-   }, [])
+   }, [harvestYear, form])
 
    // Fetch clients for autocomplete
    useEffect(() => {

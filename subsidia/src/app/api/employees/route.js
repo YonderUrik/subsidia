@@ -67,6 +67,13 @@ export async function GET(request) {
          const totalAccontiSingle = employee.acconti.reduce((sum, acconto) => sum + acconto.amount, 0);
          salaryStats.toPay -= totalAccontiSingle;
 
+         // Acconti not yet attributed to a specific salary's payedAmount (e.g. an acconto
+         // amount edited/reduced after being distributed can leave the ledger out of sync).
+         // This money has already been paid to the employee but doesn't reduce any single
+         // "giornata non pagata" badge, so we surface it separately from toPay.
+         const totalPayedAcrossSalaries = employee.salaries.reduce((sum, salary) => sum + (salary.payedAmount || 0), 0);
+         const unallocatedCredit = Math.max(0, totalAccontiSingle - totalPayedAcrossSalaries);
+
          // Find the most recent worked day
          let lastWorkedDay = null;
          let lastWorkType = null;
@@ -129,8 +136,9 @@ export async function GET(request) {
          return NextResponse.json({
             success: true,
             data: { 
-               ...employeeData, 
-               ...salaryStats, 
+               ...employeeData,
+               ...salaryStats,
+               unallocatedCredit,
                workHistory,
                acconti,
                totalAcconti,

@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 import { LandsList } from "@/components/lands-list"
 import { LandsMap } from "@/components/lands-map"
+import { InheritLandsDialog } from "@/components/inherit-lands-dialog"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 import axios from "axios"
@@ -218,6 +219,12 @@ export default function LandsPage() {
                   </Button>
                )}
                
+               <InheritLandsDialog
+                  targetYear={selectedYear}
+                  existingLandNames={lands.map(l => l.name)}
+                  onInherited={getLands}
+               />
+
                <Link href={paths.new_land}>
                   <Button>
                      <Plus className="mr-2 h-4 w-4" />
@@ -298,14 +305,21 @@ export default function LandsPage() {
                                  <Layout className="h-8 w-8" />
                                  <div>
                                     <p className="text-lg font-medium mb-1">Nessun terreno trovato</p>
-                                    <p className="text-sm">Non ci sono terreni per i filtri selezionati. Modifica i filtri o aggiungi un nuovo terreno.</p>
+                                    <p className="text-sm">Non ci sono terreni per i filtri selezionati. Modifica i filtri, aggiungi un nuovo terreno o eredita quelli di un anno passato.</p>
                                  </div>
-                                 <Link href={paths.new_land}>
-                                    <Button>
-                                       <Plus className="mr-2 h-4 w-4" />
-                                       Aggiungi Terreno
-                                    </Button>
-                                 </Link>
+                                 <div className="flex items-center gap-2">
+                                    <InheritLandsDialog
+                                       targetYear={selectedYear}
+                                       existingLandNames={lands.map(l => l.name)}
+                                       onInherited={getLands}
+                                    />
+                                    <Link href={paths.new_land}>
+                                       <Button>
+                                          <Plus className="mr-2 h-4 w-4" />
+                                          Aggiungi Terreno
+                                       </Button>
+                                    </Link>
+                                 </div>
                               </div>
                            </div>
                         ) : (
@@ -334,14 +348,21 @@ export default function LandsPage() {
                                  <Layers className="h-8 w-8" />
                                  <div>
                                     <p className="text-lg font-medium mb-1">Nessun terreno trovato</p>
-                                    <p className="text-sm">Non ci sono terreni per i filtri selezionati. Modifica i filtri o aggiungi un nuovo terreno.</p>
+                                    <p className="text-sm">Non ci sono terreni per i filtri selezionati. Modifica i filtri, aggiungi un nuovo terreno o eredita quelli di un anno passato.</p>
                                  </div>
-                                 <Link href={paths.new_land}>
-                                    <Button>
-                                       <Plus className="mr-2 h-4 w-4" />
-                                       Aggiungi Terreno
-                                    </Button>
-                                 </Link>
+                                 <div className="flex items-center gap-2">
+                                    <InheritLandsDialog
+                                       targetYear={selectedYear}
+                                       existingLandNames={lands.map(l => l.name)}
+                                       onInherited={getLands}
+                                    />
+                                    <Link href={paths.new_land}>
+                                       <Button>
+                                          <Plus className="mr-2 h-4 w-4" />
+                                          Aggiungi Terreno
+                                       </Button>
+                                    </Link>
+                                 </div>
                               </div>
                            </div>
                         ) : (

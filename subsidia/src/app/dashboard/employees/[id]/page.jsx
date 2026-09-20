@@ -452,6 +452,11 @@ export default function EmployeeDetailsPage() {
                      <p className={`text-xl font-bold ${employee.toPay > 0 ? "text-red-600" : employee.toPay < 0 ? "text-blue-600" : "text-green-600"}`}>
                         {employee.toPay < 0 ? `- ${formatNumber(Math.abs(employee.toPay))}` : formatNumber(employee.toPay)}
                      </p>
+                     {employee.unallocatedCredit > 0 && (
+                        <p className="text-xs text-amber-600 mt-1">
+                           Di cui {formatNumber(employee.unallocatedCredit)} già versati ma non assegnati a una giornata specifica
+                        </p>
+                     )}
                   </div>
                   <div className="flex gap-2 pt-2">
                      <Button
